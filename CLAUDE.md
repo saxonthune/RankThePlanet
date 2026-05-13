@@ -2,6 +2,8 @@
 
 Free, fast, open-source geo diary. User-curated lists of places with per-list review schemas.
 
+**RTP** = RankThePlanet. Use the abbreviation freely in conversation and docs.
+
 ## First action, every session
 
 **Before answering any product, design, or scaffolding question, read `.carta/MANIFEST.md` and any docs whose summary/tags match the task.** Prior decisions and research live there. Do not propose technology, architecture, or behavior without first checking what the workspace has already converged on. This rule outranks brevity — a fast answer that contradicts existing docs is worse than a slow one that aligns with them.

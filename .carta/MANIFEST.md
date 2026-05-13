@@ -33,7 +33,9 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc01.00 | `00-index.md` | Product specs — what we're building and why | product, index | — | — | — |
-| doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc02.01 | — |
+| doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
+| doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | — | — |
+| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Map Overview | product, concepts, design | — | — | — |
 
 ## 02-design — Design
 
@@ -53,16 +55,19 @@ Quick lookup for file-path→doc mapping:
 | `architecture` | doc02.01 |
 | `background` | doc01.01 |
 | `cmp` | doc02.01 |
+| `concepts` | doc01.03 |
 | `conventions` | doc00.03 |
-| `design` | doc02.01 |
+| `design` | doc01.03, doc02.01 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
 | `index` | doc00.00, doc01.00 |
 | `maintenance` | doc00.02 |
 | `maplibre` | doc02.01 |
 | `meta` | doc00.00, doc00.01 |
 | `philosophy` | doc00.02 |
-| `product` | doc01.00, doc01.01 |
+| `product` | doc01.00, doc01.01, doc01.02, doc01.03 |
 | `research` | doc01.01 |
 | `retrieval` | doc00.04 |
 | `stack` | doc02.01 |
 | `theory` | doc00.01 |
+| `use-cases` | doc01.02 |
+| `ux` | doc01.02 |

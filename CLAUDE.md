@@ -53,6 +53,18 @@ Conventions live in `doc00.03`. Maintenance / unfolding rules live in `doc00.02`
 ## Where things live (so far)
 
 - `00-codex/` — meta-documentation about the workspace itself
-- `01-product/` — what we're building and why; user-visible behavior; research that informs product decisions
+- `01-product/` — what we're building and why; user-visible behavior; research; development philosophy
+- `02-design/` — framework decisions; interaction (surfaces, navigation graph)
+- `tools/statechart/` — codegen script that turns `*.statechart.json` carta sidecars into inline-literal `createMachine` TypeScript files for the Stately VS Code extension
 
-System / architecture / operations groups will appear when the work demands them — not before.
+CMP-bound system specs (state tiers, repository contracts, screens-as-Composables, component tree) will appear in a future group when the interaction layer stabilizes.
+
+## Statechart sidecar workflow
+
+When editing a `*.statechart.json` carta sidecar, run the build to keep the generated TS in sync:
+
+```
+cd tools/statechart && npm run build
+```
+
+Commit both the sidecar and the generated file in the same change. CI gate: `git diff tools/statechart/generated/` must be empty after `npm run build`.

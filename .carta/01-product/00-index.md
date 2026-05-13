@@ -28,3 +28,4 @@ These belong in a future system or operations group, created when the work deman
 - doc01.01 — Background Context: condensed research session covering API constraints, map tech, sync model, location abstraction, competitive landscape, cold-start playbook.
 - doc01.02 — Use Cases: user-mental-model walkthroughs (Drip Coffee ranking, NYT Top 100 import, Geo Diary).
 - doc01.03 — Concepts: concept-driven design (Jackson) for Collection, Location, Review, Map Overview.
+- doc01.04 — Development Philosophy: two sources of truth, artifact chain, unfolding, spec-before-code.

@@ -1,0 +1,17 @@
+[versions]
+agp = "8.7.3"
+kotlin = "2.1.0"
+compose-multiplatform = "1.7.3"
+androidx-activity-compose = "1.10.1"
+maplibre-compose = "0.12.1"
+
+[libraries]
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version = "0.12.1" }
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

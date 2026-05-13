@@ -1,0 +1,10 @@
+.idea/
+build/
+local.properties
+.gradle/
+*.iml
+xcuserdata/
+.DS_Store
+Pods/
+*.xcworkspace
+*.orig

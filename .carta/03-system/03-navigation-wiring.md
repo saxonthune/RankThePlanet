@@ -7,15 +7,15 @@ deps: [doc02.02.01, doc03.02]
 
 # Navigation Wiring
 
-The navigation statechart ([[01-navigation]], doc02.02.01) is platform-agnostic — surfaces and gestures in concept-language, no `NavHost`, no routes. This doc is the bridge: how that statechart becomes a running Compose Multiplatform navigation graph. The statechart stays the source of truth; the wiring here is a mechanical projection of it.
+The navigation statechart ([[01-navigation]], doc02.02.01) is platform-agnostic — surfaces and gestures in concept-language, no `NavHost`, no routes. This doc is the bridge: how that statechart projects onto a Compose Multiplatform navigation graph. The statechart is the source of truth; this wiring is a mechanical projection of it.
 
 ## Library
 
-Navigation uses **`org.jetbrains.androidx.navigation:navigation-compose`** — JetBrains' KMP build of Jetpack Navigation, the peer of the `org.jetbrains.androidx.lifecycle` artifacts the app already depends on. Type-safe routes need the `kotlin("plugin.serialization")` plugin and `kotlinx-serialization-core`. Both the plugin and the dependency are added to the version catalog when this wiring is built.
+Navigation should use **`org.jetbrains.androidx.navigation:navigation-compose`** — JetBrains' KMP build of Jetpack Navigation, the peer of the `org.jetbrains.androidx.lifecycle` artifacts the app depends on. Type-safe routes require the `kotlin("plugin.serialization")` plugin and `kotlinx-serialization-core` in the version catalog.
 
 ## Routes — one per statechart state
 
-Each statechart state becomes one `@Serializable` route type. A state with no entry data is a route `object`; a state that needs an identifier to render is a route `data class` carrying it:
+Each statechart state maps to one `@Serializable` route type. A state with no entry data is a route `object`; a state that needs an identifier to render is a route `data class` carrying it:
 
 ```
 @Serializable object MapOverview
@@ -26,11 +26,11 @@ Each statechart state becomes one `@Serializable` route type. A state with no en
 // … one per state in 01-navigation.statechart.json
 ```
 
-The route's parameters carry exactly what a surface's `meta.reads` requires to identify *which* instance it shows — `CollectionDetail` reads one `collection`, so its route carries a `collectionId`. Domain id value classes (`CollectionId`, `EntryId`) are unwrapped to `String` at the route boundary and re-wrapped inside the screen, because routes are serialized.
+A route's parameters carry exactly what a surface's `meta.reads` requires to identify *which* instance it shows — `CollectionDetail` reads one `collection`, so its route carries a `collectionId`. Domain id value classes (`CollectionId`, `EntryId`) are unwrapped to `String` at the route boundary and re-wrapped inside the screen, since routes are serialized.
 
 ## The `NavHost`
 
-`App()` holds a `NavHost`. Each statechart state is one `composable<Route>` block; each transition on that state is one `navigate()` (for a `target`) or `popBackStack()` (for `BACK`-style returns) call, passed into the screen as a named callback:
+`App()` holds a single `NavHost`. Each statechart state maps to one `composable<Route>` block; each transition on that state maps to one `navigate()` call (for a `target`) or `popBackStack()` (for a `BACK`-style return), supplied to the screen as a named callback:
 
 ```
 NavHost(navController, startDestination = MapOverview) {
@@ -38,32 +38,29 @@ NavHost(navController, startDestination = MapOverview) {
         val route = entry.toRoute<CollectionDetail>()
         CollectionDetailScreen(
             collectionId = CollectionId(route.collectionId),
-            onOpenEntry   = { id -> navController.navigate(CollectionEntryDetail(id.value)) },
+            onOpenEntry    = { id -> navController.navigate(CollectionEntryDetail(id.value)) },
             onEditTemplate = { navController.navigate(SchemaBuilder) },
-            onBack        = navController::popBackStack,
+            onBack         = navController::popBackStack,
             /* repositories from doc03.02 */
         )
     }
 }
 ```
 
-A screen receives one callback per affordance that navigates — `onOpenEntry`, `onEditTemplate`, `onBack` — never a generic `onNavigate(Screen)`. The callback names the gesture, so a screen's parameter list lines up one-to-one with its affordance inventory ([[00-index]], doc02.02.02.00).
+A screen takes one callback per navigating affordance — `onOpenEntry`, `onEditTemplate`, `onBack` — not a generic `onNavigate(Screen)`. The callback names the gesture, so a screen's parameter list lines up one-to-one with its affordance inventory ([[00-index]], doc02.02.02.00).
 
 ## Back stack
 
-The statechart's `BACK` transitions name a static `target` because a flat machine has no history. The `NavHost` has a real back stack, so `BACK` is `popBackStack()` — it returns to wherever the user actually came from. The statechart's static `BACK` target is then only a *fallback*: the destination used when a surface is opened cold (a deep link, a launch into a non-root route) and the stack below it is empty. This resolves the wart doc02.02.01 records — `CollectionEntryDetail` reached from `MapOverview` no longer forces a return into a Collection it was not opened from.
+A flat statechart has no history, so its `BACK` transitions name a static `target`. The `NavHost` holds a real back stack: `BACK` is `popBackStack()`, returning the user to wherever they came from. The statechart's static `BACK` target serves only as the cold-entry fallback — the destination used when a surface is opened with no stack beneath it (a deep link, a launch into a non-root route). So `CollectionEntryDetail` opened from `MapOverview` returns to `MapOverview`, not into a Collection it was never opened from.
 
 ## ViewModel scoping
 
-`viewModel()` inside a `composable<Route>` block scopes the ViewModel to that route's `NavBackStackEntry`. A new route instance gets its own ViewModel; popping the route clears it. This retires two mockup-era hazards:
+A `viewModel()` obtained inside a `composable<Route>` block scopes to that route's `NavBackStackEntry`. Each route instance owns its ViewModel; popping the route clears it. Two properties follow: distinct routes are distinct ViewModel-store owners, so a screen needs no manual `viewModel(key = …)`; and a ViewModel does not outlive the route that owns it.
 
-- The `viewModel(key = …)` keying needed while every screen rendered at a fixed `when`-branch call-site — distinct routes are distinct store owners, so no manual key is required.
-- ViewModels accumulating in a single shared store for the lifetime of the app — a popped route disposes its ViewModel.
+## Navigation state ownership
 
-## What this retires
-
-The mockup navigation holds a single current `Screen` in a `NavState` object, with `selectedCollectionId` / `selectedEntryId` fields standing in for route arguments, and screens dispatch through a generic `onNavigate(Screen)`. The `NavHost` wiring replaces all of it: `NavState` and the `Screen` enum are removed, route arguments carry the selected ids, and the generic dispatch becomes per-affordance callbacks.
+Navigation state lives in the `NavHost` back stack — no app-held object holds a single "current screen". Route arguments carry the selected ids (a `collectionId`, an `entryId`), so no separate selection field is needed. Screens navigate through per-affordance callbacks, so there is no global `Screen` enum and no generic dispatch.
 
 ## Staying aligned with the statechart
 
-The projection is one-to-one and verifiable: the set of route types equals the set of statechart states, and every `navigate`/`popBackStack` call corresponds to a transition on that state. A future `verify.mjs` verifier kind ([[05-verification-system]], doc01.05) could diff the declared route set against the statechart's state set the way `screen-inventory` diffs affordances — flagged, not pre-built.
+The projection is one-to-one and verifiable: the set of route types equals the set of statechart states, and every `navigate`/`popBackStack` call corresponds to a transition on that state. A `verify.mjs` verifier kind ([[05-verification-system]], doc01.05) could diff the declared route set against the statechart's state set the way `screen-inventory` diffs affordances — a candidate check, not a built one.

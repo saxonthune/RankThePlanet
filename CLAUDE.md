@@ -24,6 +24,7 @@ What this means day-to-day:
 - Don't scaffold empty groups for "future architecture."
 - Don't invent content to fill thin docs.
 - When behavior changes, the spec change comes first; the code follows mechanically.
+- Write specs in the present tense of intent — describe how things *should be*, not when they were built, what they replace, or what is "currently"/"now"/"mockup-era"/"will soon" true. Temporal framing rots and makes specs brittle; intent statements stay correct. For genuinely unbuilt ideas, use conditional phrasing ("could", "a candidate") and flag them as not-yet-built.
 - Sidecar JSONs (state machines, schemas) live next to their host `.md` in the same bundle, not in a separate directory.
 
 ## Working with the carta workspace
@@ -68,6 +69,7 @@ Use the dedicated tools — they're allowlisted and don't trigger approval promp
 - DON'T `find … | xargs -I{} sh -c '…'` — DO use Glob/Grep, or Read files individually.
 - DON'T `grep -r pattern path/` — DO use the Grep tool.
 - DON'T `cat file` to read — DO use the Read tool.
+- DON'T loop the shell over files (`for f in …; do cat $f; done`) — variable expansion blocks auto-approval; DO issue parallel Read calls, one per file.
 
 ## Statechart sidecar workflow
 

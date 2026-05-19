@@ -1,5 +1,6 @@
 package com.saxonthune.ranktheplanet.domain
 
+import kotlin.jvm.JvmInline
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet

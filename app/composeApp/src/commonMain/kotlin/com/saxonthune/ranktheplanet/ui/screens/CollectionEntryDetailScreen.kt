@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
+import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.ui.NotImplementedButton
 
@@ -36,6 +37,7 @@ fun CollectionEntryDetailScreen(
     onEditReview: () -> Unit,
     onRemoveEntry: () -> Unit,
     onBack: () -> Unit,
+    onViewCollection: (CollectionId) -> Unit,
 ) {
     val vm = viewModel {
         CollectionEntryDetailViewModel(entryId, entries, templates)
@@ -76,6 +78,7 @@ fun CollectionEntryDetailScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f),
             )
+            TextButton(onClick = { state.entry?.collectionId?.let(onViewCollection) }) { Text("View collection") }
             TextButton(onClick = { onRemoveEntry() }) { Text("Remove") }
             TextButton(onClick = { onBack() }) { Text("Back") }
         }

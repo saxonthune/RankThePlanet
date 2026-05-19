@@ -20,9 +20,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -33,6 +39,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -105,9 +113,10 @@ fun MapOverviewScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            CollectionFilterDrawer(
+            AppMenuDrawer(
                 state = state,
                 onToggleCollection = { vm.toggleCollection(it) },
+                onOpenSettings = onOpenSettings,
             )
         },
     ) {
@@ -202,11 +211,15 @@ fun MapOverviewScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Button(onClick = onOpenCollections) { Text("Collections") }
-                        TextButton(onClick = onOpenSettings) { Text("Settings") }
+                        FilledIconButton(onClick = onOpenCollections) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.MenuBook,
+                                contentDescription = "Browse Collections",
+                            )
+                        }
                     }
                 }
             }
@@ -215,15 +228,23 @@ fun MapOverviewScreen(
 }
 
 @Composable
-private fun CollectionFilterDrawer(
+private fun AppMenuDrawer(
     state: MapOverviewUiState,
     onToggleCollection: (com.saxonthune.ranktheplanet.domain.CollectionId) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     ModalDrawerSheet {
         Text(
-            text = "Collections",
+            text = "Menu",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(16.dp),
+        )
+
+        Text(
+            text = "Filter",
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         var filterQuery by remember { mutableStateOf("") }
@@ -264,6 +285,16 @@ private fun CollectionFilterDrawer(
                 HorizontalDivider()
             }
         }
+
+        HorizontalDivider()
+
+        ListItem(
+            headlineContent = { Text("Settings") },
+            leadingContent = {
+                Icon(Icons.Default.Settings, contentDescription = null)
+            },
+            modifier = Modifier.clickable { onOpenSettings() },
+        )
     }
 }
 
@@ -274,55 +305,67 @@ private fun SearchBar(
     searchResults: List<SearchResultUi>,
     onSearchResultClick: () -> Unit,
 ) {
+    // TODO: Replace with DockedSearchBar + SearchBarDefaults.InputField once that API
+    //  is confirmed stable in the bundled CMP material3 version.
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth(if (expanded) 0.8f else 0.4f),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            TextButton(onClick = onOpenDrawer) {
-                Text("≡")
-            }
-
-            val fieldModifier = if (expanded) {
-                Modifier.weight(1f).focusRequester(focusRequester)
-            } else {
-                Modifier.fillMaxWidth(0.3f).focusRequester(focusRequester)
-            }
-
             TextField(
                 value = query,
-                onValueChange = {
-                    query = it
-                    if (!expanded) expanded = true
-                },
+                onValueChange = { query = it },
                 placeholder = { Text("Search") },
                 singleLine = true,
-                modifier = fieldModifier,
+                shape = CircleShape,
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { if (it.isFocused && !expanded) expanded = true },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),
             )
-        }
 
-        if (searchResults.isNotEmpty()) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                tonalElevation = 8.dp,
-            ) {
-                Column {
-                    searchResults.forEach { result ->
-                        ListItem(
-                            headlineContent = { Text(result.displayName) },
-                            modifier = Modifier.clickable { onSearchResultClick() },
-                        )
-                        HorizontalDivider()
+            if (expanded && searchResults.isNotEmpty()) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    tonalElevation = 8.dp,
+                ) {
+                    Column {
+                        searchResults.forEach { result ->
+                            ListItem(
+                                headlineContent = { Text(result.displayName) },
+                                modifier = Modifier.clickable { onSearchResultClick() },
+                            )
+                            HorizontalDivider()
+                        }
                     }
                 }
             }
+        }
+
+        IconButton(
+            onClick = onOpenDrawer,
+            modifier = Modifier.align(Alignment.TopStart),
+        ) {
+            Icon(Icons.Default.Menu, contentDescription = "Open the app menu")
         }
     }
 }

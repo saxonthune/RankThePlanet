@@ -104,6 +104,7 @@ fun App() {
                     onEditReview = { navController.navigate(ReviewForm) },
                     onRemoveEntry = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
+                    onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
                 )
             }
             composable<ReviewForm> {

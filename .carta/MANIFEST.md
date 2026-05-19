@@ -24,7 +24,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc00.00 | `00-index.md` | Meta-documentation — how to read this workspace | index, meta | — | — | — |
 | doc00.01 | `01-about.md` | Why this workspace exists, how to read it, two-sources-of-truth theory | docs, meta, theory | — | — | — |
 | doc00.02 | `02-maintenance.md` | Doc lifecycle — unfolding philosophy, development loop, versioning, epochs | docs, maintenance, philosophy | — | — | — |
-| doc00.03 | `03-conventions.md` | Cross-reference syntax, frontmatter schema, file naming, writing style | docs, conventions | — | doc01.05 | — |
+| doc00.03 | `03-conventions.md` | Cross-reference syntax, frontmatter schema, file naming, writing style | docs, conventions | — | doc01.04.02 | — |
 | doc00.04 | `04-ai-retrieval.md` | How AI agents navigate this workspace — hierarchical retrieval, MANIFEST usage, token budgets | docs, ai, retrieval | — | — | — |
 
 ## 01-product — Product
@@ -35,9 +35,17 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.00 | `00-index.md` | Product specs — what we're building and why | product, index | — | — | — |
 | doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
 | doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | doc01.03 | — |
-| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc03.01, doc03.02, doc03.04 | — |
-| doc01.04 | `04-development-philosophy.md` | How we work on RTP: two sources of truth, artifact chain, unfolding, concept-driven design, spec-before-code | product, philosophy, method, process | doc01.03 | — | — |
-| doc01.05 | `05-verification-system.md` | How carta docs declare machine-checkable verifications; the verify.mjs harness and the screen-inventory check against the statechart | product, verification, coverage, process, tooling | doc02.02.01, doc02.02.02.00, doc00.03 | — | — |
+| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04.01, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc03.01, doc03.02, doc03.04 | — |
+
+### Development Philosophy
+
+| Ref | File | Summary | Tags | Deps | Refs | Attachments |
+|-----|------|---------|------|------|------|-------------|
+
+| doc01.04.00 | `04-development-philosophy/00-index.md` | How we work on RTP and the artifacts that support it — method, verification, derived code maps | product, philosophy, method, process | — | — | — |
+| doc01.04.01 | `04-development-philosophy/01-development-philosophy.md` | How we work on RTP: two sources of truth, artifact chain, unfolding, concept-driven design, spec-before-code | product, philosophy, method, process | doc01.03 | doc01.04.03 | — |
+| doc01.04.02 | `04-development-philosophy/02-verification-system.md` | How carta docs declare machine-checkable verifications; the verify.mjs harness and the screen-inventory check against the statechart | product, verification, coverage, process, tooling | doc02.02.01, doc02.02.02.00, doc00.03 | — | — |
+| doc01.04.03 | `04-development-philosophy/03-code-map-pipeline.md` | Pipelines that derive agent-consumable artifacts from Kotlin source: a compressed code map and a Luminous graph of the interface seams | method, tooling, pipeline, code-map, luminous | doc01.04.01, doc03.02 | — | — |
 
 ## 02-design — Design
 
@@ -54,8 +62,8 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.02.00 | `02-interaction/00-index.md` | Platform-agnostic UI design — surfaces, navigation graph, action coverage | design, interaction, index | doc01.03 | — | — |
-| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc03.03 | statechart.json |
-| doc02.02.02.00 | `02-interaction/02-screens/00-index.md` | Per-surface affordance inventories — regions, affordances, lists | design, interaction, screens, index | doc02.02.01 | doc01.05 | — |
+| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.04.02, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc03.03 | statechart.json |
+| doc02.02.02.00 | `02-interaction/02-screens/00-index.md` | Per-surface affordance inventories — regions, affordances, lists | design, interaction, screens, index | doc02.02.01 | doc01.04.02 | — |
 | doc02.02.02.01 | `02-interaction/02-screens/01-collection-list.md` | Affordance inventory for the CollectionList surface — regions, affordances, lists | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.02 | `02-interaction/02-screens/02-collection-detail.md` | Affordance inventory for the CollectionDetail surface — Details section, sortable entry list | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.03 | `02-interaction/02-screens/03-settings.md` | Affordance inventory for the Settings surface — entry to provider config, sync and BYOK as stubs | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
@@ -72,7 +80,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 
 | doc03.00 | `00-index.md` | How RTP stores, reads, syncs, and wires itself together below and around the UI — the bridge from concepts to code | system, index | — | — | — |
 | doc03.01 | `01-store-model.md` | Two-store persistence: local SQLCipher DB + sync replica; table schema, local-first write path, memoized overview projection, op-log | system, storage, sqlcipher, sync, schema | doc01.03, doc02.01 | doc03.02 | schema.sql |
-| doc03.02 | `02-data-interfaces.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | doc03.03, doc03.04 | — |
+| doc03.02 | `02-data-interfaces.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | doc01.04.03, doc03.03, doc03.04 | — |
 | doc03.03 | `03-navigation-wiring.md` | How the platform-agnostic navigation statechart becomes a Compose Multiplatform NavHost — type-safe routes, back stack, per-route ViewModel scoping | system, navigation, cmp, wiring | doc02.02.01, doc03.02 | — | — |
 | doc03.04 | `04-location-providers.md` | The LocationProvider seam: osm default backed by Photon + Nominatim endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | — | — |
 
@@ -86,10 +94,11 @@ Quick lookup for file-path→doc mapping:
 | `architecture` | doc02.01 |
 | `background` | doc01.01 |
 | `cmp` | doc02.01, doc02.03, doc03.03 |
+| `code-map` | doc01.04.03 |
 | `concepts` | doc01.03 |
 | `contract` | doc03.02 |
 | `conventions` | doc00.03 |
-| `coverage` | doc01.05 |
+| `coverage` | doc01.04.02 |
 | `data` | doc03.02 |
 | `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.03 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
@@ -98,16 +107,18 @@ Quick lookup for file-path→doc mapping:
 | `interfaces` | doc03.02 |
 | `licensing` | doc03.04 |
 | `location` | doc03.04 |
+| `luminous` | doc01.04.03 |
 | `maintenance` | doc00.02 |
 | `maplibre` | doc02.01 |
 | `meta` | doc00.00, doc00.01 |
-| `method` | doc01.04 |
+| `method` | doc01.04.00, doc01.04.01, doc01.04.03 |
 | `navigation` | doc02.02.01, doc03.03 |
 | `odbl` | doc03.04 |
 | `osm` | doc03.04 |
-| `philosophy` | doc00.02, doc01.04 |
-| `process` | doc01.04, doc01.05 |
-| `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04, doc01.05 |
+| `philosophy` | doc00.02, doc01.04.00, doc01.04.01 |
+| `pipeline` | doc01.04.03 |
+| `process` | doc01.04.00, doc01.04.01, doc01.04.02 |
+| `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04.00, doc01.04.01, doc01.04.02 |
 | `providers` | doc03.04 |
 | `repository` | doc03.02 |
 | `research` | doc01.01 |
@@ -124,8 +135,8 @@ Quick lookup for file-path→doc mapping:
 | `theme` | doc02.03 |
 | `theory` | doc00.01 |
 | `tokens` | doc02.03 |
-| `tooling` | doc01.05 |
+| `tooling` | doc01.04.02, doc01.04.03 |
 | `use-cases` | doc01.02 |
 | `ux` | doc01.02 |
-| `verification` | doc01.05 |
+| `verification` | doc01.04.02 |
 | `wiring` | doc03.03 |

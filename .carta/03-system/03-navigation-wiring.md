@@ -78,4 +78,4 @@ Navigation state lives in the `NavHost` back stack — no app-held object holds 
 
 ## Staying aligned with the statechart
 
-The projection is one-to-one and verifiable: the set of route types equals the set of statechart states, and every `navigate`/`popBackStack` call corresponds to a transition on that state. A `verify.mjs` verifier kind ([[05-verification-system]], doc01.05) could diff the declared route set against the statechart's state set the way `screen-inventory` diffs affordances — a candidate check, not a built one.
+The projection is one-to-one and verifiable: the set of route types equals the set of statechart states, and every `navigate`/`popBackStack` call corresponds to a transition on that state. A `verify.mjs` verifier kind ([[05-verification-system]], doc01.04.02) could diff the declared route set against the statechart's state set the way `screen-inventory` diffs affordances — a candidate check, not a built one.

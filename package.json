@@ -1,0 +1,14 @@
+{
+  "name": "ranktheplanet-pipelines",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Node tooling for RTP: carta/Luminous pipelines and the code-map generator",
+  "type": "module",
+  "scripts": {
+    "code-map": "node .luminous/code-map.pipeline.mjs"
+  },
+  "dependencies": {
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-kotlin": "^0.3.8"
+  }
+}

@@ -19,7 +19,8 @@ export JAVA_HOME
 .DEFAULT_GOAL := build
 
 .PHONY: help build clean rebuild install run sync tasks stop adb-devices wrapper \
-        ios-build ios-run ios-debug ios-logs ios-crash ios-pod-install ios-clean
+        ios-build ios-run ios-debug ios-logs ios-crash ios-pod-install ios-clean \
+        code-map
 
 help:
 	@echo "Android targets:"
@@ -33,6 +34,7 @@ help:
 	@echo "  stop          Stop the Gradle daemon"
 	@echo "  adb-devices   List attached Android devices/emulators"
 	@echo "  wrapper       Print Gradle wrapper version"
+	@echo "  code-map      Regenerate the agent-consumable Kotlin code map"
 	@echo ""
 	@echo "iOS targets (override sim with: make ios-run SIM='iPhone 16 Pro'):"
 	@echo "  ios-build       Build the app for the iOS simulator"
@@ -71,6 +73,10 @@ adb-devices:
 
 wrapper:
 	$(GRADLE) --version
+
+# Regenerate .luminous/generated/code-map.md from the Kotlin sources.
+code-map:
+	node .luminous/code-map.pipeline.mjs
 
 # --- iOS ---
 

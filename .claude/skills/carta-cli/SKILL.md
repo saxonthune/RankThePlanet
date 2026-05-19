@@ -282,7 +282,7 @@ carta rewrite <old>=<new> [<old>=<new> ...] [--dry-run]
 ```
 
 Arguments:
-  mappings  One or more `old=new` pairs (e.g., `doc01.02=doc01.05`).
+  mappings  One or more `old=new` pairs (e.g., `doc01.02=doc01.04.02`).
 
 Side effects:
   - Rewrites all matching refs in workspace `.md` files and externalRefPaths.

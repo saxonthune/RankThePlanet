@@ -46,6 +46,7 @@ kotlin {
             implementation(libs.maplibre.compose)
             implementation(libs.kotlinx.collections.immutable)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
         }
         androidMain.dependencies {
             implementation(compose.preview)

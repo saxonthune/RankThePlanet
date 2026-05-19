@@ -6,12 +6,14 @@ androidx-activity-compose = "1.10.1"
 maplibre-compose = "0.12.1"
 kotlinx-collections-immutable = "0.3.8"
 kotlinx-coroutines-core = "1.10.1"
+lifecycle = "2.9.1"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version = "0.12.1" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
+androidx-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

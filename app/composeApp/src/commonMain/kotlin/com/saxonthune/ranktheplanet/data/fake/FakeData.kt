@@ -338,6 +338,8 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
 
 class FakeEntryRepository(private val store: InMemoryStore) : EntryRepository {
 
+    override fun observeAll(): Flow<List<Entry>> = store.entries
+
     override fun observeByCollection(collectionId: CollectionId): Flow<List<Entry>> =
         store.entries.map { list -> list.filter { it.collectionId == collectionId } }
 

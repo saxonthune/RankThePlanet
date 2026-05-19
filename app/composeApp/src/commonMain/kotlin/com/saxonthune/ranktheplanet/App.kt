@@ -1,6 +1,8 @@
 package com.saxonthune.ranktheplanet
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import com.saxonthune.ranktheplanet.data.fake.FakeRepositories
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
 import com.saxonthune.ranktheplanet.nav.Screen
 import com.saxonthune.ranktheplanet.nav.rememberNavState
@@ -20,9 +22,10 @@ fun App() {
     RtpTheme {
         val nav = rememberNavState()
         val go: (Screen) -> Unit = nav::go
+        val repos = remember { FakeRepositories() }
         when (nav.current) {
             Screen.MapOverview -> MapOverviewScreen(go)
-            Screen.CollectionList -> CollectionListScreen(go)
+            Screen.CollectionList -> CollectionListScreen(repos.collections, repos.entries, go)
             Screen.CollectionDetail -> CollectionDetailScreen(go)
             Screen.CollectionEntryDetail -> CollectionEntryDetailScreen(go)
             Screen.ReviewForm -> ReviewFormScreen(go)

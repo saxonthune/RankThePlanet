@@ -35,6 +35,7 @@ CollectionRepository
     removeEntry(entryId): Result<Unit>
 
 EntryRepository
+    observeAll(): Flow<List<Entry>>
     observeByCollection(collectionId): Flow<List<Entry>>
     observe(entryId): Flow<Entry>
     editReview(entryId, data): Result<Entry>

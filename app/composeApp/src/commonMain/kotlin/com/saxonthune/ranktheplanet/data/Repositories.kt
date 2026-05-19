@@ -22,6 +22,7 @@ interface CollectionRepository {
 }
 
 interface EntryRepository {
+    fun observeAll(): Flow<List<Entry>>
     fun observeByCollection(collectionId: CollectionId): Flow<List<Entry>>
     fun observe(entryId: EntryId): Flow<Entry?>
     suspend fun editReview(entryId: EntryId, data: Map<String, String>): Result<Entry>

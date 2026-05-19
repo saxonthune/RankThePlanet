@@ -9,7 +9,11 @@ WORKSPACE  := $(APP_DIR)/iosApp/iosApp.xcworkspace
 DERIVED    := $(APP_DIR)/build/ios
 APP_BUNDLE := $(DERIVED)/Build/Products/Debug-iphonesimulator/iosApp.app
 # xcodebuild runs gradlew (via the CocoaPods sync phase); it needs a JDK.
-JAVA_HOME  ?= /Applications/Android Studio.app/Contents/jbr/Contents/Home
+# Prefer the env-var if already set to a valid path; fall back to macOS AS, then Linux default.
+ifeq ($(wildcard $(JAVA_HOME)/bin/java),)
+  JAVA_HOME := $(or $(shell update-java-alternatives -l 2>/dev/null | awk '{print $$3}' | head -1),\
+                    /Applications/Android Studio.app/Contents/jbr/Contents/Home)
+endif
 export JAVA_HOME
 
 .DEFAULT_GOAL := build

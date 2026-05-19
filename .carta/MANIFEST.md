@@ -54,7 +54,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.02.00 | `02-interaction/00-index.md` | Platform-agnostic UI design — surfaces, navigation graph, action coverage | design, interaction, index | doc01.03 | — | — |
-| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05 | statechart.json |
+| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc03.03 | statechart.json |
 | doc02.02.02.00 | `02-interaction/02-screens/00-index.md` | Per-surface affordance inventories — regions, affordances, lists | design, interaction, screens, index | doc02.02.01 | doc01.05 | — |
 | doc02.02.02.01 | `02-interaction/02-screens/01-collection-list.md` | Affordance inventory for the CollectionList surface — regions, affordances, lists | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.02 | `02-interaction/02-screens/02-collection-detail.md` | Affordance inventory for the CollectionDetail surface — Details section, sortable entry list | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
@@ -67,9 +67,10 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | Ref | File | Summary | Tags | Deps | Refs | Attachments |
 |-----|------|---------|------|------|------|-------------|
 
-| doc03.00 | `00-index.md` | How RTP stores, reads, syncs, and structures its data — the bridge from concepts to code | system, index | — | — | — |
+| doc03.00 | `00-index.md` | How RTP stores, reads, syncs, and wires itself together below and around the UI — the bridge from concepts to code | system, index | — | — | — |
 | doc03.01 | `01-store-model.md` | Two-store persistence: local SQLCipher DB + sync replica; table schema, local-first write path, memoized overview projection, op-log | system, storage, sqlcipher, sync, schema | doc01.03, doc02.01 | doc03.02 | schema.sql |
-| doc03.02 | `02-data-interfaces.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | — | — |
+| doc03.02 | `02-data-interfaces.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | doc03.03 | — |
+| doc03.03 | `03-navigation-wiring.md` | How the platform-agnostic navigation statechart becomes a Compose Multiplatform NavHost — type-safe routes, back stack, per-route ViewModel scoping | system, navigation, cmp, wiring | doc02.02.01, doc03.02 | — | — |
 
 ## Tag Index
 
@@ -80,7 +81,7 @@ Quick lookup for file-path→doc mapping:
 | `ai` | doc00.04 |
 | `architecture` | doc02.01 |
 | `background` | doc01.01 |
-| `cmp` | doc02.01, doc02.03 |
+| `cmp` | doc02.01, doc02.03, doc03.03 |
 | `concepts` | doc01.03 |
 | `contract` | doc03.02 |
 | `conventions` | doc00.03 |
@@ -95,7 +96,7 @@ Quick lookup for file-path→doc mapping:
 | `maplibre` | doc02.01 |
 | `meta` | doc00.00, doc00.01 |
 | `method` | doc01.04 |
-| `navigation` | doc02.02.01 |
+| `navigation` | doc02.02.01, doc03.03 |
 | `philosophy` | doc00.02, doc01.04 |
 | `process` | doc01.04, doc01.05 |
 | `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04, doc01.05 |
@@ -110,7 +111,7 @@ Quick lookup for file-path→doc mapping:
 | `storage` | doc03.01 |
 | `styling` | doc02.03 |
 | `sync` | doc03.01 |
-| `system` | doc03.00, doc03.01, doc03.02 |
+| `system` | doc03.00, doc03.01, doc03.02, doc03.03 |
 | `theme` | doc02.03 |
 | `theory` | doc00.01 |
 | `tokens` | doc02.03 |
@@ -118,3 +119,4 @@ Quick lookup for file-path→doc mapping:
 | `use-cases` | doc01.02 |
 | `ux` | doc01.02 |
 | `verification` | doc01.05 |
+| `wiring` | doc03.03 |

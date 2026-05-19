@@ -35,3 +35,5 @@ Coverage stays honest: every `event` must be a real transition on that surface i
 - doc02.02.02.06 — Review Form: authoring a Review against its Collection's template — the field set as editable inputs, save and cancel.
 - doc02.02.02.07 — Map Overview: the everything view — pins for every Entry, a collection filter, search, and drop-pin.
 - doc02.02.02.08 — Collection Editor: authoring a Collection's metadata and its Review template — field set, types, and built-in templates.
+- doc02.02.02.09 — Entry Drawer: a bottom-sheet peek of one Collection Entry over MapOverview, with handoffs to full detail, owning Collection, and review form.
+- doc02.02.02.10 — Location Detail: the skinny bottom-sheet peek of a Location and the Collection Entries that reference it; rendered only when multi-entry.

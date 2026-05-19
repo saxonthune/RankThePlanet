@@ -56,27 +56,54 @@
     },
 
     "LocationDetail": {
-      "description": "One Location, reached by tapping a pin. Shows the Location plus every Collection Entry that references it across the user's Collections. Entry point for adding this Location to another Collection, or opening one of its existing Collection Entries. See doc01.03 §2.",
-      "tags": ["detail", "map"],
+      "description": "A skinny bottom-sheet peek over MapOverview, reached by tapping a pin. The left half identifies the Location; the right half is a scrolling list of every Collection Entry that references it. Tapping an entry picks it and opens EntryDrawer. Meaningful only when the Location has multiple Entries — when there is exactly one, the surface renders EntryDrawer directly instead (a downstream rendering choice). See doc01.03 §2.",
+      "tags": ["peek", "map"],
       "meta": {
         "surface": "LocationDetail",
         "reads": ["location", "entries-for-location", "collections-with-location"],
         "actions": ["Location.openExternally", "Location.refresh"]
       },
       "on": {
-        "TAP_ADD_TO_COLLECTION": {
-          "target": "AddLocationToCollection",
-          "label": "Add to a Collection",
-          "description": "User adds this already-resolved Location to a Collection (Location-first flow). AddLocationToCollection picks which Collection."
-        },
         "TAP_ENTRY": {
-          "target": "CollectionEntryDetail",
-          "label": "Open a Collection Entry",
-          "description": "User opens one of the Collection Entries that reference this Location, to inspect its Review in that Collection's context."
+          "target": "EntryDrawer",
+          "label": "Pick an entry",
+          "description": "User taps one of the Entries in the right-hand list, picking which Collection's context to peek at. Opens EntryDrawer for that Entry."
         },
         "BACK": {
           "target": "MapOverview",
-          "description": "Return to the everything view."
+          "description": "Dismiss the peek — typically the swipe-down or scrim-tap gesture on the bottom sheet — and return to the bare map."
+        }
+      }
+    },
+
+    "EntryDrawer": {
+      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationDetail's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (LocationDetail renders this directly when the tapped Location has exactly one Entry). A lightweight handoff hub, not the canonical detail screen: shows enough of the Entry to recognize it (Location name, Collection name and color, a compact Review reflection) and offers the three navigating shortcuts the user is most likely to want.",
+      "tags": ["peek", "map"],
+      "meta": {
+        "surface": "EntryDrawer",
+        "reads": ["entry", "location", "review", "collection"],
+        "actions": ["Review.edit"]
+      },
+      "on": {
+        "TAP_OPEN_DETAIL": {
+          "target": "CollectionEntryDetail",
+          "label": "Open full detail",
+          "description": "User opens the canonical CollectionEntryDetail screen for the complete view — the (Location, Review) pair with every template field and the Entry-level affordances."
+        },
+        "VIEW_COLLECTION": {
+          "target": "CollectionDetail",
+          "label": "View the Collection",
+          "description": "User opens the Collection that owns this Entry."
+        },
+        "TAP_EDIT_REVIEW": {
+          "target": "ReviewForm",
+          "label": "Edit the Review",
+          "description": "User opens the form to edit the Entry's Review (Review.edit) directly from the drawer."
+        },
+        "DISMISS": {
+          "target": "MapOverview",
+          "label": "Dismiss",
+          "description": "Close the drawer and return to the bare map — typically the bottom-sheet's swipe-down or scrim-tap gesture, not a dedicated button."
         }
       }
     },

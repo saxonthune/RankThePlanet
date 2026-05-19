@@ -1,0 +1,45 @@
+{
+  "surface": "EntryDrawer",
+  "regions": [
+    {
+      "id": "summary",
+      "purpose": "A compact identification of the Entry without leaving the map — the Location's display name, the owning Collection's name and appearance color, and a short reflection of the Review (visited/unvisited indicator and a highlight field)."
+    },
+    {
+      "id": "actions",
+      "purpose": "The three navigating handoffs out of the drawer — full detail, owning Collection, edit Review — and the dismiss."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "open-full-detail",
+      "label": "Open full detail",
+      "region": "actions",
+      "event": "TAP_OPEN_DETAIL",
+      "target": "CollectionEntryDetail"
+    },
+    {
+      "id": "view-collection",
+      "label": "View the Collection",
+      "region": "actions",
+      "event": "VIEW_COLLECTION",
+      "target": "CollectionDetail"
+    },
+    {
+      "id": "edit-review",
+      "label": "Edit the Review",
+      "region": "actions",
+      "event": "TAP_EDIT_REVIEW",
+      "target": "ReviewForm",
+      "action": "Review.edit"
+    },
+    {
+      "id": "dismiss",
+      "label": "Dismiss",
+      "region": "actions",
+      "event": "DISMISS",
+      "target": "MapOverview"
+    }
+  ],
+  "lists": []
+}

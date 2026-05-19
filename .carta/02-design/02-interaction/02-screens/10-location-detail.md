@@ -1,0 +1,19 @@
+---
+title: Location Detail
+summary: Affordance inventory for the LocationDetail surface — the skinny bottom-sheet peek of a Location and the Collection Entries that reference it; rendered only when multi-entry
+tags: [design, interaction, screens]
+deps: [doc02.02.01, doc01.03]
+verify: [{"kind":"screen-inventory","sidecar":"10-location-detail.inventory.json","against":{"doc":"doc02.02.01","key":"LocationDetail"}}]
+---
+
+# Location Detail
+
+The affordance inventory for the `LocationDetail` surface — a skinny bottom-sheet peek of one Location and every Collection Entry that references it, opened by tapping a pin on `MapOverview` ([[03-concepts]], doc01.03 §2). **The source of truth is the carta sidecar `10-location-detail.inventory.json`** ([[00-index]], doc02.02.02.00 explains the shape); this `.md` is a lean companion.
+
+The surface is a skinny bottom sheet split into two halves. The **locationSummary** region (left half) shows the Location — its display name and coordinates. The **entries** region (right half) is a vertically scrolling list of every Entry that references this Location, one per Collection; each row shows the owning Collection's name and appearance color and the Entry's visited/unvisited state. Tapping a row picks that Entry and opens the [[09-entry-drawer]] ([[01-navigation]], doc02.02.01: `TAP_ENTRY` → `EntryDrawer`).
+
+The peek is meaningful only when a Location has multiple Entries. When the tapped Location has exactly one Entry, the surface renders the `EntryDrawer` directly instead of the split peek — this is a downstream rendering choice ([[01-navigation]], doc02.02.01) and stays out of the statechart. *Dismiss* is the bottom-sheet's swipe-down or scrim-tap gesture and is modeled as `BACK` → `MapOverview`.
+
+`LocationDetail` carries no mode parameter. Pin-tap behavior in `MapOverview`'s add-to-collection mode is a separate open design ([[07-map-overview]], doc02.02.02.07) — the current statechart keeps `TAP_PIN` mode-free and routes through this surface regardless.
+
+The surface's two in-view concept actions, `Location.openExternally` and `Location.refresh`, were inherited from the earlier full-screen framing and have no peek affordance; they are listed in the sidecar's `deferred` array.

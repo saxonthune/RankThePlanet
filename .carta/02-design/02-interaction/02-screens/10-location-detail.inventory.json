@@ -1,0 +1,45 @@
+{
+  "surface": "LocationDetail",
+  "regions": [
+    {
+      "id": "locationSummary",
+      "purpose": "The left half of the skinny peek — the Location's display name and coordinates. Identifies the Location the pin sits at."
+    },
+    {
+      "id": "entries",
+      "purpose": "The right half of the skinny peek — a vertically scrolling list of every Collection Entry that references this Location, one per Collection. Each row shows the owning Collection's name and appearance color and the Entry's visited/unvisited state."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "dismiss",
+      "label": "Dismiss",
+      "region": "locationSummary",
+      "event": "BACK",
+      "target": "MapOverview"
+    }
+  ],
+  "lists": [
+    {
+      "id": "entries",
+      "region": "entries",
+      "iterates": "Collection Entry",
+      "reads": "entries-for-location",
+      "item": {
+        "shows": [
+          "the owning Collection's name",
+          "the owning Collection's appearance color",
+          "the Entry's visited or unvisited state"
+        ],
+        "affordance": {
+          "id": "pick-entry",
+          "label": "Pick an entry",
+          "event": "TAP_ENTRY",
+          "target": "EntryDrawer"
+        }
+      },
+      "emptyState": "A Location with no Entries cannot be reached from MapOverview — pins exist only where there is at least one Entry. With exactly one Entry, the surface renders the EntryDrawer directly and this list is never shown."
+    }
+  ],
+  "deferred": ["Location.openExternally", "Location.refresh"]
+}

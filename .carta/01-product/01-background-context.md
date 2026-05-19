@@ -198,9 +198,12 @@ Tradeoff: every speed technique adds complexity. Stop when "feels instant" — f
 
 These are seeds for later docs, not decisions:
 
-- Native (two codebases) vs Compose Multiplatform vs React Native?
-- SQLCipher single-file vs zipped JSON+KML bundle?
-- Op-log internal model from day one, or migrate later?
 - Which providers ship in v1 — just Google Places + manual + KML import?
 - Schema authoring UX — JSON Schema is the format; what's the editor?
 - Sharing flavors at launch — static export only, or also live-follow?
+
+Resolved since this research session:
+
+- Native vs Compose Multiplatform vs React Native → Compose Multiplatform (doc02.01).
+- SQLCipher single-file vs zipped bundle → SQLCipher (doc02.01).
+- Op-log from day one vs migrate later → the op-log exists day one as a data-layer artifact; whether it becomes the source of truth (event sourcing) vs. an audit log alongside authoritative tables is deferred (doc03.01).

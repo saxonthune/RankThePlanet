@@ -23,8 +23,13 @@ Kotlin + Compose Multiplatform for Android, iOS, and (later) desktop/web.
 
 Protomaps PMTiles. Bundle a low-zoom world basemap for offline first-frame; range-request higher zooms.
 
+## Persistence: SQLCipher
+
+The store is an encrypted SQLite database (SQLCipher), not a zipped JSON+KML bundle. A single file satisfies the whole-file sync constraint; SQLite gives indexing and transactional writes the bundle would not.
+
+**Why:** the cold-start playbook (doc01.01) already assumes an indexed local DB; the sync model needs a single self-contained file. SQLCipher meets both. The store model — two stores, write path, op-log — is specified in doc03.01.
+
 ## Not yet decided
 
-- Persistence (SQLCipher vs. zipped bundle) — see doc01.01 sync section.
 - Search/geocoding provider order — see doc01.01 location-abstraction section.
 - Desktop/web rollout timing — gated on `maplibre-compose` parity.

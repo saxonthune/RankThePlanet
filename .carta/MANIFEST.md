@@ -35,7 +35,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.00 | `00-index.md` | Product specs — what we're building and why | product, index | — | — | — |
 | doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
 | doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | doc01.03 | — |
-| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview | product, concepts, design | doc01.02 | doc01.04, doc02.02.00, doc02.02.01 | — |
+| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview | product, concepts, design | doc01.02 | doc01.04, doc02.02.00, doc02.02.01, doc03.01, doc03.02 | — |
 | doc01.04 | `04-development-philosophy.md` | How we work on RTP: two sources of truth, artifact chain, unfolding, concept-driven design, spec-before-code | product, philosophy, method, process | doc01.03 | — | — |
 
 ## 02-design — Design
@@ -44,7 +44,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.00 | `00-index.md` |  |  | — | — | — |
-| doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | — | — |
+| doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc03.01 | — |
 
 ### Interaction
 
@@ -53,6 +53,15 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 
 | doc02.02.00 | `02-interaction/00-index.md` | Platform-agnostic UI design — surfaces, navigation graph, action coverage | design, interaction, index | doc01.03 | — | — |
 | doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | — | statechart.json |
+
+## 03-system — System
+
+| Ref | File | Summary | Tags | Deps | Refs | Attachments |
+|-----|------|---------|------|------|------|-------------|
+
+| doc03.00 | `00-index.md` | How RTP stores, reads, syncs, and structures its data — the bridge from concepts to code | system, index | — | — | — |
+| doc03.01 | `01-store-model.md` | Two-store persistence: local SQLCipher DB + sync replica; table schema, local-first write path, memoized overview projection, op-log | system, storage, sqlcipher, sync, schema | doc01.03, doc02.01 | doc03.02 | schema.sql |
+| doc03.02 | `02-data-interfaces.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | — | — |
 
 ## Tag Index
 
@@ -65,11 +74,14 @@ Quick lookup for file-path→doc mapping:
 | `background` | doc01.01 |
 | `cmp` | doc02.01 |
 | `concepts` | doc01.03 |
+| `contract` | doc03.02 |
 | `conventions` | doc00.03 |
+| `data` | doc03.02 |
 | `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
-| `index` | doc00.00, doc01.00, doc02.02.00 |
+| `index` | doc00.00, doc01.00, doc02.02.00, doc03.00 |
 | `interaction` | doc02.02.00, doc02.02.01 |
+| `interfaces` | doc03.02 |
 | `maintenance` | doc00.02 |
 | `maplibre` | doc02.01 |
 | `meta` | doc00.00, doc00.01 |
@@ -78,10 +90,16 @@ Quick lookup for file-path→doc mapping:
 | `philosophy` | doc00.02, doc01.04 |
 | `process` | doc01.04 |
 | `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04 |
+| `repository` | doc03.02 |
 | `research` | doc01.01 |
 | `retrieval` | doc00.04 |
+| `schema` | doc03.01 |
+| `sqlcipher` | doc03.01 |
 | `stack` | doc02.01 |
 | `statechart` | doc02.02.01 |
+| `storage` | doc03.01 |
+| `sync` | doc03.01 |
+| `system` | doc03.00, doc03.01, doc03.02 |
 | `theory` | doc00.01 |
 | `use-cases` | doc01.02 |
 | `ux` | doc01.02 |

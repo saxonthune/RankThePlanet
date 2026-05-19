@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable data class CollectionDetail(val collectionId: String)
 @Serializable data class CollectionEntryDetail(val entryId: String)
 @Serializable object ReviewForm
-@Serializable object SchemaBuilder
+@Serializable object CollectionEditor
 @Serializable object LocationPicker
 @Serializable object AddLocationToCollection
 @Serializable object LocationDraft

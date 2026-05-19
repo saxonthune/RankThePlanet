@@ -5,11 +5,11 @@ import com.saxonthune.ranktheplanet.ui.MockScreen
 import com.saxonthune.ranktheplanet.ui.NavAction
 
 @Composable
-fun SchemaBuilderScreen(onFinish: () -> Unit, onCancel: () -> Unit) {
+fun CollectionEditorScreen(onFinish: () -> Unit, onCancel: () -> Unit) {
     MockScreen(
-        title = "Review Template",
+        title = "Edit Collection",
         actions = listOf(
-            NavAction("Finish the template", onFinish),
+            NavAction("Finish editing", onFinish),
             NavAction("Cancel", onCancel),
         ),
     )

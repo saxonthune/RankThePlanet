@@ -7,7 +7,6 @@ import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.domain.Entry
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.domain.FieldType
-import com.saxonthune.ranktheplanet.domain.ReviewStatus
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -62,7 +61,7 @@ class CollectionEntryDetailViewModel(
             CollectionEntryDetailUiState(
                 entry = entry,
                 fields = fields,
-                reviewed = entry?.review?.status == ReviewStatus.Reviewed,
+                reviewed = entry?.review != null,
                 isLoading = false,
             )
         }

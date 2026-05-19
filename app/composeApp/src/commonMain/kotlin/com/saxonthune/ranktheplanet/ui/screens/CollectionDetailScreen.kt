@@ -41,7 +41,7 @@ fun CollectionDetailScreen(
     entries: EntryRepository,
     templates: TemplateRepository,
     onAddEntry: () -> Unit,
-    onEditTemplate: () -> Unit,
+    onEditCollection: () -> Unit,
     onBack: () -> Unit,
     onOpenEntry: (EntryId) -> Unit,
 ) {
@@ -68,7 +68,7 @@ fun CollectionDetailScreen(
                 modifier = Modifier.weight(1f),
             )
             TextButton(onClick = { onAddEntry() }) { Text("Add Entry") }
-            TextButton(onClick = { onEditTemplate() }) { Text("Edit Template") }
+            TextButton(onClick = { onEditCollection() }) { Text("Edit the Collection") }
             TextButton(onClick = { onBack() }) { Text("Back") }
         }
 

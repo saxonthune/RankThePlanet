@@ -16,7 +16,6 @@ import com.saxonthune.ranktheplanet.domain.LocationId
 import com.saxonthune.ranktheplanet.domain.MapOverviewState
 import com.saxonthune.ranktheplanet.domain.ReviewDraft
 import com.saxonthune.ranktheplanet.domain.ReviewInstance
-import com.saxonthune.ranktheplanet.domain.ReviewStatus
 import com.saxonthune.ranktheplanet.domain.ReviewTemplate
 import com.saxonthune.ranktheplanet.domain.SourceType
 import com.saxonthune.ranktheplanet.domain.TemplateField
@@ -54,6 +53,7 @@ object Fixtures {
         Collection(
             id = dripCoffeeId,
             name = "Drip Coffee",
+            description = "Filter and pour-over spots, ranked.",
             appearance = Appearance(color = "#6F4E37", pinStyle = "circle"),
             templateVersion = 1,
             isVisible = true,
@@ -63,6 +63,7 @@ object Fixtures {
         Collection(
             id = nytTop100Id,
             name = "NYT Top 100",
+            description = "Tracking the NYT 100 Best Restaurants list.",
             appearance = Appearance(color = "#C0392B", pinStyle = "star"),
             templateVersion = 1,
             isVisible = true,
@@ -72,6 +73,7 @@ object Fixtures {
         Collection(
             id = geoDiaryId,
             name = "Geo Diary",
+            description = "Places worth remembering, with notes.",
             appearance = Appearance(color = "#2E86AB", pinStyle = "pin"),
             templateVersion = 1,
             isVisible = true,
@@ -165,7 +167,6 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-01-15T09:00:00Z",
                 lastModified = "2024-01-15T09:00:00Z",
-                status = ReviewStatus.Reviewed
             ),
             added = "2024-01-10T08:00:00Z"
         ),
@@ -178,7 +179,6 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-02-14T20:00:00Z",
                 lastModified = "2024-02-14T20:00:00Z",
-                status = ReviewStatus.Reviewed
             ),
             added = "2024-02-01T10:00:00Z"
         ),
@@ -191,7 +191,6 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-03-20T19:00:00Z",
                 lastModified = "2024-03-20T19:00:00Z",
-                status = ReviewStatus.Reviewed
             ),
             added = "2024-03-15T14:00:00Z"
         ),
@@ -207,7 +206,6 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-04-12T15:30:00Z",
                 lastModified = "2024-04-12T15:30:00Z",
-                status = ReviewStatus.Reviewed
             ),
             added = "2024-04-12T15:30:00Z"
         ),
@@ -223,7 +221,6 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-05-03T18:45:00Z",
                 lastModified = "2024-05-03T18:45:00Z",
-                status = ReviewStatus.Reviewed
             ),
             added = "2024-05-03T18:45:00Z"
         ),
@@ -239,7 +236,6 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-06-22T13:00:00Z",
                 lastModified = "2024-06-22T13:00:00Z",
-                status = ReviewStatus.Reviewed
             ),
             added = "2024-06-22T13:00:00Z"
         ),
@@ -255,7 +251,6 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-07-09T09:30:00Z",
                 lastModified = "2024-07-09T09:30:00Z",
-                status = ReviewStatus.Reviewed
             ),
             added = "2024-07-09T09:30:00Z"
         ),
@@ -263,13 +258,7 @@ object Fixtures {
             id = EntryId("ent-geo-golden-gate"),
             collectionId = geoDiaryId,
             location = locations[3],
-            review = ReviewInstance(
-                data = persistentMapOf(),
-                recordedTemplateVersion = 1,
-                created = "2024-08-01T10:00:00Z",
-                lastModified = "2024-08-01T10:00:00Z",
-                status = ReviewStatus.Unreviewed
-            ),
+            review = null,
             added = "2024-08-01T10:00:00Z"
         )
     )
@@ -279,7 +268,7 @@ object Fixtures {
             collectionId = dripCoffeeId,
             version = 1,
             fields = persistentListOf(
-                TemplateField(name = "overall", type = FieldType.Stars, required = true),
+                TemplateField(name = "overall", type = FieldType.Score, required = true),
                 TemplateField(name = "notes", type = FieldType.Text)
             )
         ),
@@ -287,7 +276,7 @@ object Fixtures {
             collectionId = nytTop100Id,
             version = 1,
             fields = persistentListOf(
-                TemplateField(name = "rating", type = FieldType.Stars, required = true),
+                TemplateField(name = "rating", type = FieldType.Score, required = true),
                 TemplateField(name = "notes", type = FieldType.Text),
                 TemplateField(name = "visited", type = FieldType.Boolean)
             )
@@ -317,10 +306,11 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
     override fun observe(id: CollectionId): Flow<Collection?> =
         store.collections.map { list -> list.find { it.id == id } }
 
-    override suspend fun create(name: String, appearance: Appearance): Result<Collection> {
+    override suspend fun create(name: String, description: String?, appearance: Appearance): Result<Collection> {
         val collection = Collection(
             id = CollectionId(newId()),
             name = name,
+            description = description,
             appearance = appearance,
             templateVersion = 0,
             isVisible = true,
@@ -347,12 +337,11 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
             id = EntryId(newId()),
             collectionId = collectionId,
             location = location,
-            review = ReviewInstance(
+            review = if (review.data.isEmpty()) null else ReviewInstance(
                 data = review.data,
                 recordedTemplateVersion = collection.templateVersion,
                 created = FAKE_NOW,
                 lastModified = FAKE_NOW,
-                status = if (review.data.isEmpty()) ReviewStatus.Unreviewed else ReviewStatus.Reviewed
             ),
             added = FAKE_NOW
         )
@@ -380,13 +369,20 @@ class FakeEntryRepository(private val store: InMemoryStore) : EntryRepository {
         val current = store.entries.value.find { it.id == entryId }
             ?: return Result.failure(IllegalArgumentException("Entry not found: ${entryId.value}"))
 
-        val updated = current.copy(
-            review = current.review.copy(
+        val existingReview = current.review
+        val updatedReview = if (existingReview != null) {
+            existingReview.copy(data = data.toImmutableMap(), lastModified = FAKE_NOW)
+        } else {
+            val templateVersion = store.templates.value
+                .find { it.collectionId == current.collectionId }?.version ?: 0
+            ReviewInstance(
                 data = data.toImmutableMap(),
+                recordedTemplateVersion = templateVersion,
+                created = FAKE_NOW,
                 lastModified = FAKE_NOW,
-                status = if (data.isEmpty()) ReviewStatus.Unreviewed else ReviewStatus.Reviewed
             )
-        )
+        }
+        val updated = current.copy(review = updatedReview)
         store.entries.update { list -> list.map { if (it.id == entryId) updated else it } }
         return Result.success(updated)
     }

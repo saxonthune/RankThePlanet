@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-private enum class FieldType { STARS, TEXT, ENUM, BOOLEAN, DATE, POWER_RANKING }
+private enum class FieldType { SCORE, TEXT, ENUM, BOOLEAN, DATE, POWER_RANKING }
 
 private data class TemplateField(
     val name: String,
@@ -40,7 +40,7 @@ private data class TemplateField(
 
 // Mock Review template — stands in for the Collection's authored template.
 private val MOCK_TEMPLATE = listOf(
-    TemplateField("stars", "Stars", FieldType.STARS, required = true),
+    TemplateField("score", "Score", FieldType.SCORE, required = true),
     TemplateField("style", "Roast style", FieldType.ENUM, options = listOf("light", "medium", "dark")),
     TemplateField("visited", "Visited", FieldType.BOOLEAN),
     TemplateField("visitedOn", "Visited on", FieldType.DATE),
@@ -50,7 +50,7 @@ private val MOCK_TEMPLATE = listOf(
 
 // Mock draft-review — pre-filled by Review.start on entry (unset fields absent).
 private val MOCK_DRAFT = mapOf(
-    "stars" to "4",
+    "score" to "4",
     "style" to "light",
     "visited" to "true",
     "visitedOn" to "2026-05-12",
@@ -146,7 +146,7 @@ private fun FieldRow(
         }
 
         when (field.type) {
-            FieldType.STARS -> {
+            FieldType.SCORE -> {
                 val filled = value?.toIntOrNull() ?: 0
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     (1..5).forEach { i ->

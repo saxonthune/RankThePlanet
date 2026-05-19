@@ -53,16 +53,16 @@ class CollectionDetailViewModel(
         _sortMode,
     ) { collection, entryList, template, sortMode ->
         val scoreFieldName = template?.fields
-            ?.firstOrNull { it.type == FieldType.Stars || it.type == FieldType.PowerRanking }
+            ?.firstOrNull { it.type == FieldType.Score || it.type == FieldType.PowerRanking }
             ?.name
 
         val rows = entryList.map { entry ->
             val score = scoreFieldName
-                ?.let { entry.review.data[it] }
+                ?.let { entry.review?.data?.get(it) }
                 ?.toDoubleOrNull()
-            val summary = entry.review.data.entries
-                .filter { (k, _) -> k != scoreFieldName }
-                .firstOrNull()
+            val summary = entry.review?.data?.entries
+                ?.filter { (k, _) -> k != scoreFieldName }
+                ?.firstOrNull()
                 ?.value
                 ?.take(60)
                 ?: ""
@@ -72,7 +72,7 @@ class CollectionDetailViewModel(
                 reviewSummary = summary,
                 score = score,
                 added = entry.added,
-                reviewLastModified = entry.review.lastModified,
+                reviewLastModified = entry.review?.lastModified ?: "",
             )
         }
 

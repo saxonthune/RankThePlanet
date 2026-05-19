@@ -18,7 +18,7 @@ import com.saxonthune.ranktheplanet.nav.LocationDraft
 import com.saxonthune.ranktheplanet.nav.LocationPicker
 import com.saxonthune.ranktheplanet.nav.MapOverview
 import com.saxonthune.ranktheplanet.nav.ReviewForm
-import com.saxonthune.ranktheplanet.nav.SchemaBuilder
+import com.saxonthune.ranktheplanet.nav.CollectionEditor
 import com.saxonthune.ranktheplanet.nav.Settings
 import com.saxonthune.ranktheplanet.ui.screens.AddLocationToCollectionScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionDetailScreen
@@ -29,7 +29,7 @@ import com.saxonthune.ranktheplanet.ui.screens.LocationDraftScreen
 import com.saxonthune.ranktheplanet.ui.screens.LocationPickerScreen
 import com.saxonthune.ranktheplanet.ui.screens.MapOverviewScreen
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormScreen
-import com.saxonthune.ranktheplanet.ui.screens.SchemaBuilderScreen
+import com.saxonthune.ranktheplanet.ui.screens.CollectionEditorScreen
 import com.saxonthune.ranktheplanet.ui.screens.SettingsScreen
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
 
@@ -51,7 +51,7 @@ fun App() {
                 CollectionListScreen(
                     collections = repos.collections,
                     entries = repos.entries,
-                    onNewCollection = { navController.navigate(SchemaBuilder) },
+                    onNewCollection = { navController.navigate(CollectionEditor) },
                     onImport = { navController.navigate(ImportFlow) },
                     onBack = { navController.popBackStack() },
                     onOpenCollection = { id -> navController.navigate(CollectionDetail(id.value)) },
@@ -65,7 +65,7 @@ fun App() {
                     entries = repos.entries,
                     templates = repos.templates,
                     onAddEntry = { navController.navigate(LocationPicker) },
-                    onEditTemplate = { navController.navigate(SchemaBuilder) },
+                    onEditCollection = { navController.navigate(CollectionEditor) },
                     onBack = { navController.popBackStack() },
                     onOpenEntry = { id -> navController.navigate(CollectionEntryDetail(id.value)) },
                 )
@@ -87,8 +87,8 @@ fun App() {
                     onCancel = { navController.popBackStack() },
                 )
             }
-            composable<SchemaBuilder> {
-                SchemaBuilderScreen(
+            composable<CollectionEditor> {
+                CollectionEditorScreen(
                     onFinish = { navController.popBackStack() },
                     onCancel = { navController.popBackStack() },
                 )
@@ -102,7 +102,7 @@ fun App() {
             composable<AddLocationToCollection> {
                 AddLocationToCollectionScreen(
                     onPickCollection = { navController.navigate(ReviewForm) },
-                    onNewCollection = { navController.navigate(SchemaBuilder) },
+                    onNewCollection = { navController.navigate(CollectionEditor) },
                     onCancel = { navController.popBackStack() },
                 )
             }

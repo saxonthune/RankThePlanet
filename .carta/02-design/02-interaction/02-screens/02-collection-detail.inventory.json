@@ -1,0 +1,74 @@
+{
+  "surface": "CollectionDetail",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Identifies the Collection and holds the Collection-level affordances."
+    },
+    {
+      "id": "details",
+      "purpose": "Collapsed-by-default section that expands in place to show the Collection's metadata."
+    },
+    {
+      "id": "content",
+      "purpose": "The Collection's Entries, browsable as a sortable vertical list."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "topBar",
+      "event": "BACK",
+      "target": "CollectionList"
+    },
+    {
+      "id": "add-entry",
+      "label": "Add a Collection Entry",
+      "region": "topBar",
+      "event": "TAP_ADD_ENTRY",
+      "target": "LocationLookup",
+      "action": "Collection.addEntry"
+    },
+    {
+      "id": "edit-template",
+      "label": "Edit the template",
+      "region": "topBar",
+      "event": "TAP_EDIT_TEMPLATE",
+      "target": "SchemaBuilder",
+      "action": "Review.editTemplate"
+    },
+    {
+      "id": "toggle-details",
+      "label": "Expand or collapse the Details section",
+      "region": "details"
+    },
+    {
+      "id": "sort-entries",
+      "label": "Sort the entry list — Near Me, Date Added, Review Time, or Score",
+      "region": "content"
+    }
+  ],
+  "lists": [
+    {
+      "id": "entries",
+      "region": "content",
+      "iterates": "Entry",
+      "reads": "entries",
+      "item": {
+        "shows": [
+          "Entry.location displayName",
+          "a short summary of the Entry's Review",
+          "the Review's score, when the Collection's template defines a rating field"
+        ],
+        "affordance": {
+          "id": "open-entry",
+          "label": "Open a Collection Entry",
+          "event": "TAP_ENTRY",
+          "target": "CollectionEntryDetail"
+        }
+      },
+      "emptyState": "When the Collection has no Entries, the region shows a hint pointing at Add a Collection Entry."
+    }
+  ]
+}

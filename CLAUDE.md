@@ -59,6 +59,16 @@ Conventions live in `doc00.03`. Maintenance / unfolding rules live in `doc00.02`
 
 CMP-bound system specs (state tiers, repository contracts, screens-as-Composables, component tree) will appear in a future group when the interaction layer stabilizes.
 
+## Searching and reading files
+
+Use the dedicated tools — they're allowlisted and don't trigger approval prompts. Shell pipelines that wrap file access (`cd`, `xargs`, `sh -c`, output redirection, `find … | cat`) do trigger prompts. This list grows as new anti-patterns surface.
+
+- DON'T `find … -name '*.kt' | xargs cat` — DO use Glob to list, then Read each file (Read takes parallel calls).
+- DON'T `cd some/dir && cmd` — DO pass absolute paths; for unavoidable multi-step shell use a single subshell `(cd dir && cmd)`.
+- DON'T `find … | xargs -I{} sh -c '…'` — DO use Glob/Grep, or Read files individually.
+- DON'T `grep -r pattern path/` — DO use the Grep tool.
+- DON'T `cat file` to read — DO use the Read tool.
+
 ## Statechart sidecar workflow
 
 When editing a `*.statechart.json` carta sidecar, regenerate its Luminous canvas:

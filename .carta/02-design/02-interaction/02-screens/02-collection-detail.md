@@ -1,0 +1,14 @@
+---
+title: Collection Detail
+summary: Affordance inventory for the CollectionDetail surface — Details section, sortable entry list
+tags: [design, interaction, screens]
+deps: [doc02.02.01, doc01.03]
+---
+
+# Collection Detail
+
+The affordance inventory for the `CollectionDetail` surface — one Collection seen as its list of Collection Entries. **The source of truth is the carta sidecar `02-collection-detail.inventory.json`** ([[00-index]], doc02.02.02.00 explains the shape); this `.md` is a lean companion.
+
+The surface has three regions. The **topBar** carries the surface title and the Collection-level affordances — *Add a Collection Entry* (`Collection.addEntry`), *Edit the template* (`Review.editTemplate`), and *Back* to the Collection list. The **details** region is a collapsed-by-default section that expands in place to show the Collection's metadata (appearance, timestamps, template version, entry count); collapsing is a self-action, not a navigation. The **content** region is a single list iterating the Collection's Entries; each item shows the Location and a Review summary and opens that Entry on tap. A sort control over the list offers *Date Added*, *Review Time*, and *Score* orderings — *Score* appears only when the Collection's Review template defines a rating field. *Near Me* is named but inert until device location lands.
+
+Each navigating affordance ties to a transition on `CollectionDetail` in the statechart ([[01-navigation]], doc02.02.01); the topBar affordances also carry the surface's `meta.actions`. Beyond the statechart's `meta.reads` (`collection`, `entries`, `appearance`), the surface also reads the Collection's Review template to resolve which field the *Score* sort orders on. The map/list projection toggle (`TAP_TOGGLE_PROJECTION`) is a known affordance of this surface but is not yet inventoried — this inventory covers the list projection only.

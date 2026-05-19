@@ -1,0 +1,1586 @@
+{
+  "version": 3,
+  "pack": "01-navigation.canvas",
+  "nodes": [
+    {
+      "id": "action.AddLocationToCollection.Collection.addEntry",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.addEntry",
+        "action": "addEntry",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "AddLocationToCollection"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.AddLocationToCollection.Collection.create",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.create",
+        "action": "create",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "AddLocationToCollection"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.AddLocationToCollection.Location.addToCollection",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Location.addToCollection",
+        "action": "addToCollection",
+        "concept": "Location",
+        "color": "#4C8DD8",
+        "tone": "default",
+        "screen": "AddLocationToCollection"
+      },
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "action.CollectionDetail.Collection.addEntry",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.addEntry",
+        "action": "addEntry",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "CollectionDetail"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.CollectionDetail.Collection.export",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.export",
+        "action": "export",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "CollectionDetail"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.CollectionDetail.Collection.removeEntry",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.removeEntry",
+        "action": "removeEntry",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "CollectionDetail"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.CollectionDetail.Collection.share",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.share",
+        "action": "share",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "CollectionDetail"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.CollectionDetail.Review.editTemplate",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Review.editTemplate",
+        "action": "editTemplate",
+        "concept": "Review",
+        "color": "#5BA85B",
+        "tone": "danger",
+        "screen": "CollectionDetail"
+      },
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "action.CollectionEntryDetail.Collection.removeEntry",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.removeEntry",
+        "action": "removeEntry",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "CollectionEntryDetail"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.CollectionEntryDetail.Location.openExternally",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Location.openExternally",
+        "action": "openExternally",
+        "concept": "Location",
+        "color": "#4C8DD8",
+        "tone": "default",
+        "screen": "CollectionEntryDetail"
+      },
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "action.CollectionEntryDetail.Location.refresh",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Location.refresh",
+        "action": "refresh",
+        "concept": "Location",
+        "color": "#4C8DD8",
+        "tone": "default",
+        "screen": "CollectionEntryDetail"
+      },
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "action.CollectionEntryDetail.Review.edit",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Review.edit",
+        "action": "edit",
+        "concept": "Review",
+        "color": "#5BA85B",
+        "tone": "danger",
+        "screen": "CollectionEntryDetail"
+      },
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "action.CollectionList.Collection.create",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.create",
+        "action": "create",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "CollectionList"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.CollectionList.Collection.import",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.import",
+        "action": "import",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "CollectionList"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.ImportFlow.Collection.import",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Collection.import",
+        "action": "import",
+        "concept": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent",
+        "screen": "ImportFlow"
+      },
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "action.LocationPicker.Location.dropPin",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Location.dropPin",
+        "action": "dropPin",
+        "concept": "Location",
+        "color": "#4C8DD8",
+        "tone": "default",
+        "screen": "LocationPicker"
+      },
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "action.LocationPicker.Location.import",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Location.import",
+        "action": "import",
+        "concept": "Location",
+        "color": "#4C8DD8",
+        "tone": "default",
+        "screen": "LocationPicker"
+      },
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "action.LocationPicker.Location.resolve",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Location.resolve",
+        "action": "resolve",
+        "concept": "Location",
+        "color": "#4C8DD8",
+        "tone": "default",
+        "screen": "LocationPicker"
+      },
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "action.MapOverview.Location.dropPin",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Location.dropPin",
+        "action": "dropPin",
+        "concept": "Location",
+        "color": "#4C8DD8",
+        "tone": "default",
+        "screen": "MapOverview"
+      },
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "action.MapOverview.MapOverview.jumpToCollection",
+      "kind": "rtp.action",
+      "props": {
+        "name": "MapOverview.jumpToCollection",
+        "action": "jumpToCollection",
+        "concept": "MapOverview",
+        "color": "#9B6FCB",
+        "tone": "muted",
+        "screen": "MapOverview"
+      },
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "action.MapOverview.MapOverview.open",
+      "kind": "rtp.action",
+      "props": {
+        "name": "MapOverview.open",
+        "action": "open",
+        "concept": "MapOverview",
+        "color": "#9B6FCB",
+        "tone": "muted",
+        "screen": "MapOverview"
+      },
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "action.MapOverview.MapOverview.pan",
+      "kind": "rtp.action",
+      "props": {
+        "name": "MapOverview.pan",
+        "action": "pan",
+        "concept": "MapOverview",
+        "color": "#9B6FCB",
+        "tone": "muted",
+        "screen": "MapOverview"
+      },
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "action.MapOverview.MapOverview.selectPin",
+      "kind": "rtp.action",
+      "props": {
+        "name": "MapOverview.selectPin",
+        "action": "selectPin",
+        "concept": "MapOverview",
+        "color": "#9B6FCB",
+        "tone": "muted",
+        "screen": "MapOverview"
+      },
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "action.MapOverview.MapOverview.toggleCollection",
+      "kind": "rtp.action",
+      "props": {
+        "name": "MapOverview.toggleCollection",
+        "action": "toggleCollection",
+        "concept": "MapOverview",
+        "color": "#9B6FCB",
+        "tone": "muted",
+        "screen": "MapOverview"
+      },
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "action.MapOverview.MapOverview.zoom",
+      "kind": "rtp.action",
+      "props": {
+        "name": "MapOverview.zoom",
+        "action": "zoom",
+        "concept": "MapOverview",
+        "color": "#9B6FCB",
+        "tone": "muted",
+        "screen": "MapOverview"
+      },
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "action.ReviewForm.Review.clear",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Review.clear",
+        "action": "clear",
+        "concept": "Review",
+        "color": "#5BA85B",
+        "tone": "danger",
+        "screen": "ReviewForm"
+      },
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "action.ReviewForm.Review.edit",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Review.edit",
+        "action": "edit",
+        "concept": "Review",
+        "color": "#5BA85B",
+        "tone": "danger",
+        "screen": "ReviewForm"
+      },
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "action.ReviewForm.Review.start",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Review.start",
+        "action": "start",
+        "concept": "Review",
+        "color": "#5BA85B",
+        "tone": "danger",
+        "screen": "ReviewForm"
+      },
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "action.ReviewForm.Review.submit",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Review.submit",
+        "action": "submit",
+        "concept": "Review",
+        "color": "#5BA85B",
+        "tone": "danger",
+        "screen": "ReviewForm"
+      },
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "action.SchemaBuilder.Review.defineTemplate",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Review.defineTemplate",
+        "action": "defineTemplate",
+        "concept": "Review",
+        "color": "#5BA85B",
+        "tone": "danger",
+        "screen": "SchemaBuilder"
+      },
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "action.SchemaBuilder.Review.editTemplate",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Review.editTemplate",
+        "action": "editTemplate",
+        "concept": "Review",
+        "color": "#5BA85B",
+        "tone": "danger",
+        "screen": "SchemaBuilder"
+      },
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "action.SchemaBuilder.Review.useBuiltIn",
+      "kind": "rtp.action",
+      "props": {
+        "name": "Review.useBuiltIn",
+        "action": "useBuiltIn",
+        "concept": "Review",
+        "color": "#5BA85B",
+        "tone": "danger",
+        "screen": "SchemaBuilder"
+      },
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "concept.Collection",
+      "kind": "rtp.concept",
+      "props": {
+        "name": "Collection",
+        "color": "#E8A23D",
+        "tone": "accent"
+      },
+      "tags": []
+    },
+    {
+      "id": "concept.Location",
+      "kind": "rtp.concept",
+      "props": {
+        "name": "Location",
+        "color": "#4C8DD8",
+        "tone": "default"
+      },
+      "tags": []
+    },
+    {
+      "id": "concept.MapOverview",
+      "kind": "rtp.concept",
+      "props": {
+        "name": "MapOverview",
+        "color": "#9B6FCB",
+        "tone": "muted"
+      },
+      "tags": []
+    },
+    {
+      "id": "concept.Review",
+      "kind": "rtp.concept",
+      "props": {
+        "name": "Review",
+        "color": "#5BA85B",
+        "tone": "danger"
+      },
+      "tags": []
+    },
+    {
+      "id": "screen.AddLocationToCollection",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "AddLocationToCollection",
+        "surface": "AddLocationToCollection",
+        "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to.",
+        "reads": [
+          "collections",
+          "candidate-location"
+        ]
+      },
+      "tags": [
+        "picker"
+      ]
+    },
+    {
+      "id": "screen.CollectionDetail",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "CollectionDetail",
+        "surface": "CollectionDetail",
+        "description": "One Collection: its entries shown as either a map or a list projection (toggleable in place — projection is a view-internal mode, not a separate view). Entry point for adding/removing entries, editing the template, and exporting/sharing.",
+        "reads": [
+          "collection",
+          "entries",
+          "appearance"
+        ]
+      },
+      "tags": [
+        "detail"
+      ]
+    },
+    {
+      "id": "screen.CollectionEntryDetail",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "CollectionEntryDetail",
+        "surface": "CollectionEntryDetail",
+        "description": "One entry — the (Location, Review) pair. Read-mostly view; mutation goes through ReviewForm. Hosts the 'open externally' handoff to Google Maps / Apple Maps / etc.",
+        "reads": [
+          "entry",
+          "location",
+          "review"
+        ]
+      },
+      "tags": [
+        "detail"
+      ]
+    },
+    {
+      "id": "screen.CollectionList",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "CollectionList",
+        "surface": "CollectionList",
+        "description": "Manage the user's Collections. Create new ones, open existing ones, import external lists.",
+        "reads": [
+          "collections"
+        ]
+      },
+      "tags": [
+        "list"
+      ]
+    },
+    {
+      "id": "screen.ImportFlow",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "ImportFlow",
+        "surface": "ImportFlow",
+        "description": "Import an external collection. Stub — concrete steps (source picker, schema mapping, preview, confirm) will be detailed when the import view is unfolded.",
+        "reads": []
+      },
+      "tags": [
+        "modal"
+      ]
+    },
+    {
+      "id": "screen.LocationPicker",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "LocationPicker",
+        "surface": "LocationPicker",
+        "description": "Resolve, drop, or import a Location. Search via a configured provider, drop a manual pin, or import from a URL / file (KML, share link).",
+        "reads": [
+          "provider-results"
+        ]
+      },
+      "tags": [
+        "picker"
+      ]
+    },
+    {
+      "id": "screen.MapOverview",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "MapOverview",
+        "surface": "MapOverview",
+        "description": "The everything view. Default landing surface. Shows pins for every entry in every visible Collection, colored by Collection appearance and styled by visited/unvisited state. See doc01.03 §4.",
+        "reads": [
+          "all-collections",
+          "all-entries",
+          "viewport"
+        ]
+      },
+      "tags": [
+        "landing",
+        "map"
+      ]
+    },
+    {
+      "id": "screen.ReviewForm",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "ReviewForm",
+        "surface": "ReviewForm",
+        "description": "Author or edit a Review instance against the Collection's template. Filling, clearing, and submitting fields are in-view concept actions (meta.actions); only SUBMIT and CANCEL move the user.",
+        "reads": [
+          "template",
+          "draft-review"
+        ]
+      },
+      "tags": [
+        "form"
+      ]
+    },
+    {
+      "id": "screen.SchemaBuilder",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "SchemaBuilder",
+        "surface": "SchemaBuilder",
+        "description": "Author or edit a Collection's Review template — the schema governing every Review in this Collection. Add/remove/reorder fields; pick field types (stars, enum, boolean, date, power-ranking, text). Adopt a built-in template as a starting point.",
+        "reads": [
+          "template"
+        ]
+      },
+      "tags": [
+        "form"
+      ]
+    },
+    {
+      "id": "screen.Settings",
+      "kind": "rtp.screen",
+      "props": {
+        "name": "Settings",
+        "surface": "Settings",
+        "description": "Configure providers, BYOK keys, sync target. View is intentionally under-specified until the relevant concept actions exist.",
+        "reads": [
+          "settings"
+        ]
+      },
+      "tags": [
+        "modal"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge.contains.action.AddLocationToCollection.Collection.addEntry.screen.AddLocationToCollection",
+      "kind": "rtp.contains",
+      "from": "action.AddLocationToCollection.Collection.addEntry",
+      "to": "screen.AddLocationToCollection",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.AddLocationToCollection.Collection.create.screen.AddLocationToCollection",
+      "kind": "rtp.contains",
+      "from": "action.AddLocationToCollection.Collection.create",
+      "to": "screen.AddLocationToCollection",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.AddLocationToCollection.Location.addToCollection.screen.AddLocationToCollection",
+      "kind": "rtp.contains",
+      "from": "action.AddLocationToCollection.Location.addToCollection",
+      "to": "screen.AddLocationToCollection",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionDetail.Collection.addEntry.screen.CollectionDetail",
+      "kind": "rtp.contains",
+      "from": "action.CollectionDetail.Collection.addEntry",
+      "to": "screen.CollectionDetail",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionDetail.Collection.export.screen.CollectionDetail",
+      "kind": "rtp.contains",
+      "from": "action.CollectionDetail.Collection.export",
+      "to": "screen.CollectionDetail",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionDetail.Collection.removeEntry.screen.CollectionDetail",
+      "kind": "rtp.contains",
+      "from": "action.CollectionDetail.Collection.removeEntry",
+      "to": "screen.CollectionDetail",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionDetail.Collection.share.screen.CollectionDetail",
+      "kind": "rtp.contains",
+      "from": "action.CollectionDetail.Collection.share",
+      "to": "screen.CollectionDetail",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionDetail.Review.editTemplate.screen.CollectionDetail",
+      "kind": "rtp.contains",
+      "from": "action.CollectionDetail.Review.editTemplate",
+      "to": "screen.CollectionDetail",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionEntryDetail.Collection.removeEntry.screen.CollectionEntryDetail",
+      "kind": "rtp.contains",
+      "from": "action.CollectionEntryDetail.Collection.removeEntry",
+      "to": "screen.CollectionEntryDetail",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionEntryDetail.Location.openExternally.screen.CollectionEntryDetail",
+      "kind": "rtp.contains",
+      "from": "action.CollectionEntryDetail.Location.openExternally",
+      "to": "screen.CollectionEntryDetail",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionEntryDetail.Location.refresh.screen.CollectionEntryDetail",
+      "kind": "rtp.contains",
+      "from": "action.CollectionEntryDetail.Location.refresh",
+      "to": "screen.CollectionEntryDetail",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionEntryDetail.Review.edit.screen.CollectionEntryDetail",
+      "kind": "rtp.contains",
+      "from": "action.CollectionEntryDetail.Review.edit",
+      "to": "screen.CollectionEntryDetail",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionList.Collection.create.screen.CollectionList",
+      "kind": "rtp.contains",
+      "from": "action.CollectionList.Collection.create",
+      "to": "screen.CollectionList",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.CollectionList.Collection.import.screen.CollectionList",
+      "kind": "rtp.contains",
+      "from": "action.CollectionList.Collection.import",
+      "to": "screen.CollectionList",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.ImportFlow.Collection.import.screen.ImportFlow",
+      "kind": "rtp.contains",
+      "from": "action.ImportFlow.Collection.import",
+      "to": "screen.ImportFlow",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.LocationPicker.Location.dropPin.screen.LocationPicker",
+      "kind": "rtp.contains",
+      "from": "action.LocationPicker.Location.dropPin",
+      "to": "screen.LocationPicker",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.LocationPicker.Location.import.screen.LocationPicker",
+      "kind": "rtp.contains",
+      "from": "action.LocationPicker.Location.import",
+      "to": "screen.LocationPicker",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.LocationPicker.Location.resolve.screen.LocationPicker",
+      "kind": "rtp.contains",
+      "from": "action.LocationPicker.Location.resolve",
+      "to": "screen.LocationPicker",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.MapOverview.Location.dropPin.screen.MapOverview",
+      "kind": "rtp.contains",
+      "from": "action.MapOverview.Location.dropPin",
+      "to": "screen.MapOverview",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.MapOverview.MapOverview.jumpToCollection.screen.MapOverview",
+      "kind": "rtp.contains",
+      "from": "action.MapOverview.MapOverview.jumpToCollection",
+      "to": "screen.MapOverview",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.MapOverview.MapOverview.open.screen.MapOverview",
+      "kind": "rtp.contains",
+      "from": "action.MapOverview.MapOverview.open",
+      "to": "screen.MapOverview",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.MapOverview.MapOverview.pan.screen.MapOverview",
+      "kind": "rtp.contains",
+      "from": "action.MapOverview.MapOverview.pan",
+      "to": "screen.MapOverview",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.MapOverview.MapOverview.selectPin.screen.MapOverview",
+      "kind": "rtp.contains",
+      "from": "action.MapOverview.MapOverview.selectPin",
+      "to": "screen.MapOverview",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.MapOverview.MapOverview.toggleCollection.screen.MapOverview",
+      "kind": "rtp.contains",
+      "from": "action.MapOverview.MapOverview.toggleCollection",
+      "to": "screen.MapOverview",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.MapOverview.MapOverview.zoom.screen.MapOverview",
+      "kind": "rtp.contains",
+      "from": "action.MapOverview.MapOverview.zoom",
+      "to": "screen.MapOverview",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.ReviewForm.Review.clear.screen.ReviewForm",
+      "kind": "rtp.contains",
+      "from": "action.ReviewForm.Review.clear",
+      "to": "screen.ReviewForm",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.ReviewForm.Review.edit.screen.ReviewForm",
+      "kind": "rtp.contains",
+      "from": "action.ReviewForm.Review.edit",
+      "to": "screen.ReviewForm",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.ReviewForm.Review.start.screen.ReviewForm",
+      "kind": "rtp.contains",
+      "from": "action.ReviewForm.Review.start",
+      "to": "screen.ReviewForm",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.ReviewForm.Review.submit.screen.ReviewForm",
+      "kind": "rtp.contains",
+      "from": "action.ReviewForm.Review.submit",
+      "to": "screen.ReviewForm",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.SchemaBuilder.Review.defineTemplate.screen.SchemaBuilder",
+      "kind": "rtp.contains",
+      "from": "action.SchemaBuilder.Review.defineTemplate",
+      "to": "screen.SchemaBuilder",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.SchemaBuilder.Review.editTemplate.screen.SchemaBuilder",
+      "kind": "rtp.contains",
+      "from": "action.SchemaBuilder.Review.editTemplate",
+      "to": "screen.SchemaBuilder",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.contains.action.SchemaBuilder.Review.useBuiltIn.screen.SchemaBuilder",
+      "kind": "rtp.contains",
+      "from": "action.SchemaBuilder.Review.useBuiltIn",
+      "to": "screen.SchemaBuilder",
+      "props": {},
+      "tags": []
+    },
+    {
+      "id": "edge.performs.action.AddLocationToCollection.Collection.addEntry.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.AddLocationToCollection.Collection.addEntry",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.AddLocationToCollection.Collection.create.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.AddLocationToCollection.Collection.create",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.AddLocationToCollection.Location.addToCollection.concept.Location",
+      "kind": "rtp.performs",
+      "from": "action.AddLocationToCollection.Location.addToCollection",
+      "to": "concept.Location",
+      "props": {},
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionDetail.Collection.addEntry.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.CollectionDetail.Collection.addEntry",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionDetail.Collection.export.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.CollectionDetail.Collection.export",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionDetail.Collection.removeEntry.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.CollectionDetail.Collection.removeEntry",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionDetail.Collection.share.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.CollectionDetail.Collection.share",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionDetail.Review.editTemplate.concept.Review",
+      "kind": "rtp.performs",
+      "from": "action.CollectionDetail.Review.editTemplate",
+      "to": "concept.Review",
+      "props": {},
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionEntryDetail.Collection.removeEntry.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.CollectionEntryDetail.Collection.removeEntry",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionEntryDetail.Location.openExternally.concept.Location",
+      "kind": "rtp.performs",
+      "from": "action.CollectionEntryDetail.Location.openExternally",
+      "to": "concept.Location",
+      "props": {},
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionEntryDetail.Location.refresh.concept.Location",
+      "kind": "rtp.performs",
+      "from": "action.CollectionEntryDetail.Location.refresh",
+      "to": "concept.Location",
+      "props": {},
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionEntryDetail.Review.edit.concept.Review",
+      "kind": "rtp.performs",
+      "from": "action.CollectionEntryDetail.Review.edit",
+      "to": "concept.Review",
+      "props": {},
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionList.Collection.create.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.CollectionList.Collection.create",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.CollectionList.Collection.import.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.CollectionList.Collection.import",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.ImportFlow.Collection.import.concept.Collection",
+      "kind": "rtp.performs",
+      "from": "action.ImportFlow.Collection.import",
+      "to": "concept.Collection",
+      "props": {},
+      "tags": [
+        "Collection"
+      ]
+    },
+    {
+      "id": "edge.performs.action.LocationPicker.Location.dropPin.concept.Location",
+      "kind": "rtp.performs",
+      "from": "action.LocationPicker.Location.dropPin",
+      "to": "concept.Location",
+      "props": {},
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "edge.performs.action.LocationPicker.Location.import.concept.Location",
+      "kind": "rtp.performs",
+      "from": "action.LocationPicker.Location.import",
+      "to": "concept.Location",
+      "props": {},
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "edge.performs.action.LocationPicker.Location.resolve.concept.Location",
+      "kind": "rtp.performs",
+      "from": "action.LocationPicker.Location.resolve",
+      "to": "concept.Location",
+      "props": {},
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "edge.performs.action.MapOverview.Location.dropPin.concept.Location",
+      "kind": "rtp.performs",
+      "from": "action.MapOverview.Location.dropPin",
+      "to": "concept.Location",
+      "props": {},
+      "tags": [
+        "Location"
+      ]
+    },
+    {
+      "id": "edge.performs.action.MapOverview.MapOverview.jumpToCollection.concept.MapOverview",
+      "kind": "rtp.performs",
+      "from": "action.MapOverview.MapOverview.jumpToCollection",
+      "to": "concept.MapOverview",
+      "props": {},
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "edge.performs.action.MapOverview.MapOverview.open.concept.MapOverview",
+      "kind": "rtp.performs",
+      "from": "action.MapOverview.MapOverview.open",
+      "to": "concept.MapOverview",
+      "props": {},
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "edge.performs.action.MapOverview.MapOverview.pan.concept.MapOverview",
+      "kind": "rtp.performs",
+      "from": "action.MapOverview.MapOverview.pan",
+      "to": "concept.MapOverview",
+      "props": {},
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "edge.performs.action.MapOverview.MapOverview.selectPin.concept.MapOverview",
+      "kind": "rtp.performs",
+      "from": "action.MapOverview.MapOverview.selectPin",
+      "to": "concept.MapOverview",
+      "props": {},
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "edge.performs.action.MapOverview.MapOverview.toggleCollection.concept.MapOverview",
+      "kind": "rtp.performs",
+      "from": "action.MapOverview.MapOverview.toggleCollection",
+      "to": "concept.MapOverview",
+      "props": {},
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "edge.performs.action.MapOverview.MapOverview.zoom.concept.MapOverview",
+      "kind": "rtp.performs",
+      "from": "action.MapOverview.MapOverview.zoom",
+      "to": "concept.MapOverview",
+      "props": {},
+      "tags": [
+        "MapOverview"
+      ]
+    },
+    {
+      "id": "edge.performs.action.ReviewForm.Review.clear.concept.Review",
+      "kind": "rtp.performs",
+      "from": "action.ReviewForm.Review.clear",
+      "to": "concept.Review",
+      "props": {},
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "edge.performs.action.ReviewForm.Review.edit.concept.Review",
+      "kind": "rtp.performs",
+      "from": "action.ReviewForm.Review.edit",
+      "to": "concept.Review",
+      "props": {},
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "edge.performs.action.ReviewForm.Review.start.concept.Review",
+      "kind": "rtp.performs",
+      "from": "action.ReviewForm.Review.start",
+      "to": "concept.Review",
+      "props": {},
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "edge.performs.action.ReviewForm.Review.submit.concept.Review",
+      "kind": "rtp.performs",
+      "from": "action.ReviewForm.Review.submit",
+      "to": "concept.Review",
+      "props": {},
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "edge.performs.action.SchemaBuilder.Review.defineTemplate.concept.Review",
+      "kind": "rtp.performs",
+      "from": "action.SchemaBuilder.Review.defineTemplate",
+      "to": "concept.Review",
+      "props": {},
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "edge.performs.action.SchemaBuilder.Review.editTemplate.concept.Review",
+      "kind": "rtp.performs",
+      "from": "action.SchemaBuilder.Review.editTemplate",
+      "to": "concept.Review",
+      "props": {},
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "edge.performs.action.SchemaBuilder.Review.useBuiltIn.concept.Review",
+      "kind": "rtp.performs",
+      "from": "action.SchemaBuilder.Review.useBuiltIn",
+      "to": "concept.Review",
+      "props": {},
+      "tags": [
+        "Review"
+      ]
+    },
+    {
+      "id": "edge.transition.screen.AddLocationToCollection.screen.MapOverview.CLOSE",
+      "kind": "rtp.transition",
+      "from": "screen.AddLocationToCollection",
+      "to": "screen.MapOverview",
+      "props": {
+        "event": "CLOSE",
+        "label": "",
+        "description": "Cancel; return to the everything view."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.AddLocationToCollection.screen.ReviewForm.PICK_COLLECTION",
+      "kind": "rtp.transition",
+      "from": "screen.AddLocationToCollection",
+      "to": "screen.ReviewForm",
+      "props": {
+        "event": "PICK_COLLECTION",
+        "label": "Pick a Collection",
+        "description": "User picks a Collection (Location.addToCollection); advance to fill out the Review."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.AddLocationToCollection.screen.SchemaBuilder.TAP_NEW_COLLECTION",
+      "kind": "rtp.transition",
+      "from": "screen.AddLocationToCollection",
+      "to": "screen.SchemaBuilder",
+      "props": {
+        "event": "TAP_NEW_COLLECTION",
+        "label": "New Collection",
+        "description": "None of the existing Collections fit; create a new one (Collection.create)."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionDetail.screen.CollectionEntryDetail.TAP_ENTRY",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionDetail",
+      "to": "screen.CollectionEntryDetail",
+      "props": {
+        "event": "TAP_ENTRY",
+        "label": "Open an entry",
+        "description": "User opens a single entry to inspect its Location and Review."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionDetail.screen.CollectionList.BACK",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionDetail",
+      "to": "screen.CollectionList",
+      "props": {
+        "event": "BACK",
+        "label": "",
+        "description": "Return to the Collection list."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionDetail.screen.LocationPicker.TAP_ADD_ENTRY",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionDetail",
+      "to": "screen.LocationPicker",
+      "props": {
+        "event": "TAP_ADD_ENTRY",
+        "label": "Add an entry",
+        "description": "User starts the Collection-first add flow. LocationPicker resolves a Location, then ReviewForm captures the per-entry Review (Collection.addEntry)."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionDetail.screen.SchemaBuilder.TAP_EDIT_TEMPLATE",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionDetail",
+      "to": "screen.SchemaBuilder",
+      "props": {
+        "event": "TAP_EDIT_TEMPLATE",
+        "label": "Edit the template",
+        "description": "User opens the Review template editor for this Collection (Review.editTemplate)."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionEntryDetail.screen.CollectionDetail.BACK",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionEntryDetail",
+      "to": "screen.CollectionDetail",
+      "props": {
+        "event": "BACK",
+        "label": "",
+        "description": "Return to the owning Collection. (CollectionEntryDetail is also reachable from MapOverview; static BACK targets the Collection context — true back-stack is runtime history. See doc02.02.01.)"
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionEntryDetail.screen.CollectionDetail.TAP_REMOVE_ENTRY",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionEntryDetail",
+      "to": "screen.CollectionDetail",
+      "props": {
+        "event": "TAP_REMOVE_ENTRY",
+        "label": "Remove the entry",
+        "description": "User removes this entry from the Collection (Collection.removeEntry). Does not delete the Location — it may exist in other Collections."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionEntryDetail.screen.ReviewForm.TAP_EDIT_REVIEW",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionEntryDetail",
+      "to": "screen.ReviewForm",
+      "props": {
+        "event": "TAP_EDIT_REVIEW",
+        "label": "Edit the Review",
+        "description": "User opens the form to edit the Review for this entry (Review.edit)."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionList.screen.CollectionDetail.TAP_COLLECTION",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionList",
+      "to": "screen.CollectionDetail",
+      "props": {
+        "event": "TAP_COLLECTION",
+        "label": "Open a Collection",
+        "description": "User opens a Collection to see its entries."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionList.screen.ImportFlow.TAP_IMPORT",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionList",
+      "to": "screen.ImportFlow",
+      "props": {
+        "event": "TAP_IMPORT",
+        "label": "Import a list",
+        "description": "User imports an external collection (KML, GeoJSON, RTP bundle, third-party share URL)."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionList.screen.MapOverview.BACK",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionList",
+      "to": "screen.MapOverview",
+      "props": {
+        "event": "BACK",
+        "label": "",
+        "description": "Return to the everything view."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.CollectionList.screen.SchemaBuilder.TAP_NEW_COLLECTION",
+      "kind": "rtp.transition",
+      "from": "screen.CollectionList",
+      "to": "screen.SchemaBuilder",
+      "props": {
+        "event": "TAP_NEW_COLLECTION",
+        "label": "New Collection",
+        "description": "User starts a new Collection (Collection.create). Opens the SchemaBuilder to author the Review template before any entries can be added."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.ImportFlow.screen.CollectionList.CLOSE",
+      "kind": "rtp.transition",
+      "from": "screen.ImportFlow",
+      "to": "screen.CollectionList",
+      "props": {
+        "event": "CLOSE",
+        "label": "",
+        "description": "Cancel the import."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.ImportFlow.screen.CollectionList.DONE",
+      "kind": "rtp.transition",
+      "from": "screen.ImportFlow",
+      "to": "screen.CollectionList",
+      "props": {
+        "event": "DONE",
+        "label": "Finish the import",
+        "description": "Import committed; return to the refreshed Collection list."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.LocationPicker.screen.CollectionDetail.CLOSE",
+      "kind": "rtp.transition",
+      "from": "screen.LocationPicker",
+      "to": "screen.CollectionDetail",
+      "props": {
+        "event": "CLOSE",
+        "label": "",
+        "description": "Cancel the add flow."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.LocationPicker.screen.ReviewForm.PICK_RESULT",
+      "kind": "rtp.transition",
+      "from": "screen.LocationPicker",
+      "to": "screen.ReviewForm",
+      "props": {
+        "event": "PICK_RESULT",
+        "label": "Pick a Location",
+        "description": "User picks one candidate Location; advance to fill out the Review."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.MapOverview.screen.AddLocationToCollection.TAP_ADD_HERE",
+      "kind": "rtp.transition",
+      "from": "screen.MapOverview",
+      "to": "screen.AddLocationToCollection",
+      "props": {
+        "event": "TAP_ADD_HERE",
+        "label": "Drop a pin here",
+        "description": "User drops a pin at their current location (or a tapped map point) and chooses which Collection to add it to. Starts the Location-first flow from doc01.02 §3. The drop gesture is Location.dropPin (see meta.actions)."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.MapOverview.screen.CollectionEntryDetail.TAP_PIN",
+      "kind": "rtp.transition",
+      "from": "screen.MapOverview",
+      "to": "screen.CollectionEntryDetail",
+      "props": {
+        "event": "TAP_PIN",
+        "label": "Inspect a pin",
+        "description": "User taps a pin to inspect that entry. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.MapOverview.screen.CollectionList.TAP_COLLECTIONS_BUTTON",
+      "kind": "rtp.transition",
+      "from": "screen.MapOverview",
+      "to": "screen.CollectionList",
+      "props": {
+        "event": "TAP_COLLECTIONS_BUTTON",
+        "label": "Browse Collections",
+        "description": "User opens the list of Collections to manage them."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.MapOverview.screen.Settings.TAP_SETTINGS",
+      "kind": "rtp.transition",
+      "from": "screen.MapOverview",
+      "to": "screen.Settings",
+      "props": {
+        "event": "TAP_SETTINGS",
+        "label": "Open Settings",
+        "description": "User opens settings (providers, BYOK keys, sync target)."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.ReviewForm.screen.CollectionDetail.CANCEL",
+      "kind": "rtp.transition",
+      "from": "screen.ReviewForm",
+      "to": "screen.CollectionDetail",
+      "props": {
+        "event": "CANCEL",
+        "label": "",
+        "description": "User cancels without saving; the draft is discarded. (Reachable from LocationPicker, AddLocationToCollection, and CollectionEntryDetail; static CANCEL targets the Collection context.)"
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.ReviewForm.screen.CollectionEntryDetail.SUBMIT",
+      "kind": "rtp.transition",
+      "from": "screen.ReviewForm",
+      "to": "screen.CollectionEntryDetail",
+      "props": {
+        "event": "SUBMIT",
+        "label": "Save the Review",
+        "description": "User commits the Review (Review.submit). The entry is saved; navigate to its CollectionEntryDetail."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.SchemaBuilder.screen.CollectionDetail.CLOSE",
+      "kind": "rtp.transition",
+      "from": "screen.SchemaBuilder",
+      "to": "screen.CollectionDetail",
+      "props": {
+        "event": "CLOSE",
+        "label": "",
+        "description": "Cancel without committing template changes."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.SchemaBuilder.screen.CollectionDetail.DONE",
+      "kind": "rtp.transition",
+      "from": "screen.SchemaBuilder",
+      "to": "screen.CollectionDetail",
+      "props": {
+        "event": "DONE",
+        "label": "Finish the template",
+        "description": "Template authored or edited; continue into the Collection."
+      },
+      "tags": []
+    },
+    {
+      "id": "edge.transition.screen.Settings.screen.MapOverview.BACK",
+      "kind": "rtp.transition",
+      "from": "screen.Settings",
+      "to": "screen.MapOverview",
+      "props": {
+        "event": "BACK",
+        "label": "",
+        "description": "Return to the everything view."
+      },
+      "tags": []
+    }
+  ],
+  "defaultView": "navigation"
+}

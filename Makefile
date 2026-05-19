@@ -3,11 +3,17 @@ PACKAGE  := com.saxonthune.ranktheplanet
 ACTIVITY := $(PACKAGE)/$(PACKAGE).MainActivity
 GRADLE   := cd $(APP_DIR) && ./gradlew
 
+# Local-only signing credentials (TEAM, DEVICE) — gitignored, not committed.
+-include credentials.mk
+
 # --- iOS ---
 SIM        ?= iPhone 16
 WORKSPACE  := $(APP_DIR)/iosApp/iosApp.xcworkspace
 DERIVED    := $(APP_DIR)/build/ios
 APP_BUNDLE := $(DERIVED)/Build/Products/Debug-iphonesimulator/iosApp.app
+# Physical-device build outputs (separate derived-data dir from the simulator).
+DEVICE_DERIVED    := $(APP_DIR)/build/ios-device
+DEVICE_APP_BUNDLE := $(DEVICE_DERIVED)/Build/Products/Debug-iphoneos/iosApp.app
 # xcodebuild runs gradlew (via the CocoaPods sync phase); it needs a JDK.
 # Prefer the env-var if already set to a valid path; fall back to macOS AS, then Linux default.
 ifeq ($(wildcard $(JAVA_HOME)/bin/java),)
@@ -20,6 +26,7 @@ export JAVA_HOME
 
 .PHONY: help build clean rebuild install run sync tasks stop adb-devices wrapper \
         ios-build ios-run ios-debug ios-logs ios-crash ios-pod-install ios-clean \
+        ios-device-build ios-device-run ios-devices \
         code-map
 
 help:
@@ -44,6 +51,11 @@ help:
 	@echo "  ios-crash       Print the most recent iOS crash report"
 	@echo "  ios-pod-install Regenerate the Xcode workspace + Pods"
 	@echo "  ios-clean       Remove the iOS derived-data dir"
+	@echo ""
+	@echo "Physical iPhone targets (signing creds come from credentials.mk):"
+	@echo "  ios-devices       List paired/connected physical devices"
+	@echo "  ios-device-build  Build the app for a physical device"
+	@echo "  ios-device-run    Build, install, and launch on the device"
 
 build:
 	$(GRADLE) :composeApp:assembleDebug
@@ -117,3 +129,21 @@ ios-crash:
 
 ios-clean:
 	rm -rf $(DERIVED)
+
+# --- iOS physical device ---
+
+ios-devices:
+	xcrun devicectl list devices
+
+ios-device-build:
+	@test -n "$(TEAM)" || { echo "TEAM is unset — create credentials.mk"; exit 1; }
+	xcodebuild -workspace $(WORKSPACE) -scheme iosApp -configuration Debug \
+		-destination 'generic/platform=iOS' \
+		-derivedDataPath $(DEVICE_DERIVED) \
+		-allowProvisioningUpdates \
+		DEVELOPMENT_TEAM=$(TEAM) build
+
+ios-device-run: ios-device-build
+	@test -n "$(DEVICE)" || { echo "DEVICE is unset — create credentials.mk"; exit 1; }
+	xcrun devicectl device install app --device $(DEVICE) "$(DEVICE_APP_BUNDLE)"
+	xcrun devicectl device process launch --device $(DEVICE) $(PACKAGE)

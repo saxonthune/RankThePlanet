@@ -44,6 +44,11 @@ object Fixtures {
     val lumonLocId = LocationId("loc-lumon")
     val goldenGateLocId = LocationId("loc-golden-gate")
 
+    val centralParkLocId = LocationId("loc-central-park")
+    val highLineLocId = LocationId("loc-high-line")
+    val prospectParkLocId = LocationId("loc-prospect-park")
+    val dominoParkLocId = LocationId("loc-domino-park")
+
     val collections = listOf(
         Collection(
             id = dripCoffeeId,
@@ -110,6 +115,42 @@ object Fixtures {
             sourceId = "osm-75530416",
             cachedMetadata = null,
             refreshable = true
+        ),
+        Location(
+            id = centralParkLocId,
+            coordinates = Coordinates(lat = 40.7829, lng = -73.9654),
+            displayName = "Central Park — The Mall",
+            sourceType = SourceType.Osm,
+            sourceId = "osm-4453738",
+            cachedMetadata = null,
+            refreshable = true
+        ),
+        Location(
+            id = highLineLocId,
+            coordinates = Coordinates(lat = 40.7480, lng = -74.0048),
+            displayName = "The High Line",
+            sourceType = SourceType.Osm,
+            sourceId = "osm-4504115",
+            cachedMetadata = null,
+            refreshable = true
+        ),
+        Location(
+            id = prospectParkLocId,
+            coordinates = Coordinates(lat = 40.6602, lng = -73.9690),
+            displayName = "Prospect Park — Long Meadow",
+            sourceType = SourceType.Osm,
+            sourceId = "osm-7773888",
+            cachedMetadata = null,
+            refreshable = true
+        ),
+        Location(
+            id = dominoParkLocId,
+            coordinates = Coordinates(lat = 40.7144, lng = -73.9680),
+            displayName = "Domino Park",
+            sourceType = SourceType.Osm,
+            sourceId = "osm-558129000",
+            cachedMetadata = null,
+            refreshable = true
         )
     )
 
@@ -145,6 +186,62 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-03-20T19:00:00Z",
                 lastModified = "2024-03-20T19:00:00Z"
+            )
+        ),
+        Entry(
+            id = EntryId("ent-geo-central-park"),
+            collectionId = geoDiaryId,
+            location = locations[4],
+            review = ReviewInstance(
+                data = persistentMapOf(
+                    "description" to "Read on a bench by The Mall while the buskers set up. First real warm afternoon of the year.",
+                    "visitedOn" to "2024-04-12"
+                ),
+                recordedTemplateVersion = 1,
+                created = "2024-04-12T15:30:00Z",
+                lastModified = "2024-04-12T15:30:00Z"
+            )
+        ),
+        Entry(
+            id = EntryId("ent-geo-high-line"),
+            collectionId = geoDiaryId,
+            location = locations[5],
+            review = ReviewInstance(
+                data = persistentMapOf(
+                    "description" to "Walked the whole High Line at golden hour. Stopped where it overlooks 10th Ave to watch the traffic.",
+                    "visitedOn" to "2024-05-03"
+                ),
+                recordedTemplateVersion = 1,
+                created = "2024-05-03T18:45:00Z",
+                lastModified = "2024-05-03T18:45:00Z"
+            )
+        ),
+        Entry(
+            id = EntryId("ent-geo-prospect-park"),
+            collectionId = geoDiaryId,
+            location = locations[6],
+            review = ReviewInstance(
+                data = persistentMapOf(
+                    "description" to "Picnic on Long Meadow with friends visiting from out of town. Lost a frisbee in the trees.",
+                    "visitedOn" to "2024-06-22"
+                ),
+                recordedTemplateVersion = 1,
+                created = "2024-06-22T13:00:00Z",
+                lastModified = "2024-06-22T13:00:00Z"
+            )
+        ),
+        Entry(
+            id = EntryId("ent-geo-domino-park"),
+            collectionId = geoDiaryId,
+            location = locations[7],
+            review = ReviewInstance(
+                data = persistentMapOf(
+                    "description" to "Coffee by the water watching the ferries cross to Manhattan. The old sugar refinery signage still up.",
+                    "visitedOn" to "2024-07-09"
+                ),
+                recordedTemplateVersion = 1,
+                created = "2024-07-09T09:30:00Z",
+                lastModified = "2024-07-09T09:30:00Z"
             )
         )
     )

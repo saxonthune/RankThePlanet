@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.saxonthune.ranktheplanet.data.fake.FakeLocationProvider
 import com.saxonthune.ranktheplanet.data.fake.FakeRepositories
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
@@ -39,6 +40,7 @@ fun App() {
     RtpTheme {
         val navController = rememberNavController()
         val repos = remember { FakeRepositories() }
+        val locationProvider = remember { FakeLocationProvider() }
         NavHost(navController = navController, startDestination = MapOverview()) {
             composable<MapOverview> { backStackEntry ->
                 val route = backStackEntry.toRoute<MapOverview>()
@@ -60,10 +62,13 @@ fun App() {
                 }
                 MapOverviewScreen(
                     mode = mode,
+                    collections = repos.collections,
+                    entries = repos.entries,
+                    locationProvider = locationProvider,
                     onCancelAdd = { navController.popBackStack() },
                     onOpenCollections = { navController.navigate(CollectionList) },
                     onOpenSettings = { navController.navigate(Settings) },
-                    onInspectPin = { navController.navigate(CollectionEntryDetail("ent-bluebottle")) },
+                    onInspectPin = { entryId -> navController.navigate(CollectionEntryDetail(entryId.value)) },
                     onDropPin = { navController.navigate(LocationDraft) },
                 )
             }

@@ -82,16 +82,17 @@ fun MapOverviewScreen(onNavigate: (Screen) -> Unit) {
         )
     )
 
-    val pinsSource = rememberGeoJsonSource(
-        data = GeoJsonData.JsonString(PINS_GEOJSON)
-    )
-
     Box(Modifier.fillMaxSize()) {
         MaplibreMap(
             modifier = Modifier.fillMaxSize(),
             cameraState = cameraState,
             baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/liberty"),
         ) {
+            // Sources and layers must be created inside the MaplibreMap content
+            // lambda — they consume LocalStyleNode, which only exists here.
+            val pinsSource = rememberGeoJsonSource(
+                data = GeoJsonData.JsonString(PINS_GEOJSON)
+            )
             CircleLayer(
                 id = "manhattan-pins",
                 source = pinsSource,

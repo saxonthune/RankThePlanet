@@ -1,0 +1,9 @@
+platform :ios, '15.0'
+
+target 'iosApp' do
+  use_frameworks!
+
+  # Shared Compose UI built by the Kotlin CocoaPods plugin.
+  # This pulls in the MapLibre pod transitively (declared in composeApp/build.gradle.kts).
+  pod 'composeApp', :path => '../composeApp'
+end

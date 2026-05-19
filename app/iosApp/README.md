@@ -1,14 +1,30 @@
 # iOS App
 
-The Xcode project for this target must be created on macOS.
+Xcode project for the RankThePlanet iOS target. Hosts the shared Compose UI
+(`MainViewController()` from `composeApp/src/iosMain`) inside a SwiftUI shell.
 
-After cloning the repo on a Mac:
+## Prerequisites
 
-1. Open Android Studio (Hedgehog or later)
-2. File → Open → `<repo>/app`
-3. Wait for Gradle sync to complete
-4. Use Android Studio's KMP wizard (File → New → Kotlin Multiplatform → iOS Application) to generate the Xcode project, or use the KMP plugin to create it.
+- Full **Xcode** (not just Command Line Tools):
+  `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`
+- A JDK (Android Studio bundles one).
+- **CocoaPods**: `brew install cocoapods` (or `sudo gem install cocoapods`).
 
-Alternatively, run `./gradlew linkReleaseFrameworkIosSimulatorArm64` to build the framework, then wire it into a new Xcode project manually.
+The iOS build pulls the MapLibre Native framework as a CocoaPod, declared in
+`composeApp/build.gradle.kts` via the Kotlin CocoaPods plugin.
 
-The iOS framework entry point is `MainViewController()` in `composeApp/src/iosMain/kotlin/com/saxonthune/ranktheplanet/MainViewController.kt`.
+## First-time setup
+
+```
+cd app
+./gradlew :composeApp:podInstall   # generates iosApp/iosApp.xcworkspace
+```
+
+## Running
+
+Open **`iosApp/iosApp.xcworkspace`** (the `.xcworkspace`, not the `.xcodeproj`)
+in Xcode, pick a simulator, and Run. Android Studio with the KMP plugin can also
+launch it directly.
+
+The Kotlin framework is compiled by Gradle automatically as part of the build
+(driven by the generated `composeApp` pod).

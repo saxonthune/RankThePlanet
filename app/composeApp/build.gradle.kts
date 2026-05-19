@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.androidApplication)
+    // Bundled with the Kotlin Multiplatform plugin; applied without a version.
+    id("org.jetbrains.kotlin.native.cocoapods")
 }
 
 kotlin {
@@ -14,14 +16,23 @@ kotlin {
         }
     }
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
+    cocoapods {
+        version = "1.0.0"
+        summary = "RankThePlanet shared Compose UI"
+        homepage = "https://github.com/saxonthune/RankThePlanet"
+        ios.deploymentTarget = "15.0"
+        podfile = project.file("../iosApp/Podfile")
+        framework {
             baseName = "ComposeApp"
             isStatic = true
+        }
+        // MapLibre Native framework required by maplibre-compose on iOS.
+        pod("MapLibre") {
+            version = "6.17.1"
         }
     }
 

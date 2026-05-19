@@ -69,7 +69,7 @@ Method names track concept actions so the future `coverage.mjs` (doc02.02.01) ke
 
 The `Op` sealed type is internal to the data layer — repositories construct ops; nothing above the repository sees them. Repository implementations expose a `SharedFlow` of applied mutations that `ProjectionMaintainer` and `SyncEngine` subscribe to; that flow is the only coupling between writing and its downstream consumers.
 
-The swappable *external* seams — `LocationProvider`, `ImportSource`, `ExportFormat`, `TileSource`, `FieldType` — will be catalogued in a future providers doc. They play no part in a review submission.
+The swappable *external* seams play no part in a review submission. `LocationProvider` is specified in doc03.04; the rest — `ImportSource`, `ExportFormat`, `TileSource`, `FieldType` — are catalogued as work items demand.
 
 ## What UI-mockup sessions consume
 

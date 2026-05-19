@@ -197,7 +197,7 @@ Instance:
 
 - A keyless provider (`osm` via Nominatim) is the always-available fallback, so RTP works with zero configuration.
 - `switchProvider` changes the default only — it does not migrate or re-resolve existing Locations. Rebuilding a library against a new provider is a separate, per-place-confirmed flow (see §2 `merge`).
-- The full provider catalogue and the `LocationProvider` data-layer seam belong in a future providers doc; this concept covers only what the user does.
+- The full provider catalogue and the `LocationProvider` data-layer seam live in doc03.04; this concept covers only what the user does.
 
 ---
 

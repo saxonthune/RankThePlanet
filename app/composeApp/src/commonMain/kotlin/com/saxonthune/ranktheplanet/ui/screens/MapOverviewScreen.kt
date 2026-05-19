@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
@@ -31,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
@@ -40,7 +44,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,6 +66,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.location.LocationProvider
+import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.nav.MapMode
 import kotlinx.coroutines.launch
@@ -92,6 +99,7 @@ private fun buildPinsGeoJson(pins: List<PinUi>): String {
     return """{"type":"FeatureCollection","features":[$features]}"""
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapOverviewScreen(
     mode: MapMode,
@@ -101,7 +109,9 @@ fun MapOverviewScreen(
     onCancelAdd: () -> Unit,
     onOpenCollections: () -> Unit,
     onOpenSettings: () -> Unit,
-    onInspectPin: (EntryId) -> Unit,
+    onOpenFullDetail: (EntryId) -> Unit,
+    onViewCollection: (CollectionId) -> Unit,
+    onEditReview: () -> Unit,
     onDropPin: () -> Unit,
 ) {
     val vm = viewModel { MapOverviewViewModel(collections, entries, locationProvider) }
@@ -109,6 +119,7 @@ fun MapOverviewScreen(
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -158,7 +169,7 @@ fun MapOverviewScreen(
                                     ?.jsonPrimitive
                                     ?.contentOrNull
                                 if (entryId != null) {
-                                    onInspectPin(EntryId(entryId))
+                                    vm.selectPin(EntryId(entryId))
                                     ClickResult.Consume
                                 } else {
                                     ClickResult.Pass
@@ -225,12 +236,137 @@ fun MapOverviewScreen(
             }
         }
     }
+
+    if (state.pinSheet !is PinSheet.None) {
+        ModalBottomSheet(
+            onDismissRequest = { vm.dismissSheet() },
+            sheetState = sheetState,
+        ) {
+            when (val sheet = state.pinSheet) {
+                is PinSheet.Peek -> LocationDetailPeek(
+                    peek = sheet,
+                    onPickEntry = { vm.openEntryFromPeek(it) },
+                )
+                is PinSheet.Entry -> EntryDrawerSheet(
+                    entry = sheet.entry,
+                    onOpenFullDetail = { entryId ->
+                        vm.dismissSheet()
+                        onOpenFullDetail(entryId)
+                    },
+                    onViewCollection = { collectionId ->
+                        vm.dismissSheet()
+                        onViewCollection(collectionId)
+                    },
+                    onEditReview = {
+                        vm.dismissSheet()
+                        onEditReview()
+                    },
+                    onDismiss = { vm.dismissSheet() },
+                )
+                is PinSheet.None -> {}
+            }
+        }
+    }
+}
+
+@Composable
+private fun LocationDetailPeek(
+    peek: PinSheet.Peek,
+    onPickEntry: (EntryId) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 160.dp, max = 220.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(peek.locationName, style = MaterialTheme.typography.titleMedium)
+            Text(
+                "${peek.lat}, ${peek.lng}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            items(peek.entries) { entry ->
+                ListItem(
+                    headlineContent = { Text(entry.collectionName) },
+                    leadingContent = {
+                        Box(
+                            Modifier
+                                .size(12.dp)
+                                .background(parseHexColor(entry.collectionColor), CircleShape)
+                        )
+                    },
+                    supportingContent = { Text(if (entry.visited) "Visited" else "—") },
+                    modifier = Modifier.clickable { onPickEntry(entry.entryId) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EntryDrawerSheet(
+    entry: EntrySummaryUi,
+    onOpenFullDetail: (EntryId) -> Unit,
+    onViewCollection: (CollectionId) -> Unit,
+    onEditReview: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Text(entry.locationName, style = MaterialTheme.typography.titleMedium)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(vertical = 4.dp),
+        ) {
+            Box(
+                Modifier
+                    .size(12.dp)
+                    .background(parseHexColor(entry.collectionColor), CircleShape)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(entry.collectionName)
+        }
+        Text(
+            if (entry.visited) "Visited" else "—",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        Button(
+            onClick = { onOpenFullDetail(entry.entryId) },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Open full detail")
+        }
+        TextButton(
+            onClick = { onViewCollection(entry.collectionId) },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("View the Collection")
+        }
+        TextButton(
+            onClick = { onEditReview() },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Edit the Review")
+        }
+        Spacer(Modifier.height(8.dp))
+    }
 }
 
 @Composable
 private fun AppMenuDrawer(
     state: MapOverviewUiState,
-    onToggleCollection: (com.saxonthune.ranktheplanet.domain.CollectionId) -> Unit,
+    onToggleCollection: (CollectionId) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     ModalDrawerSheet {

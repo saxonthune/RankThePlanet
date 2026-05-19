@@ -68,7 +68,9 @@ fun App() {
                     onCancelAdd = { navController.popBackStack() },
                     onOpenCollections = { navController.navigate(CollectionList) },
                     onOpenSettings = { navController.navigate(Settings) },
-                    onInspectPin = { entryId -> navController.navigate(CollectionEntryDetail(entryId.value)) },
+                    onOpenFullDetail = { entryId -> navController.navigate(CollectionEntryDetail(entryId.value)) },
+                    onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
+                    onEditReview = { navController.navigate(ReviewForm) },
                     onDropPin = { navController.navigate(LocationDraft) },
                 )
             }

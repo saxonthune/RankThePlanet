@@ -1,18 +1,16 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
 import androidx.compose.runtime.Composable
-import com.saxonthune.ranktheplanet.nav.Screen
 import com.saxonthune.ranktheplanet.ui.MockScreen
 import com.saxonthune.ranktheplanet.ui.NavAction
 
 @Composable
-fun SchemaBuilderScreen(onNavigate: (Screen) -> Unit) {
+fun SchemaBuilderScreen(onFinish: () -> Unit, onCancel: () -> Unit) {
     MockScreen(
-        title = Screen.SchemaBuilder.title,
+        title = "Review Template",
         actions = listOf(
-            NavAction("Finish the template", Screen.CollectionDetail),
-            NavAction("Cancel", Screen.CollectionDetail),
+            NavAction("Finish the template", onFinish),
+            NavAction("Cancel", onCancel),
         ),
-        onNavigate = onNavigate,
     )
 }

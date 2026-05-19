@@ -24,8 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.saxonthune.ranktheplanet.nav.Screen
-
 private const val MOCK_COORDS = "40.7580, -73.9855"
 
 private data class NearbyCandidate(val name: String, val detail: String, val distance: String)
@@ -37,7 +35,7 @@ private val MOCK_NEARBY = listOf(
 )
 
 @Composable
-fun LocationDraftScreen(onNavigate: (Screen) -> Unit) {
+fun LocationDraftScreen(onClose: () -> Unit, onAddToCollection: () -> Unit) {
     var adopted by remember { mutableStateOf<String?>(null) }
 
     Column(
@@ -56,7 +54,7 @@ fun LocationDraftScreen(onNavigate: (Screen) -> Unit) {
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = { onNavigate(Screen.MapOverview) }) {
+            TextButton(onClick = onClose) {
                 Text("Close")
             }
         }
@@ -85,7 +83,7 @@ fun LocationDraftScreen(onNavigate: (Screen) -> Unit) {
                     Text("Keep coordinates only")
                 }
             }
-            Button(onClick = { onNavigate(Screen.AddLocationToCollection) }) {
+            Button(onClick = onAddToCollection) {
                 Text("Add to a Collection")
             }
         }

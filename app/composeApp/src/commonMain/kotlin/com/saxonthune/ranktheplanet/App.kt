@@ -19,9 +19,7 @@ import com.saxonthune.ranktheplanet.nav.LocationPicker
 import com.saxonthune.ranktheplanet.nav.MapOverview
 import com.saxonthune.ranktheplanet.nav.ReviewForm
 import com.saxonthune.ranktheplanet.nav.SchemaBuilder
-import com.saxonthune.ranktheplanet.nav.Screen
 import com.saxonthune.ranktheplanet.nav.Settings
-import com.saxonthune.ranktheplanet.nav.toRoute
 import com.saxonthune.ranktheplanet.ui.screens.AddLocationToCollectionScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEntryDetailScreen
@@ -84,25 +82,44 @@ fun App() {
                 )
             }
             composable<ReviewForm> {
-                ReviewFormScreen(onNavigate = { screen -> navController.navigate(screen.toRoute()) })
+                ReviewFormScreen(
+                    onSave = { navController.navigate(CollectionEntryDetail("ent-bluebottle")) },
+                    onCancel = { navController.popBackStack() },
+                )
             }
             composable<SchemaBuilder> {
-                SchemaBuilderScreen(onNavigate = { screen -> navController.navigate(screen.toRoute()) })
+                SchemaBuilderScreen(
+                    onFinish = { navController.popBackStack() },
+                    onCancel = { navController.popBackStack() },
+                )
             }
             composable<LocationPicker> {
-                LocationPickerScreen(onNavigate = { screen -> navController.navigate(screen.toRoute()) })
+                LocationPickerScreen(
+                    onPickLocation = { navController.navigate(ReviewForm) },
+                    onCancel = { navController.popBackStack() },
+                )
             }
             composable<AddLocationToCollection> {
-                AddLocationToCollectionScreen(onNavigate = { screen -> navController.navigate(screen.toRoute()) })
+                AddLocationToCollectionScreen(
+                    onPickCollection = { navController.navigate(ReviewForm) },
+                    onNewCollection = { navController.navigate(SchemaBuilder) },
+                    onCancel = { navController.popBackStack() },
+                )
             }
             composable<LocationDraft> {
-                LocationDraftScreen(onNavigate = { screen -> navController.navigate(screen.toRoute()) })
+                LocationDraftScreen(
+                    onClose = { navController.popBackStack() },
+                    onAddToCollection = { navController.navigate(AddLocationToCollection) },
+                )
             }
             composable<ImportFlow> {
-                ImportFlowScreen(onNavigate = { screen -> navController.navigate(screen.toRoute()) })
+                ImportFlowScreen(
+                    onFinish = { navController.popBackStack() },
+                    onCancel = { navController.popBackStack() },
+                )
             }
             composable<Settings> {
-                SettingsScreen(onNavigate = { screen -> navController.navigate(screen.toRoute()) })
+                SettingsScreen(onBack = { navController.popBackStack() })
             }
         }
     }

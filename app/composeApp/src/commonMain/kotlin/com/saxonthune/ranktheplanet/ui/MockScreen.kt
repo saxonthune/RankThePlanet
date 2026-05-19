@@ -11,25 +11,20 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.MaterialTheme
-import com.saxonthune.ranktheplanet.nav.Screen
 
-/** A labeled navigation affordance: tapping it moves the user to [target]. */
-data class NavAction(val label: String, val target: Screen)
+/** A labeled navigation affordance. */
+data class NavAction(val label: String, val onClick: () -> Unit)
 
-/**
- * Shared mockup scaffold — a screen [title] over a column of buttons, one per
- * [actions] entry. Each button reads "<action> -> <target screen>".
- */
+/** Shared mockup scaffold — a screen [title] over a column of buttons, one per [actions] entry. */
 @Composable
 fun MockScreen(
     title: String,
     actions: List<NavAction>,
-    onNavigate: (Screen) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -42,10 +37,10 @@ fun MockScreen(
         Text(title, style = MaterialTheme.typography.headlineMedium)
         actions.forEach { action ->
             Button(
-                onClick = { onNavigate(action.target) },
+                onClick = action.onClick,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("${action.label}  ->  ${action.target.title}")
+                Text(action.label)
             }
         }
     }

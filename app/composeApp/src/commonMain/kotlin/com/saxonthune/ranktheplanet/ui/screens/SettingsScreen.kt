@@ -18,10 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.saxonthune.ranktheplanet.nav.Screen
-
 @Composable
-fun SettingsScreen(onNavigate: (Screen) -> Unit) {
+fun SettingsScreen(onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -38,7 +36,7 @@ fun SettingsScreen(onNavigate: (Screen) -> Unit) {
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = { onNavigate(Screen.MapOverview) }) {
+            TextButton(onClick = onBack) {
                 Text("Back")
             }
         }

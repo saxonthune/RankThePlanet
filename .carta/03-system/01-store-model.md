@@ -25,9 +25,9 @@ A third artifact, the **overview projection**, is a derived read cache — not a
 Concept → table mapping. The DDL is the sidecar `store-model.schema.sql`; this section states behavior.
 
 - `location` — a Location (doc01.03 §2). Surrogate `id` for foreign keys; `UNIQUE (source_type, source_id)` carries the real identity. `cached_metadata` is opaque JSON.
-- `collection` — a Collection (§1). Holds `appearance`, the current `template_version`, and `is_visible` (absorbs Map Overview's persistent `collectionFilter`, §4).
+- `collection` — a Collection (§1). Holds `name`, optional `description`, `appearance`, the current `template_version`, and `is_visible` (absorbs Map Overview's persistent `collectionFilter`, §4).
 - `template_field` — Review template fields (§3), keyed `(collection_id, version, name)`. `editTemplate` bumps `collection.template_version`; old fields stay under their old version rather than being deleted — this is how "removed fields archived but not destroyed" works.
-- `entry` — an entry = the `(Location, Review)` pair within a Collection. The Review *instance* folds in here (`data` JSON, `recorded_template_version`); there is no separate review table, because a Review never exists outside an entry (§3). `UNIQUE (collection_id, location_id)`: a Location appears at most once per Collection.
+- `entry` — an entry = a Location within a Collection, optionally carrying a Review. The Review *instance* folds in here (`data` JSON, `recorded_template_version`); there is no separate review table, because a Review never exists outside an entry (§3). `data` is `NULL` until the user submits a Review — a NULL-data entry is **unreviewed** (§3), which is what drives the Map Overview's unvisited pin styling. `UNIQUE (collection_id, location_id)`: a Location appears at most once per Collection.
 - `op_log` — append-only mutation log; see below.
 
 `viewport` and `selectedPin` (§4) are device-local session state, not in either store — they belong in a tiny file restored synchronously at launch (doc01.01 cold-start playbook).

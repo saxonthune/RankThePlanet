@@ -32,3 +32,6 @@ Coverage stays honest: every `event` must be a real transition on that surface i
 - doc02.02.02.03 — Settings: entry to provider config; sync target and BYOK keys remain stubs.
 - doc02.02.02.04 — Collection Entry Detail: one Entry as its Location, Review handoffs, and the full template field set; reviewed vs unreviewed.
 - doc02.02.02.05 — Location Draft: an uncommitted dropped pin or search result — coordinates, nearby resolution candidates, keep-or-adopt.
+- doc02.02.02.06 — Review Form: authoring a Review against its Collection's template — the field set as editable inputs, save and cancel.
+- doc02.02.02.07 — Map Overview: the everything view — pins for every Entry, a collection filter, search, and drop-pin.
+- doc02.02.02.08 — Collection Editor: authoring a Collection's metadata and its Review template — field set, types, and built-in templates.

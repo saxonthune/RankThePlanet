@@ -23,7 +23,7 @@
       "label": "New Collection",
       "region": "topBar",
       "event": "TAP_NEW_COLLECTION",
-      "target": "SchemaBuilder",
+      "target": "CollectionEditor",
       "action": "Collection.create"
     },
     {

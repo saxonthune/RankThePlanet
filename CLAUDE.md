@@ -70,6 +70,7 @@ Use the dedicated tools — they're allowlisted and don't trigger approval promp
 - DON'T `grep -r pattern path/` — DO use the Grep tool.
 - DON'T `cat file` to read — DO use the Read tool.
 - DON'T loop the shell over files (`for f in …; do cat $f; done`) — variable expansion blocks auto-approval; DO issue parallel Read calls, one per file.
+- DON'T `wc -l *.kt` or other glob-expanded shell over many files — DO use Glob to list paths, then Read each (Read reports line counts).
 
 ## Statechart sidecar workflow
 

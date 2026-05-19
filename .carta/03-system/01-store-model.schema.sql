@@ -18,6 +18,7 @@ CREATE TABLE location (
 CREATE TABLE collection (
     id                   TEXT PRIMARY KEY,
     name                 TEXT NOT NULL,
+    description          TEXT,                    -- optional, user-authored
     appearance_color     TEXT NOT NULL,           -- drives pin fill on the map
     appearance_pin_style TEXT NOT NULL,
     template_version     INTEGER NOT NULL DEFAULT 1,
@@ -33,20 +34,21 @@ CREATE TABLE template_field (
     version         INTEGER NOT NULL,
     ordinal         INTEGER NOT NULL,             -- template is an ordered list
     name            TEXT NOT NULL,
-    type            TEXT NOT NULL,                -- stars|text|enum|boolean|date|power-ranking
+    type            TEXT NOT NULL,                -- score|text|enum|boolean|date|power-ranking
     config          TEXT,                         -- JSON: per-type config
     required        INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (collection_id, version, name)
 );
 
--- An entry = (Location, Review) pair within a Collection.
--- The Review instance folds in: no orphan Reviews exist.
+-- An entry = a Location within a Collection, optionally carrying a Review.
+-- The Review instance folds in: no orphan Reviews exist. data is NULL until
+-- the user submits a Review; a NULL-data entry is unreviewed (doc01.03 §3).
 CREATE TABLE entry (
     id                        TEXT PRIMARY KEY,
     collection_id             TEXT NOT NULL REFERENCES collection(id),
     location_id               TEXT NOT NULL REFERENCES location(id),
-    data                      TEXT NOT NULL,      -- JSON map: field-name -> value
-    recorded_template_version INTEGER NOT NULL,   -- version `data` conforms to
+    data                      TEXT,               -- JSON map: field-name -> value; NULL = unreviewed
+    recorded_template_version INTEGER,             -- version `data` conforms to; NULL when unreviewed
     created                   TEXT NOT NULL,
     last_modified             TEXT NOT NULL,
     UNIQUE (collection_id, location_id)

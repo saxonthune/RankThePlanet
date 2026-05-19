@@ -1,0 +1,134 @@
+{
+  "surface": "MapOverview",
+  "regions": [
+    {
+      "id": "map",
+      "purpose": "The full-screen map canvas — a pin for every Collection Entry in every visible Collection. Panning and zooming move the viewport."
+    },
+    {
+      "id": "topBar",
+      "purpose": "Overlay holding entry to the Collection list and to Settings."
+    },
+    {
+      "id": "search",
+      "purpose": "The map's search field — typing resolves Location candidates from the active provider, and the results are pickable."
+    },
+    {
+      "id": "collectionFilter",
+      "purpose": "A horizontally scrollable row of chips, one per Collection, controlling which Collections' pins show on the map and jumping the camera to a Collection."
+    },
+    {
+      "id": "mapActions",
+      "purpose": "Holds the drop-a-pin affordance, which starts the Location-first flow."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "pan-map",
+      "label": "Pan the map",
+      "region": "map",
+      "action": "MapOverview.pan"
+    },
+    {
+      "id": "zoom-map",
+      "label": "Zoom the map",
+      "region": "map",
+      "action": "MapOverview.zoom"
+    },
+    {
+      "id": "open-collections",
+      "label": "Browse Collections",
+      "region": "topBar",
+      "event": "TAP_COLLECTIONS_BUTTON",
+      "target": "CollectionList"
+    },
+    {
+      "id": "open-settings",
+      "label": "Open Settings",
+      "region": "topBar",
+      "event": "TAP_SETTINGS",
+      "target": "Settings"
+    },
+    {
+      "id": "search-locations",
+      "label": "Search for a place",
+      "region": "search",
+      "action": "Location.resolve"
+    },
+    {
+      "id": "jump-to-collection",
+      "label": "Jump the map to a Collection",
+      "region": "collectionFilter",
+      "action": "MapOverview.jumpToCollection"
+    },
+    {
+      "id": "drop-pin",
+      "label": "Drop a pin here",
+      "region": "mapActions",
+      "event": "DROP_PIN",
+      "target": "LocationDraft"
+    }
+  ],
+  "lists": [
+    {
+      "id": "pins",
+      "region": "map",
+      "iterates": "Collection Entry",
+      "reads": "all-entries",
+      "item": {
+        "shows": [
+          "a pin at the Entry's Location coordinates",
+          "the pin colored by its Collection's appearance",
+          "visited or unvisited styling from the Entry's Review status"
+        ],
+        "affordance": {
+          "id": "tap-pin",
+          "label": "Inspect a pin",
+          "event": "TAP_PIN",
+          "target": "LocationDetail",
+          "action": "MapOverview.selectPin"
+        }
+      },
+      "emptyState": "Before any Collection has Entries the map shows no pins; the topBar still points the user toward creating a Collection."
+    },
+    {
+      "id": "search-results",
+      "region": "search",
+      "iterates": "Location",
+      "reads": "provider-results",
+      "item": {
+        "shows": [
+          "the candidate Location's displayName",
+          "address or category from the provider, when supplied"
+        ],
+        "affordance": {
+          "id": "pick-search-result",
+          "label": "Pick a search result",
+          "event": "PICK_SEARCH_RESULT",
+          "target": "LocationDraft"
+        }
+      },
+      "emptyState": "An empty or unqueried search field shows no results; the map stays the focus."
+    },
+    {
+      "id": "collections",
+      "region": "collectionFilter",
+      "iterates": "Collection",
+      "reads": "all-collections",
+      "item": {
+        "shows": [
+          "the Collection's name",
+          "the Collection's appearance color",
+          "whether its pins are currently shown"
+        ],
+        "affordance": {
+          "id": "toggle-collection",
+          "label": "Toggle a Collection's pins on the map",
+          "action": "MapOverview.toggleCollection"
+        }
+      },
+      "emptyState": "With no Collections the filter row is absent; the user has nothing to toggle yet."
+    }
+  ],
+  "deferred": ["MapOverview.open"]
+}

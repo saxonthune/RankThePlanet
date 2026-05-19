@@ -1,0 +1,74 @@
+{
+  "surface": "CollectionEditor",
+  "deferred": ["Collection.create", "Review.defineTemplate"],
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Identifies the surface and holds Done, which commits the Collection and continues into it, and Cancel, which discards uncommitted changes."
+    },
+    {
+      "id": "metadata",
+      "purpose": "The Collection's own identity — name, description, and appearance (color, pin style). The only place this metadata is editable."
+    },
+    {
+      "id": "template",
+      "purpose": "The Review template — the ordered field set governing every Review in this Collection. Add fields, adopt a built-in template, and edit each field in place."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "done",
+      "label": "Finish editing",
+      "region": "topBar",
+      "event": "DONE",
+      "target": "CollectionDetail"
+    },
+    {
+      "id": "cancel",
+      "label": "Cancel",
+      "region": "topBar",
+      "event": "CLOSE",
+      "target": "CollectionDetail"
+    },
+    {
+      "id": "edit-metadata",
+      "label": "Edit the Collection's name, description, and appearance",
+      "region": "metadata",
+      "action": "Collection.edit"
+    },
+    {
+      "id": "adopt-builtin",
+      "label": "Adopt a built-in template as a starting point",
+      "region": "template",
+      "action": "Review.useBuiltIn"
+    },
+    {
+      "id": "add-field",
+      "label": "Add a template field",
+      "region": "template",
+      "action": "Review.editTemplate"
+    }
+  ],
+  "lists": [
+    {
+      "id": "template-fields",
+      "region": "template",
+      "iterates": "Review template field",
+      "reads": "template",
+      "item": {
+        "shows": [
+          "the field's name",
+          "the field's type — score, text, enum, boolean, date, power-ranking",
+          "the field's per-type configuration — for a score field, its range, step, and render style (number, stars, icon, slider, bar); for an enum, its option list",
+          "the field's required marker"
+        ],
+        "affordance": {
+          "id": "edit-field",
+          "label": "Edit, reorder, or remove a field",
+          "action": "Review.editTemplate"
+        }
+      },
+      "emptyState": "A template with no fields — the region prompts the user to add a field or adopt a built-in template. An empty template is a valid (if unusual) end state; a Collection with one leaves ReviewForm nothing to fill."
+    }
+  ]
+}

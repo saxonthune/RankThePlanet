@@ -23,7 +23,7 @@ States in the JSON, keyed by `meta.surface`:
 | `CollectionDetail` | One Collection's entries, map or list projection (in-place toggle). |
 | `CollectionEntryDetail` | One Collection Entry: the (Location, Review) pair. |
 | `ReviewForm` | Author/edit a Review instance against the template. |
-| `SchemaBuilder` | Author/edit a Collection's Review template. |
+| `CollectionEditor` | Author/edit a Collection — its metadata (name, description, appearance) and its Review template. |
 | `LocationDraft` | A dropped pin or picked search result, not yet committed — coordinates plus nearby resolution candidates, rendered as a sheet over the map. |
 | `AddLocationToCollection` | Pick which Collection to add an already-chosen Location to. |
 | `ImportFlow` | Import an external collection (stub). |

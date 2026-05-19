@@ -39,7 +39,7 @@ NavHost(navController, startDestination = MapOverview) {
         CollectionDetailScreen(
             collectionId = CollectionId(route.collectionId),
             onOpenEntry    = { id -> navController.navigate(CollectionEntryDetail(id.value)) },
-            onEditTemplate = { navController.navigate(SchemaBuilder) },
+            onEditCollection = { navController.navigate(CollectionEditor) },
             onBack         = navController::popBackStack,
             /* repositories from doc03.02 */
         )
@@ -47,7 +47,7 @@ NavHost(navController, startDestination = MapOverview) {
 }
 ```
 
-A screen takes one callback per navigating affordance — `onOpenEntry`, `onEditTemplate`, `onBack` — not a generic `onNavigate(Screen)`. The callback names the gesture, so a screen's parameter list lines up one-to-one with its affordance inventory ([[00-index]], doc02.02.02.00).
+A screen takes one callback per navigating affordance — `onOpenEntry`, `onEditCollection`, `onBack` — not a generic `onNavigate(Screen)`. The callback names the gesture, so a screen's parameter list lines up one-to-one with its affordance inventory ([[00-index]], doc02.02.02.00).
 
 ## Back stack
 

@@ -32,11 +32,11 @@
       "action": "Collection.addEntry"
     },
     {
-      "id": "edit-template",
-      "label": "Edit the template",
+      "id": "edit-collection",
+      "label": "Edit the Collection",
       "region": "topBar",
       "event": "TAP_EDIT_TEMPLATE",
-      "target": "SchemaBuilder",
+      "target": "CollectionEditor",
       "action": "Review.editTemplate"
     },
     {

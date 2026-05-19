@@ -19,7 +19,7 @@ Concepts in this doc:
 - §4 [Map Overview](#4-map-overview)
 - §5 [Location Provider](#5-location-provider)
 
-A **Collection Entry** is the pairing `(Location, Review)` within a Collection. It is not a concept on its own — it's the unit that emerges when Collection, Location, and Review compose.
+A **Collection Entry** is a Location placed within a Collection, optionally paired with a Review. It is not a concept on its own — it's the unit that emerges when Collection, Location, and Review compose. The Review is absent until the user submits one (§3).
 
 Use cases that exercise these concepts: doc01.02.
 
@@ -32,22 +32,24 @@ Use cases that exercise these concepts: doc01.02.
 **State.**
 
 - `name` — user-provided label.
+- `description` — optional longer text describing what the Collection is for.
 - `entries` — set of `(Location, Review)` pairs. The same Location may appear in many Collections; each appearance is a distinct Collection Entry with its own Review.
 - `created`, `last_modified` — for sorting and sync.
-- `appearance` — visual identity used on the map (color, pin style). Set on creation; editable.
+- `appearance` — visual identity used on the map (color, pin style).
 
 The Collection's review template lives in the Review concept (§3), not here. The Collection knows that *its* Collection Entries' Reviews share a template, but does not own the template's structure.
 
 **Actions.**
 
 - `create(name)` — start an empty Collection.
+- `edit(metadata)` — change the Collection's `name`, `description`, or `appearance`.
 - `addEntry(location, review)` — append a Collection Entry. Same Location across Collections = multiple Collection Entries.
 - `removeEntry(entry)` — drop a Collection Entry from this Collection. Does not delete the Location or its Reviews in other Collections.
 - `import(source)` — ingest an external collection (KML, GeoJSON, RTP bundle, third-party share URL). Becomes a first-class Collection owned by the user.
 - `export(format)` — emit the Collection as a portable bundle for backup or sharing.
 - `share(audience)` — produce a shareable artifact (deferred to a later sharing concept).
 
-**Operational principle.** A user creates a Collection "Drip Coffee," authors its Review template (via §3) to include stars and coffee-style, and `addEntry(BlueBottleMintPlaza, review)` where the Review carries the per-place data. Later they add Blue Bottle to a different Collection "Geo Diary" with a different Review template; the two Collection Entries are independent. Browsing Drip Coffee shows only the coffee-shaped Collection Entries.
+**Operational principle.** A user creates a Collection "Drip Coffee," authors its Review template (via §3) to include a score and coffee-style, and `addEntry(BlueBottleMintPlaza, review)` where the Review carries the per-place data. Later they add Blue Bottle to a different Collection "Geo Diary" with a different Review template; the two Collection Entries are independent. Browsing Drip Coffee shows only the coffee-shaped Collection Entries.
 
 **Notes.**
 
@@ -108,15 +110,25 @@ A Review has two faces, kept inside one concept because they share a single purp
 
 Per Collection (template):
 
-- `template` — an ordered list of fields. Each field has a `name`, a `type` (e.g. `stars`, `text`, `enum`, `boolean`, `date`, `power-ranking`), per-type configuration (e.g. `stars: 1–5`; `enum: [light, medium, dark]`), and a `required` flag.
+- `template` — an ordered list of fields. Each field has a `name`, a `type`, per-type configuration, and a `required` flag.
 - `template_version` — bumped when the template changes; used to reconcile instances.
 
-Per Collection Entry (instance):
+The field types and their configuration:
+
+- `score` — a number within a user-chosen range. Config: `min`, `max`, and a `step` granularity down to one decimal place (e.g. 0–5 by 0.5, 0–10 by 0.1). A separate `render` style governs presentation without changing the stored number — `number`, `stars`, `icon` (a chosen glyph, such as a coffee cup), `slider`, or `bar`. A 4.5-of-5 star rating and an 8.3-of-10 numeric rating are the same `score` type with different config.
+- `text` — freeform text, single- or multi-line.
+- `enum` — one choice from an ordered option list (e.g. `[light, medium, dark]`).
+- `boolean` — a yes/no value.
+- `date` — a calendar date.
+- `power-ranking` — a relative ordering of the Collection's entries; its value is positional, not absolute.
+
+Per Collection Entry (instance) — a Review instance exists only once the user submits one:
 
 - `data` — a map of `field-name → value`, conforming to the template at the recorded version. Any subset of the template's fields may be filled; a single field is as valid as the whole form.
-- `status` — `unreviewed` or `reviewed`. An entry is `unreviewed` when the Location sits in the Collection but the user has not yet captured an evaluation; it becomes `reviewed` once the user saves any field. There is no "incomplete" state in between — a sparse Review is a finished Review.
 - `recorded_template_version` — the template version this instance was written against.
 - `created`, `last_modified`.
+
+An entry is **unreviewed** while the Location sits in the Collection with no Review instance, and **reviewed** once the user submits one. There is no "incomplete" state in between — a sparse Review is a finished Review. This `reviewed`/`unreviewed` distinction is the entry's visited/unvisited state on the map (§4); it is derived from instance existence, not stored as a field.
 
 **Actions.**
 
@@ -128,20 +140,20 @@ Template authoring (per Collection):
 
 Instance:
 
-- `start(collection, location)` — produce a draft Review for a Location in this Collection. Pre-filled with sensible defaults (today's date, Unvisited, etc.).
+- `start(collection, location)` — produce a draft Review for a Location in this Collection. Pre-filled with sensible defaults (today's date, etc.). The draft is interaction-layer state; the instance does not exist until `submit`.
 - `submit(review, data)` — commit the instance. Becomes the Collection Entry's Review.
 - `edit(review, data)` — change values within the template.
 - `clear(field)` — unset a field where "not set" is meaningful (distinct from "false" for booleans, etc.).
 
-**Operational principle.** A user creating "Drip Coffee" authors the template: a 1–5 stars field, a `light|medium|dark` style enum, a Visited boolean, a power-ranking field, a freeform notes field. Later, sitting at a café, they `start(DripCoffee, BlueBottleMintPlaza)`. The app shows the template's form; they fill in stars=4, style=light, visited=true, notes="excellent", and `submit`. The Collection Entry now carries this Review. Browsing the Collection, they see Collection Entries shaped exactly by their template.
+**Operational principle.** A user creating "Drip Coffee" authors the template: a 0–5 `score` field shown as stars, a `light|medium|dark` style enum, a power-ranking field, and a freeform notes field. Later, sitting at a café, they `start(DripCoffee, BlueBottleMintPlaza)`. The app shows the template's form; they fill in score=4, style=light, notes="excellent", and `submit`. The Collection Entry now carries this Review — and reads as visited on the map. Browsing the Collection, they see Collection Entries shaped exactly by their template.
 
 **Notes.**
 
-- The interactive **schema builder** (e.g. "add a field shown as stars") is the UI mapping for `defineTemplate` / `editTemplate` — covered when the schema-builder doc is written.
-- Built-in templates (Coffee Ranking, Wishlist, Geo Diary) are starting points users can adopt and customize. Built-in field types (stars, power-ranking, visited/unvisited, date) are shared affordances across all templates.
+- The **Collection editor** is the UI mapping for `defineTemplate` / `editTemplate` (and for the Collection's own metadata) — see doc02.02.02.08.
+- Built-in templates (Coffee Ranking, Wishlist, Geo Diary) are starting points users can adopt and customize. The field types above are shared affordances across all templates.
 - One concept covers both template and instance for now. If sharing makes the template-author and reviewer different people, this may split into a separate **ReviewTemplate** concept — flagged but not pre-built.
-- A Review exists only as part of a Collection Entry. There are no orphan Reviews.
-- A Review is valid with any subset of its template's fields filled — like a Letterboxd review, it need not be complete to count. The only meaningful distinction is `reviewed` vs `unreviewed` (see Instance `status`). A field's `required` flag marks what the template author considers core; it is used to nudge the user, never to block saving a sparse Review.
+- A Review exists only as part of a Collection Entry, and only once submitted — there are no orphan Reviews, and no empty ones. An entry with no Review instance is unreviewed (§4 visited/unvisited).
+- A Review is valid with any subset of its template's fields filled — like a Letterboxd review, it need not be complete to count. A field's `required` flag marks what the template author considers core; it is used to nudge the user, never to block saving a sparse Review.
 
 ---
 
@@ -154,7 +166,7 @@ Instance:
 - `viewport` — current `(center, zoom, bearing)`. Persisted across launches.
 - `visiblePins` — for each Collection Entry across all Collections, a pin styled by:
   - **fill color** = the owning Collection's `appearance` color
-  - **outline** = same color as fill for visited Collection Entries; pin is **gray with a colored outline** for unvisited Collection Entries (where the schema has a Visited/Unvisited concept)
+  - **outline** = same color as fill for visited Collection Entries (those with a Review); pin is **gray with a colored outline** for unvisited Collection Entries (those with no Review yet)
 - `collectionFilter` — set of Collections currently shown. Defaults to "all."
 - `selectedPin` — currently focused Collection Entry, if any.
 
@@ -171,9 +183,9 @@ Instance:
 **Notes.**
 
 - The "everything view" is the default landing surface. Entering a single Collection is a navigation away from it, not the inverse.
-- Visited/Unvisited rendering only applies to Collection Entries whose schema has that field. Collection Entries without it render with the standard filled pin.
+- Visited/Unvisited is derived from whether a Collection Entry has a Review (§3) — it applies to every entry, with no dedicated template field.
 - Pin appearance is driven by Collection `appearance`, not per-Collection-Entry. Per-Collection-Entry visual encoding (e.g. star count) is reserved for the Collection Entry detail view, not the overview map.
-- Color-collision handling (two Collections with similar colors) is an emergent UX problem to address when the schema-builder / appearance-picker is designed.
+- Color-collision handling (two Collections with similar colors) is an emergent UX problem to address when the Collection editor's appearance picker is designed.
 
 ---
 
@@ -211,5 +223,5 @@ These are tentative synchronization observations, not a complete composition spe
 - **Location.addToCollection ↔ Collection.addEntry.** Same underlying action, two viewpoints. The user can initiate from either side (Collection-first or Location-first; see doc01.02 §"Geo Diary"). Both paths must reach the same final state.
 - **Map Overview ↔ Collection.appearance.** Changing a Collection's color updates its pins everywhere on the map.
 - **Map Overview ↔ Collection.entries.** Adding/removing Collection Entries updates `visiblePins`. Live; no manual refresh.
-- **Map Overview ↔ Review.** Pin styling can read Review fields when present (Visited/Unvisited drives gray-pin-with-colored-outline). Other Review data is reserved for the Collection Entry detail view.
+- **Map Overview ↔ Review.** Pin styling reads whether a Collection Entry has a Review — an entry without one renders gray (unvisited). Review field data is reserved for the Collection Entry detail view.
 - **Open Externally ↔ no concept dependency.** `openExternally` is a leaf action — RTP hands off to the OS and does not track what happens after. Deliberately under-coupled.

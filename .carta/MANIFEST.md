@@ -35,7 +35,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.00 | `00-index.md` | Product specs — what we're building and why | product, index | — | — | — |
 | doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
 | doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | doc01.03 | — |
-| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc03.01, doc03.02, doc03.04 | — |
+| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc03.01, doc03.02, doc03.04 | — |
 | doc01.04 | `04-development-philosophy.md` | How we work on RTP: two sources of truth, artifact chain, unfolding, concept-driven design, spec-before-code | product, philosophy, method, process | doc01.03 | — | — |
 | doc01.05 | `05-verification-system.md` | How carta docs declare machine-checkable verifications; the verify.mjs harness and the screen-inventory check against the statechart | product, verification, coverage, process, tooling | doc02.02.01, doc02.02.02.00, doc00.03 | — | — |
 
@@ -54,13 +54,16 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.02.00 | `02-interaction/00-index.md` | Platform-agnostic UI design — surfaces, navigation graph, action coverage | design, interaction, index | doc01.03 | — | — |
-| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc03.03 | statechart.json |
+| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc03.03 | statechart.json |
 | doc02.02.02.00 | `02-interaction/02-screens/00-index.md` | Per-surface affordance inventories — regions, affordances, lists | design, interaction, screens, index | doc02.02.01 | doc01.05 | — |
 | doc02.02.02.01 | `02-interaction/02-screens/01-collection-list.md` | Affordance inventory for the CollectionList surface — regions, affordances, lists | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.02 | `02-interaction/02-screens/02-collection-detail.md` | Affordance inventory for the CollectionDetail surface — Details section, sortable entry list | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.03 | `02-interaction/02-screens/03-settings.md` | Affordance inventory for the Settings surface — entry to provider config, sync and BYOK as stubs | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.04 | `02-interaction/02-screens/04-collection-entry-detail.md` | Affordance inventory for the CollectionEntryDetail surface — the (Location, Review) pair, reviewed/unreviewed | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.05 | `02-interaction/02-screens/05-location-draft.md` | Affordance inventory for the LocationDraft surface — coordinates, nearby resolution candidates, keep-or-adopt | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
+| doc02.02.02.06 | `02-interaction/02-screens/06-review-form.md` | Affordance inventory for the ReviewForm surface — the template field set as editable inputs, save and cancel | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
+| doc02.02.02.07 | `02-interaction/02-screens/07-map-overview.md` | Affordance inventory for the MapOverview surface — the everything view: pins, collection filter, search, drop-pin | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
+| doc02.02.02.08 | `02-interaction/02-screens/08-collection-editor.md` | Affordance inventory for the CollectionEditor surface — Collection metadata and the Review template field set | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 
 ## 03-system — System
 
@@ -88,10 +91,10 @@ Quick lookup for file-path→doc mapping:
 | `conventions` | doc00.03 |
 | `coverage` | doc01.05 |
 | `data` | doc03.02 |
-| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.03 |
+| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.03 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
 | `index` | doc00.00, doc01.00, doc02.02.00, doc02.02.02.00, doc03.00 |
-| `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05 |
+| `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08 |
 | `interfaces` | doc03.02 |
 | `licensing` | doc03.04 |
 | `location` | doc03.04 |
@@ -110,7 +113,7 @@ Quick lookup for file-path→doc mapping:
 | `research` | doc01.01 |
 | `retrieval` | doc00.04 |
 | `schema` | doc03.01 |
-| `screens` | doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05 |
+| `screens` | doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08 |
 | `sqlcipher` | doc03.01 |
 | `stack` | doc02.01 |
 | `statechart` | doc02.02.01 |

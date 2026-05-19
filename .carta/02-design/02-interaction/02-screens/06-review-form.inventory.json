@@ -1,0 +1,62 @@
+{
+  "surface": "ReviewForm",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Names the Review being authored — the Location, within its Collection's context — and holds Cancel, which discards the draft."
+    },
+    {
+      "id": "fields",
+      "purpose": "The Collection template's ordered fields, each rendered as an editable input for its type. The user fills and clears values here; the draft starts pre-filled with sensible defaults on entry."
+    },
+    {
+      "id": "submitBar",
+      "purpose": "Holds Save, which commits the draft Review and advances to the Collection Entry."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "cancel",
+      "label": "Cancel",
+      "region": "topBar",
+      "event": "CANCEL",
+      "target": "CollectionDetail"
+    },
+    {
+      "id": "clear-field",
+      "label": "Clear a field",
+      "region": "fields",
+      "action": "Review.clear"
+    },
+    {
+      "id": "save",
+      "label": "Save the Review",
+      "region": "submitBar",
+      "event": "SUBMIT",
+      "target": "CollectionEntryDetail",
+      "action": "Review.submit"
+    }
+  ],
+  "lists": [
+    {
+      "id": "fields",
+      "region": "fields",
+      "iterates": "Review field",
+      "reads": "template",
+      "item": {
+        "shows": [
+          "the template field's label",
+          "the field's required marker, when the template author flagged it",
+          "the field's current draft value, rendered as an editable input for its type — stars, text, enum, boolean, date, power-ranking"
+        ],
+        "affordance": {
+          "id": "edit-field",
+          "label": "Edit a field's value",
+          "action": "Review.edit"
+        }
+      },
+      "emptyState": "When the Collection's template has no fields, the form has nothing to fill and points the user toward editing the template in CollectionEditor."
+    }
+  ],
+  "deferred": ["Review.start"]
+}

@@ -90,9 +90,9 @@
           "description": "User opens a Collection to see its Collection Entries."
         },
         "TAP_NEW_COLLECTION": {
-          "target": "SchemaBuilder",
+          "target": "CollectionEditor",
           "label": "New Collection",
-          "description": "User starts a new Collection (Collection.create). Opens the SchemaBuilder to author the Review template before any Collection Entries can be added."
+          "description": "User starts a new Collection (Collection.create). Opens the CollectionEditor to set its metadata and author the Review template before any Collection Entries can be added."
         },
         "TAP_IMPORT": {
           "target": "ImportFlow",
@@ -135,9 +135,9 @@
           "description": "User starts the Collection-first add flow. The Collection is held in context; the user finds a Location with the map's search or drop-pin, lands on LocationDraft, and the binding flows through AddLocationToCollection (which pre-selects the originating Collection). The precise re-entry into ReviewForm is unfolded when Collection-first context-passing is specified."
         },
         "TAP_EDIT_TEMPLATE": {
-          "target": "SchemaBuilder",
-          "label": "Edit the template",
-          "description": "User opens the Review template editor for this Collection (Review.editTemplate)."
+          "target": "CollectionEditor",
+          "label": "Edit the Collection",
+          "description": "User opens the CollectionEditor for this Collection — its metadata and its Review template (Review.editTemplate)."
         },
         "BACK": {
           "target": "CollectionList",
@@ -198,23 +198,23 @@
       }
     },
 
-    "SchemaBuilder": {
-      "description": "Author or edit a Collection's Review template — the schema governing every Review in this Collection. Add/remove/reorder fields; pick field types (stars, enum, boolean, date, power-ranking, text). Adopt a built-in template as a starting point.",
+    "CollectionEditor": {
+      "description": "Author or edit a Collection — its metadata (name, description, appearance) and its Review template, the schema governing every Review in this Collection. Edit name and description, pick the appearance, add/remove/reorder template fields and pick field types (score, enum, boolean, date, power-ranking, text), adopt a built-in template as a starting point. Collection metadata is editable only here, not on CollectionDetail.",
       "tags": ["form"],
       "meta": {
-        "surface": "SchemaBuilder",
-        "reads": ["template"],
-        "actions": ["Review.defineTemplate", "Review.editTemplate", "Review.useBuiltIn"]
+        "surface": "CollectionEditor",
+        "reads": ["collection", "template"],
+        "actions": ["Collection.create", "Collection.edit", "Review.defineTemplate", "Review.editTemplate", "Review.useBuiltIn"]
       },
       "on": {
         "DONE": {
           "target": "CollectionDetail",
-          "label": "Finish the template",
-          "description": "Template authored or edited; continue into the Collection."
+          "label": "Finish editing",
+          "description": "Collection metadata and template authored or edited; continue into the Collection."
         },
         "CLOSE": {
           "target": "CollectionDetail",
-          "description": "Cancel without committing template changes."
+          "description": "Cancel without committing changes."
         }
       }
     },
@@ -255,9 +255,9 @@
           "description": "User picks a Collection (Location.addToCollection); advance to fill out the Review."
         },
         "TAP_NEW_COLLECTION": {
-          "target": "SchemaBuilder",
+          "target": "CollectionEditor",
           "label": "New Collection",
-          "description": "None of the existing Collections fit; create a new one (Collection.create)."
+          "description": "None of the existing Collections fit; create a new one (Collection.create) in the CollectionEditor."
         },
         "CLOSE": {
           "target": "MapOverview",

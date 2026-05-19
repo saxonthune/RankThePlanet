@@ -9,7 +9,7 @@ deps: [doc01.01]
 
 Walkthroughs anchored on what the user is thinking and doing — not on storage, sync, or framework details. Each use case is a concrete journey a real person would describe in their own words. Implementation lives in later groups.
 
-A `Collection` is the user-facing word for a curated list of `Location`s. Each Collection is bound to a `Schema` that defines what fields a per-location entry has. `Location` is a workspace concept implemented by multiple providers (see doc01.01 §"Location as an abstraction").
+A `Collection` is the user-facing word for a curated list of `Location`s. Each Collection is bound to a `Schema` that defines what fields a Collection Entry has. `Location` is a workspace concept implemented by multiple providers (see doc01.01 §"Location as an abstraction").
 
 ## 1. Drip Coffee Ranking
 
@@ -39,7 +39,7 @@ A `Collection` is the user-facing word for a curated list of `Location`s. Each C
 
 **Persona.** Someone who saw the NYT list, wants to work through it on visits to New York, and wants to track which they've been to.
 
-**Goal.** Import an existing curated list as a Collection, then use it as a personal checklist with light per-entry annotations.
+**Goal.** Import an existing curated list as a Collection, then use it as a personal checklist with light per-Collection-Entry annotations.
 
 **Journey.**
 
@@ -47,7 +47,7 @@ A `Collection` is the user-facing word for a curated list of `Location`s. Each C
 2. In the app, taps **Import Collection**. Picks the source format. App ingests the list.
 3. App asks: "What schema do you want for this Collection?" Offers a default **Wishlist** schema:
    - **Location** — pre-populated from the import.
-   - **Visited / Unvisited** — defaults to Unvisited for every imported entry.
+   - **Visited / Unvisited** — defaults to Unvisited for every imported Collection Entry.
    - **Date visited** — empty until user fills it.
    - **Notes** — freeform.
 4. The Collection appears with 100 unvisited pins on the map of NYC.
@@ -76,11 +76,11 @@ A `Collection` is the user-facing word for a curated list of `Location`s. Each C
 
 1. Sitting in a park. Opens app on the map view. Long-presses the map at their location (or taps **+** with **Use current location**).
 2. App: "Add to which Collection?" Shows a list of the user's Collections. The user picks **Geo Diary**.
-3. App opens the Geo Diary entry form (date prefilled, text empty). Writes a paragraph. Done.
+3. App opens the Geo Diary Collection Entry form (date prefilled, text empty). Writes a paragraph. Done.
 
-**Implication.** Both flows must reach the same final state. The "add to Collection" affordance has to be available from both Collection context and Location context, with no duplication of entry data.
+**Implication.** Both flows must reach the same final state. The "add to Collection" affordance has to be available from both Collection context and Location context, with no duplication of Collection Entry data.
 
-**What the user never has to think about.** That a Location can belong to many Collections, that today's diary entry and yesterday's diary entry at the same park are two separate entries (not one place with two timestamps).
+**What the user never has to think about.** That a Location can belong to many Collections, that today's diary Collection Entry and yesterday's diary Collection Entry at the same park are two separate Collection Entries (not one place with two timestamps).
 
 ## Cross-cutting observations
 
@@ -91,4 +91,4 @@ These fall out of the three use cases together. They are observations, not specs
 - **Power ranking is one schema field, not a global app feature.** A Collection without a power-ranking field has no ranking flow. Keeps the "different lists, different mental models" promise honest.
 - **"Add to Collection" must be reachable from both directions.** Either start from a Collection and add a Location, or start from a Location and add to a Collection. Same end state.
 - **Maps view and list view are two projections of the same Collection.** Both must be available; neither is privileged.
-- **Imports are first-class Collections, not a separate "shared lists" namespace.** Once imported, an NYT list is the user's Collection — they can edit it, change its schema, delete entries.
+- **Imports are first-class Collections, not a separate "shared lists" namespace.** Once imported, an NYT list is the user's Collection — they can edit it, change its schema, delete Collection Entries.

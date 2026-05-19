@@ -15,10 +15,10 @@ A **surface** is a UI region the user perceives as one place. It may render as a
 
 | Surface | Purpose | Opened with | Reads (concept state) | Invokes (concept actions) |
 |---|---|---|---|---|
-| `MapOverview` | Everything view; default landing | — | all Collections + entries | toggleCollection, selectPin, jumpToCollection |
+| `MapOverview` | Everything view; default landing | — | all Collections + Collection Entries | toggleCollection, selectPin, jumpToCollection |
 | `CollectionList` | Manage the user's Collections | — | Collections | Collection.create, Collection.import |
-| `CollectionDetail` | One Collection's entries (map + list projections) | `collection_id` | Collection.entries, appearance | Collection.addEntry, Collection.removeEntry, Collection.share, Collection.export, Review.editTemplate |
-| `CollectionEntryDetail` | One entry: full Location + Review | `entry_id` | Location, Review | Review.edit, Location.openExternally, Collection.removeEntry |
+| `CollectionDetail` | One Collection's Collection Entries (map + list projections) | `collection_id` | Collection.entries, appearance | Collection.addEntry, Collection.removeEntry, Collection.share, Collection.export, Review.editTemplate |
+| `CollectionEntryDetail` | One Collection Entry: full Location + Review | `entry_id` | Location, Review | Review.edit, Location.openExternally, Collection.removeEntry |
 | `ReviewForm` | Author/edit a Review instance against a template | `(collection_id, location_id)` | template, draft Review | Review.start, Review.edit, Review.submit, Review.clear |
 | `ReviewBuilder` | Author/edit a Collection's Review template | `collection_id` | template | Review.defineTemplate, Review.editTemplate, Review.useBuiltIn |
 | `LocationPicker` | Resolve / drop / import a Location | `(mode, collection_id?)` | provider results | Location.resolve, Location.dropPin, Location.import |

@@ -4,10 +4,15 @@
 // ╚══════════════════════════════════════════════════════════════════════════╝
 //
 // Walks .carta/ for *.statechart.json sidecars and, for each, emits a
-// co-located Luminous canvas pair:
+// Luminous canvas pair into .luminous/generated/, mirroring the sidecar's
+// path under .carta/:
 //
-//   <base>.statechart.json  →  <base>.canvas.graph.json
-//                              <base>.canvas.pack.json
+//   .carta/<sub>/<base>.statechart.json
+//        →  .luminous/generated/<sub>/<base>.canvas.graph.json
+//           .luminous/generated/<sub>/<base>.canvas.pack.json
+//
+// The output tree is fully derived — it is .gitignored and never hand-edited.
+// Edit the .statechart.json sidecar and re-run this pipeline instead.
 //
 // One of several Luminous pipelines living under .luminous/. This one is
 // specific to navigation statecharts; others (component trees, schemas, …)
@@ -44,7 +49,7 @@
 //
 // Re-running is deterministic: ids derive from content, nodes/edges are sorted.
 
-import { readFile, writeFile, readdir } from 'node:fs/promises';
+import { readFile, writeFile, readdir, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -53,6 +58,8 @@ import { validateGraphPack } from './validate-graph.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '..');
 const CARTA_ROOT = join(REPO_ROOT, '.carta');
+// Derived output tree — mirrors the .carta/ layout, .gitignored, never hand-edited.
+const GENERATED_ROOT = join(REPO_ROOT, '.luminous', 'generated');
 
 // ── Concept palette (presentation concern — applied in projectGraph only) ──────
 // Each concept from doc01.03 gets a distinct color. `tone` is the in-vocabulary
@@ -461,7 +468,8 @@ async function buildOne(ref, dumpStage) {
   if (dumpStage === 'graph') return { dump: graph };
   if (dumpStage === 'pack') return { dump: pack };
 
-  const dir = dirname(ref.path);
+  const dir = join(GENERATED_ROOT, dirname(relative(CARTA_ROOT, ref.path)));
+  await mkdir(dir, { recursive: true });
   const graphPath = join(dir, `${packName}.graph.json`);
   const packPath = join(dir, `${packName}.pack.json`);
   await writeFile(graphPath, JSON.stringify(graph, null, 2) + '\n', 'utf8');

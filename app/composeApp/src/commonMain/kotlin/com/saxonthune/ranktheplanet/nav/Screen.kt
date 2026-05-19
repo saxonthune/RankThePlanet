@@ -8,7 +8,7 @@ enum class Screen(val title: String) {
     MapOverview("Map Overview"),
     CollectionList("Collections"),
     CollectionDetail("Collection"),
-    CollectionEntryDetail("Entry"),
+    CollectionEntryDetail("Collection Entry"),
     ReviewForm("Review"),
     SchemaBuilder("Review Template"),
     LocationPicker("Pick a Location"),

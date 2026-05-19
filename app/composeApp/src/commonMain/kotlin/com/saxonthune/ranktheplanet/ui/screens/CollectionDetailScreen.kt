@@ -11,8 +11,8 @@ fun CollectionDetailScreen(onNavigate: (Screen) -> Unit) {
         title = Screen.CollectionDetail.title,
         actions = listOf(
             NavAction("Toggle map/list projection", Screen.CollectionDetail),
-            NavAction("Open an entry", Screen.CollectionEntryDetail),
-            NavAction("Add an entry", Screen.LocationPicker),
+            NavAction("Open a Collection Entry", Screen.CollectionEntryDetail),
+            NavAction("Add a Collection Entry", Screen.LocationPicker),
             NavAction("Edit the template", Screen.SchemaBuilder),
             NavAction("Back", Screen.CollectionList),
         ),

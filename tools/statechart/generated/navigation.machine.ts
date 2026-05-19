@@ -14,7 +14,7 @@ export const navigationMachine = createMachine({
   "description": "Platform-agnostic navigation graph. Every surface is an equal **view** — full screen, sheet, sidebar, popover is a downstream rendering choice, not a structural one. States are views; transitions are navigation gestures that move the user between views. The concept actions performable *within* a view are documented in `meta.actions` — they are not transitions because they do not move the user. See doc02.02.01.",
   "states": {
     "MapOverview": {
-      "description": "The everything view. Default landing surface. Shows pins for every entry in every visible Collection, colored by Collection appearance and styled by visited/unvisited state. See doc01.03 §4.",
+      "description": "The everything view. Default landing surface. Shows pins for every Collection Entry in every visible Collection, colored by Collection appearance and styled by visited/unvisited state. See doc01.03 §4.",
       "tags": [
         "landing",
         "map"
@@ -40,7 +40,7 @@ export const navigationMachine = createMachine({
         "TAP_PIN": {
           "target": "CollectionEntryDetail",
           "label": "Inspect a pin",
-          "description": "User taps a pin to inspect that entry. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows."
+          "description": "User taps a pin to inspect that Collection Entry. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows."
         },
         "TAP_COLLECTIONS_BUTTON": {
           "target": "CollectionList",
@@ -78,12 +78,12 @@ export const navigationMachine = createMachine({
         "TAP_COLLECTION": {
           "target": "CollectionDetail",
           "label": "Open a Collection",
-          "description": "User opens a Collection to see its entries."
+          "description": "User opens a Collection to see its Collection Entries."
         },
         "TAP_NEW_COLLECTION": {
           "target": "SchemaBuilder",
           "label": "New Collection",
-          "description": "User starts a new Collection (Collection.create). Opens the SchemaBuilder to author the Review template before any entries can be added."
+          "description": "User starts a new Collection (Collection.create). Opens the SchemaBuilder to author the Review template before any Collection Entries can be added."
         },
         "TAP_IMPORT": {
           "target": "ImportFlow",
@@ -97,7 +97,7 @@ export const navigationMachine = createMachine({
       }
     },
     "CollectionDetail": {
-      "description": "One Collection: its entries shown as either a map or a list projection (toggleable in place — projection is a view-internal mode, not a separate view). Entry point for adding/removing entries, editing the template, and exporting/sharing.",
+      "description": "One Collection: its Collection Entries shown as either a map or a list projection (toggleable in place — projection is a view-internal mode, not a separate view). Entry point for adding/removing Collection Entries, editing the template, and exporting/sharing.",
       "tags": [
         "detail"
       ],
@@ -122,13 +122,13 @@ export const navigationMachine = createMachine({
         },
         "TAP_ENTRY": {
           "target": "CollectionEntryDetail",
-          "label": "Open an entry",
-          "description": "User opens a single entry to inspect its Location and Review."
+          "label": "Open a Collection Entry",
+          "description": "User opens a single Collection Entry to inspect its Location and Review."
         },
         "TAP_ADD_ENTRY": {
           "target": "LocationPicker",
-          "label": "Add an entry",
-          "description": "User starts the Collection-first add flow. LocationPicker resolves a Location, then ReviewForm captures the per-entry Review (Collection.addEntry)."
+          "label": "Add a Collection Entry",
+          "description": "User starts the Collection-first add flow. LocationPicker resolves a Location, then ReviewForm captures the per-Collection-Entry Review (Collection.addEntry)."
         },
         "TAP_EDIT_TEMPLATE": {
           "target": "SchemaBuilder",
@@ -142,7 +142,7 @@ export const navigationMachine = createMachine({
       }
     },
     "CollectionEntryDetail": {
-      "description": "One entry — the (Location, Review) pair. Read-mostly view; mutation goes through ReviewForm. Hosts the 'open externally' handoff to Google Maps / Apple Maps / etc.",
+      "description": "One Collection Entry — the (Location, Review) pair. Read-mostly view; mutation goes through ReviewForm. Hosts the 'open externally' handoff to Google Maps / Apple Maps / etc.",
       "tags": [
         "detail"
       ],
@@ -164,12 +164,12 @@ export const navigationMachine = createMachine({
         "TAP_EDIT_REVIEW": {
           "target": "ReviewForm",
           "label": "Edit the Review",
-          "description": "User opens the form to edit the Review for this entry (Review.edit)."
+          "description": "User opens the form to edit the Review for this Collection Entry (Review.edit)."
         },
         "TAP_REMOVE_ENTRY": {
           "target": "CollectionDetail",
-          "label": "Remove the entry",
-          "description": "User removes this entry from the Collection (Collection.removeEntry). Does not delete the Location — it may exist in other Collections."
+          "label": "Remove the Collection Entry",
+          "description": "User removes this Collection Entry from the Collection (Collection.removeEntry). Does not delete the Location — it may exist in other Collections."
         },
         "BACK": {
           "target": "CollectionDetail",
@@ -199,7 +199,7 @@ export const navigationMachine = createMachine({
         "SUBMIT": {
           "target": "CollectionEntryDetail",
           "label": "Save the Review",
-          "description": "User commits the Review (Review.submit). The entry is saved; navigate to its CollectionEntryDetail."
+          "description": "User commits the Review (Review.submit). The Collection Entry is saved; navigate to its CollectionEntryDetail."
         },
         "CANCEL": {
           "target": "CollectionDetail",

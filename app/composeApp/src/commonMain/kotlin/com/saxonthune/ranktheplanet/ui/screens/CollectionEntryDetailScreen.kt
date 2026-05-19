@@ -11,7 +11,7 @@ fun CollectionEntryDetailScreen(onNavigate: (Screen) -> Unit) {
         title = Screen.CollectionEntryDetail.title,
         actions = listOf(
             NavAction("Edit the Review", Screen.ReviewForm),
-            NavAction("Remove the entry", Screen.CollectionDetail),
+            NavAction("Remove the Collection Entry", Screen.CollectionDetail),
             NavAction("Back", Screen.CollectionDetail),
         ),
         onNavigate = onNavigate,

@@ -13,6 +13,8 @@ Mental models for Kotlin + Compose Multiplatform. Use this when shaping architec
 ## Read Order
 This file is dense. For an architecture conversation, read top-to-bottom once. For a coding task, jump to the section whose heading matches the question — the cross-references in `[brackets]` point to the section you also need.
 
+For visual-design questions (theming, color, typography, spacing, animation, "looks bad"), read the sibling file `LOOK-AND-FEEL.md` instead — this file is architecture-only.
+
 ---
 
 ## 1. Two pillars

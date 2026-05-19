@@ -1,6 +1,8 @@
 package com.saxonthune.ranktheplanet
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,7 +17,7 @@ import com.saxonthune.ranktheplanet.nav.CollectionEntryDetail
 import com.saxonthune.ranktheplanet.nav.CollectionList
 import com.saxonthune.ranktheplanet.nav.ImportFlow
 import com.saxonthune.ranktheplanet.nav.LocationDraft
-import com.saxonthune.ranktheplanet.nav.LocationPicker
+import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.nav.MapOverview
 import com.saxonthune.ranktheplanet.nav.ReviewForm
 import com.saxonthune.ranktheplanet.nav.CollectionEditor
@@ -26,7 +28,6 @@ import com.saxonthune.ranktheplanet.ui.screens.CollectionEntryDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionListScreen
 import com.saxonthune.ranktheplanet.ui.screens.ImportFlowScreen
 import com.saxonthune.ranktheplanet.ui.screens.LocationDraftScreen
-import com.saxonthune.ranktheplanet.ui.screens.LocationPickerScreen
 import com.saxonthune.ranktheplanet.ui.screens.MapOverviewScreen
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEditorScreen
@@ -38,9 +39,28 @@ fun App() {
     RtpTheme {
         val navController = rememberNavController()
         val repos = remember { FakeRepositories() }
-        NavHost(navController = navController, startDestination = MapOverview) {
-            composable<MapOverview> {
+        NavHost(navController = navController, startDestination = MapOverview()) {
+            composable<MapOverview> { backStackEntry ->
+                val route = backStackEntry.toRoute<MapOverview>()
+                val collectionId = route.addToCollectionId
+                val collectionName by produceState<String?>(initialValue = collectionId, collectionId) {
+                    if (collectionId != null) {
+                        repos.collections.observe(CollectionId(collectionId)).collect { collection ->
+                            value = collection?.name ?: collectionId
+                        }
+                    }
+                }
+                val mode: MapMode = if (collectionId == null) {
+                    MapMode.Browse
+                } else {
+                    MapMode.AddingToCollection(
+                        collectionId = CollectionId(collectionId),
+                        collectionName = collectionName ?: collectionId,
+                    )
+                }
                 MapOverviewScreen(
+                    mode = mode,
+                    onCancelAdd = { navController.popBackStack() },
                     onOpenCollections = { navController.navigate(CollectionList) },
                     onOpenSettings = { navController.navigate(Settings) },
                     onInspectPin = { navController.navigate(CollectionEntryDetail("ent-bluebottle")) },
@@ -64,7 +84,7 @@ fun App() {
                     collections = repos.collections,
                     entries = repos.entries,
                     templates = repos.templates,
-                    onAddEntry = { navController.navigate(LocationPicker) },
+                    onAddEntry = { navController.navigate(MapOverview(route.collectionId)) },
                     onEditCollection = { navController.navigate(CollectionEditor) },
                     onBack = { navController.popBackStack() },
                     onOpenEntry = { id -> navController.navigate(CollectionEntryDetail(id.value)) },
@@ -90,12 +110,6 @@ fun App() {
             composable<CollectionEditor> {
                 CollectionEditorScreen(
                     onFinish = { navController.popBackStack() },
-                    onCancel = { navController.popBackStack() },
-                )
-            }
-            composable<LocationPicker> {
-                LocationPickerScreen(
-                    onPickLocation = { navController.navigate(ReviewForm) },
                     onCancel = { navController.popBackStack() },
                 )
             }

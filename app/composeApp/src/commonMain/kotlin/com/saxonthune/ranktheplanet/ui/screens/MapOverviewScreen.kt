@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.saxonthune.ranktheplanet.nav.MapMode
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
@@ -74,6 +76,8 @@ private val MOCK_COLLECTIONS = listOf("Drip Coffee", "NYT Top 100", "Geo Diary")
 
 @Composable
 fun MapOverviewScreen(
+    mode: MapMode,
+    onCancelAdd: () -> Unit,
     onOpenCollections: () -> Unit,
     onOpenSettings: () -> Unit,
     onInspectPin: () -> Unit,
@@ -113,21 +117,42 @@ fun MapOverviewScreen(
                 .windowInsetsPadding(WindowInsets.safeDrawing),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.Black.copy(alpha = 0.45f),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Button(onClick = { onOpenCollections() }) {
-                        Text("Collections")
+            Column(modifier = Modifier.fillMaxWidth()) {
+                if (mode is MapMode.AddingToCollection) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color.Black.copy(alpha = 0.65f),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text("Adding to ${mode.collectionName}")
+                            TextButton(onClick = onCancelAdd) {
+                                Text("Cancel")
+                            }
+                        }
                     }
-                    Button(onClick = { onOpenSettings() }) {
-                        Text("Settings")
+                }
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.Black.copy(alpha = 0.45f),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Button(onClick = { onOpenCollections() }) {
+                            Text("Collections")
+                        }
+                        Button(onClick = { onOpenSettings() }) {
+                            Text("Settings")
+                        }
                     }
                 }
             }

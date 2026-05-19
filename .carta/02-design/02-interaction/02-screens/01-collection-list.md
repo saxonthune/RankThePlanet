@@ -3,6 +3,7 @@ title: Collection List
 summary: Affordance inventory for the CollectionList surface — regions, affordances, lists
 tags: [design, interaction, screens]
 deps: [doc02.02.01, doc01.03]
+verify: [{"kind":"screen-inventory","sidecar":"01-collection-list.inventory.json","against":{"doc":"doc02.02.01","key":"CollectionList"}}]
 ---
 
 # Collection List

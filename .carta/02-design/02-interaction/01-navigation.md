@@ -39,7 +39,7 @@ The JSON is flat: states are surfaces, transitions are navigation gestures. Conc
 - **States**: `description`, `tags` (visual chips), `meta.surface`, `meta.reads`, `meta.actions`. State id = surface name in PascalCase; internal substates lowerCamelCase.
 - **Transitions**: event key is UPPER_SNAKE, named for the gesture (`TAP_PIN`, `BACK`). `description` explains the gesture; optional `actions` array names `"Concept.action"` strings. `target` omitted for self-transitions.
 
-`meta.actions` is load-bearing for coverage: a future `coverage.mjs` diffs the `Concept.action` strings against doc01.03's concept action lists — orphan actions = gulf of execution, phantom tags = stale concept.
+`meta.actions` is load-bearing for coverage: `.carta/verify.mjs` cross-checks every surface's affordance inventory against its statechart state — missing events or actions are gaps, phantom ones are stale refs. A future verifier kind will also diff `Concept.action` strings against doc01.03's concept action lists to detect orphan actions (gulf of execution) and phantom tags (stale concept).
 
 ## Visualizing the graph
 

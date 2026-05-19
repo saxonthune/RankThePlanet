@@ -1,5 +1,6 @@
 {
   "surface": "CollectionDetail",
+  "deferred": ["TAP_TOGGLE_PROJECTION", "Collection.removeEntry", "Collection.export", "Collection.share"],
   "regions": [
     {
       "id": "topBar",

@@ -23,6 +23,8 @@ A `*.inventory.json` has three arrays, all keyed to the surface's statechart ent
 
 Coverage stays honest: every `event` must be a real transition on that surface in the statechart, and every `action` must appear in its `meta.actions`.
 
+- **`deferred`** (optional) — a list of statechart events and `meta.actions` the surface knowingly has not inventoried yet. The `screen-inventory` verifier treats deferred items as acknowledged gaps rather than failures, and reports their count as a backlog metric. Use `deferred` for affordances that exist in the statechart but are not yet built (e.g. a toggle whose UI is not yet designed).
+
 ## Contents
 
 - doc02.02.02.01 — Collection List: the surface that manages the user's Collections.

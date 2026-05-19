@@ -3,6 +3,7 @@ title: Collection Detail
 summary: Affordance inventory for the CollectionDetail surface — Details section, sortable entry list
 tags: [design, interaction, screens]
 deps: [doc02.02.01, doc01.03]
+verify: [{"kind":"screen-inventory","sidecar":"02-collection-detail.inventory.json","against":{"doc":"doc02.02.01","key":"CollectionDetail"}}]
 ---
 
 # Collection Detail

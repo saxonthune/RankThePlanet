@@ -44,6 +44,21 @@ deps: [doc01.02]
 
 **epoch** (optional): Used for staleness auditing. See doc00.02.
 
+**verify** (optional): An inline-JSON array of verification entries (valid YAML, `JSON.parse`-able with no dependency). Each entry selects a verifier `kind`, names a sidecar file in the same bundle, and points at a comparison doc:
+
+```yaml
+verify: [{"kind":"screen-inventory","sidecar":"NN-slug.inventory.json","against":{"doc":"docXX.YY","key":"SurfaceName"}}]
+```
+
+| Entry field | Notes |
+|---|---|
+| `kind` | Selects the verifier. Today: `screen-inventory`. |
+| `sidecar` | Filename (same directory as the `.md`) of the data to verify. |
+| `against.doc` | Carta doc ref whose bundle holds the comparison data. |
+| `against.key` | Join value (e.g. the statechart `meta.surface` name). |
+
+Run `.carta/verify.mjs` to execute all declared verifications. See doc02.02.01 for the `screen-inventory` verifier.
+
 ## File Naming
 
 Files use numbered prefixes with kebab-case slugs:

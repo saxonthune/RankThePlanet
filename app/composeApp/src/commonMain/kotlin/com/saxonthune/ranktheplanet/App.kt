@@ -1,7 +1,7 @@
 package com.saxonthune.ranktheplanet
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
 import com.saxonthune.ranktheplanet.nav.Screen
 import com.saxonthune.ranktheplanet.nav.rememberNavState
 import com.saxonthune.ranktheplanet.ui.screens.AddLocationToCollectionScreen
@@ -17,7 +17,7 @@ import com.saxonthune.ranktheplanet.ui.screens.SettingsScreen
 
 @Composable
 fun App() {
-    MaterialTheme {
+    RtpTheme {
         val nav = rememberNavState()
         val go: (Screen) -> Unit = nav::go
         when (nav.current) {

@@ -1,6 +1,16 @@
 package com.saxonthune.ranktheplanet.data
 
-import com.saxonthune.ranktheplanet.domain.*
+import com.saxonthune.ranktheplanet.domain.Appearance
+import com.saxonthune.ranktheplanet.domain.Collection
+import com.saxonthune.ranktheplanet.domain.CollectionId
+import com.saxonthune.ranktheplanet.domain.Entry
+import com.saxonthune.ranktheplanet.domain.EntryId
+import com.saxonthune.ranktheplanet.domain.Location
+import com.saxonthune.ranktheplanet.domain.LocationId
+import com.saxonthune.ranktheplanet.domain.ReviewDraft
+import com.saxonthune.ranktheplanet.domain.ReviewTemplate
+import com.saxonthune.ranktheplanet.domain.SourceType
+import com.saxonthune.ranktheplanet.domain.TemplateField
 import kotlinx.coroutines.flow.Flow
 
 interface CollectionRepository {

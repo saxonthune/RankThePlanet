@@ -4,9 +4,9 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
 
-value class CollectionId(val value: String)
-value class LocationId(val value: String)
-value class EntryId(val value: String)
+@JvmInline value class CollectionId(val value: String)
+@JvmInline value class LocationId(val value: String)
+@JvmInline value class EntryId(val value: String)
 
 data class Coordinates(val lat: Double, val lng: Double)
 

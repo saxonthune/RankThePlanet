@@ -3,23 +3,23 @@
   "regions": [
     {
       "id": "map",
-      "purpose": "The full-screen map canvas — a pin for every Collection Entry in every visible Collection. Panning and zooming move the viewport."
+      "purpose": "The full-screen map canvas — a pin for every Collection Entry in every visible Collection. Panning and zooming move the viewport; a long-press drops a pin."
     },
     {
-      "id": "topBar",
-      "purpose": "Overlay holding entry to the Collection list and to Settings."
+      "id": "filterButton",
+      "purpose": "A button in the top-left corner that opens the collection filter drawer."
     },
     {
       "id": "search",
-      "purpose": "The map's search field — typing resolves Location candidates from the active provider, and the results are pickable."
+      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the filter button. Tapping it widens the field and raises the keyboard; submitting resolves Location candidates."
     },
     {
-      "id": "collectionFilter",
-      "purpose": "A horizontally scrollable row of chips, one per Collection, controlling which Collections' pins show on the map and jumping the camera to a Collection."
+      "id": "bottomBar",
+      "purpose": "A panel along the bottom of the surface holding entry to the Collection list and to Settings."
     },
     {
-      "id": "mapActions",
-      "purpose": "Holds the drop-a-pin affordance, which starts the Location-first flow."
+      "id": "collectionFilterDrawer",
+      "purpose": "A left-hand drawer, opened from the filter button. Holds a field to search the user's Collections by name and a list of Collections, each toggleable to show or hide its pins."
     },
     {
       "id": "statusBar",
@@ -40,18 +40,16 @@
       "action": "MapOverview.zoom"
     },
     {
-      "id": "open-collections",
-      "label": "Browse Collections",
-      "region": "topBar",
-      "event": "TAP_COLLECTIONS_BUTTON",
-      "target": "CollectionList"
+      "id": "drop-pin",
+      "label": "Drop a pin",
+      "region": "map",
+      "event": "DROP_PIN",
+      "target": "LocationDraft"
     },
     {
-      "id": "open-settings",
-      "label": "Open Settings",
-      "region": "topBar",
-      "event": "TAP_SETTINGS",
-      "target": "Settings"
+      "id": "open-filter-drawer",
+      "label": "Open the collection filter",
+      "region": "filterButton"
     },
     {
       "id": "search-locations",
@@ -60,17 +58,23 @@
       "action": "Location.resolve"
     },
     {
-      "id": "jump-to-collection",
-      "label": "Jump the map to a Collection",
-      "region": "collectionFilter",
-      "action": "MapOverview.jumpToCollection"
+      "id": "search-collections",
+      "label": "Search the collection list",
+      "region": "collectionFilterDrawer"
     },
     {
-      "id": "drop-pin",
-      "label": "Drop a pin here",
-      "region": "mapActions",
-      "event": "DROP_PIN",
-      "target": "LocationDraft"
+      "id": "open-collections",
+      "label": "Browse Collections",
+      "region": "bottomBar",
+      "event": "TAP_COLLECTIONS_BUTTON",
+      "target": "CollectionList"
+    },
+    {
+      "id": "open-settings",
+      "label": "Open Settings",
+      "region": "bottomBar",
+      "event": "TAP_SETTINGS",
+      "target": "Settings"
     },
     {
       "id": "cancel-add",
@@ -100,7 +104,7 @@
           "action": "MapOverview.selectPin"
         }
       },
-      "emptyState": "Before any Collection has Entries the map shows no pins; the topBar still points the user toward creating a Collection."
+      "emptyState": "Before any Collection has Entries the map shows no pins; the bottomBar still points the user toward creating a Collection."
     },
     {
       "id": "search-results",
@@ -119,11 +123,11 @@
           "target": "LocationDraft"
         }
       },
-      "emptyState": "An empty or unqueried search field shows no results; the map stays the focus."
+      "emptyState": "An empty or unsubmitted search field shows no results; results appear only after the user submits a query — there is no search-ahead. The map stays the focus."
     },
     {
       "id": "collections",
-      "region": "collectionFilter",
+      "region": "collectionFilterDrawer",
       "iterates": "Collection",
       "reads": "all-collections",
       "item": {
@@ -138,8 +142,8 @@
           "action": "MapOverview.toggleCollection"
         }
       },
-      "emptyState": "With no Collections the filter row is absent; the user has nothing to toggle yet."
+      "emptyState": "With no Collections the drawer's list is empty; the user has nothing to toggle yet."
     }
   ],
-  "deferred": ["MapOverview.open"]
+  "deferred": ["MapOverview.open", "MapOverview.jumpToCollection"]
 }

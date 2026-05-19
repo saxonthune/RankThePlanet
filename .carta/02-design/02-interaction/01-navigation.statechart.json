@@ -33,8 +33,8 @@
         },
         "DROP_PIN": {
           "target": "LocationDraft",
-          "label": "Drop a pin here",
-          "description": "User places a point on the map (current location or a tapped spot). This produces an uncommitted candidate — not yet a Location — and opens LocationDraft over the map. Starts the Location-first flow from doc01.02 §3."
+          "label": "Drop a pin",
+          "description": "User long-presses a spot on the map to place a point. This produces an uncommitted candidate — not yet a Location — and opens LocationDraft over the map. Starts the Location-first flow from doc01.02 §3. The long-press gesture on the map is the only trigger; there is no dedicated drop-pin button."
         },
         "PICK_SEARCH_RESULT": {
           "target": "LocationDraft",

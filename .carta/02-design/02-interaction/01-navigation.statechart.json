@@ -22,9 +22,9 @@
       },
       "on": {
         "TAP_PIN": {
-          "target": "CollectionEntryDetail",
+          "target": "LocationDetail",
           "label": "Inspect a pin",
-          "description": "User taps a pin to inspect that Collection Entry. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows."
+          "description": "User taps a pin to inspect that Location. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows. A pin is a Location, which may appear in several Collections — LocationDetail fans out to those Collection Entries rather than assuming one."
         },
         "TAP_COLLECTIONS_BUTTON": {
           "target": "CollectionList",
@@ -40,6 +40,32 @@
           "target": "Settings",
           "label": "Open Settings",
           "description": "User opens settings (providers, BYOK keys, sync target)."
+        }
+      }
+    },
+
+    "LocationDetail": {
+      "description": "One Location, reached by tapping a pin. Shows the Location plus every Collection Entry that references it across the user's Collections. Entry point for adding this Location to another Collection, or opening one of its existing Collection Entries. See doc01.03 §2.",
+      "tags": ["detail", "map"],
+      "meta": {
+        "surface": "LocationDetail",
+        "reads": ["location", "entries-for-location", "collections-with-location"],
+        "actions": ["Location.openExternally", "Location.refresh"]
+      },
+      "on": {
+        "TAP_ADD_TO_COLLECTION": {
+          "target": "AddLocationToCollection",
+          "label": "Add to a Collection",
+          "description": "User adds this already-resolved Location to a Collection (Location-first flow). AddLocationToCollection picks which Collection."
+        },
+        "TAP_ENTRY": {
+          "target": "CollectionEntryDetail",
+          "label": "Open a Collection Entry",
+          "description": "User opens one of the Collection Entries that reference this Location, to inspect its Review in that Collection's context."
+        },
+        "BACK": {
+          "target": "MapOverview",
+          "description": "Return to the everything view."
         }
       }
     },
@@ -99,9 +125,9 @@
           "description": "User opens a single Collection Entry to inspect its Location and Review."
         },
         "TAP_ADD_ENTRY": {
-          "target": "LocationPicker",
+          "target": "LocationLookup",
           "label": "Add a Collection Entry",
-          "description": "User starts the Collection-first add flow. LocationPicker resolves a Location, then ReviewForm captures the per-Collection-Entry Review (Collection.addEntry)."
+          "description": "User starts the Collection-first add flow. LocationLookup resolves a Location, then ReviewForm captures the per-Collection-Entry Review (Collection.addEntry)."
         },
         "TAP_EDIT_TEMPLATE": {
           "target": "SchemaBuilder",
@@ -188,11 +214,11 @@
       }
     },
 
-    "LocationPicker": {
-      "description": "Resolve, drop, or import a Location. Search via a configured provider, drop a manual pin, or import from a URL / file (KML, share link).",
-      "tags": ["picker"],
+    "LocationLookup": {
+      "description": "Resolve, drop, or import a Location. A map-projection surface — like MapOverview but with lookup chrome (search field, result list, confirm affordance) instead of the everything-view controls. Search via a configured provider, drop a manual pin, or import from a URL / file (KML, share link).",
+      "tags": ["picker", "map"],
       "meta": {
-        "surface": "LocationPicker",
+        "surface": "LocationLookup",
         "reads": ["provider-results"],
         "actions": ["Location.resolve", "Location.dropPin", "Location.import"]
       },

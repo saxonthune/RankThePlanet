@@ -29,7 +29,7 @@ This sits between concepts (what RTP is) and CMP-bound system specs (how it's bu
 
 The navigation graph is an XState statechart kept as a carta sidecar (`01-navigation.statechart.json`). Transitions are pure navigation; the concept actions performable on each view live in that view's `meta.actions` array. A coverage script diffs the set of `meta.actions` entries against doc01.03's action lists; orphan actions = gulf of execution.
 
-The statechart is generated to a TypeScript file at `tools/statechart/generated/` for visualization with the Stately VS Code extension. See doc02.02.01 (`01-navigation.md`) for the loop.
+A Luminous pipeline (`.luminous/statechart-canvas.pipeline.mjs`) generates a visual canvas graph from the statechart sidecar. See doc02.02.01 (`01-navigation.md`).
 
 ## Contents
 

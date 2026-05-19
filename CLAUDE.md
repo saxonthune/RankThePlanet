@@ -55,18 +55,16 @@ Conventions live in `doc00.03`. Maintenance / unfolding rules live in `doc00.02`
 - `00-codex/` — meta-documentation about the workspace itself
 - `01-product/` — what we're building and why; user-visible behavior; research; development philosophy
 - `02-design/` — framework decisions; interaction (surfaces, navigation graph)
-- `tools/statechart/` — codegen script that turns `*.statechart.json` carta sidecars into inline-literal `createMachine` TypeScript files for the Stately VS Code extension
+- `.luminous/` — Luminous pipelines that turn carta sidecars into visual canvas graphs
 
 CMP-bound system specs (state tiers, repository contracts, screens-as-Composables, component tree) will appear in a future group when the interaction layer stabilizes.
 
 ## Statechart sidecar workflow
 
-When editing a `*.statechart.json` carta sidecar:
+When editing a `*.statechart.json` carta sidecar, regenerate its Luminous canvas:
 
 ```
-cd tools/statechart
-make build    # codegen TS files (Stately VS Code extension); needs `npm install` once
-make viz      # render local HTML viewer to dist/ (Python stdlib only)
+node .luminous/statechart-canvas.pipeline.mjs
 ```
 
-Commit both the sidecar and the generated TS in the same change. CI gate: `git diff tools/statechart/generated/` must be empty after `make build`. The `dist/` viewer output is gitignored.
+The pipeline walks `.carta/` for `*.statechart.json` sidecars and emits a derived canvas pair (`*.canvas.graph.json` + `*.canvas.pack.json`) per sidecar under `.luminous/generated/`. That output tree is gitignored — edit the sidecar and re-run, never hand-edit the generated files.

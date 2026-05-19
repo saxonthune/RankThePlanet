@@ -22,7 +22,7 @@ This sits between concepts (what RTP is) and CMP-bound system specs (how it's bu
 ## What does not
 
 - Composable shapes, UiState models, ViewModel boundaries → future `04-system/`
-- Visual design tokens, pin colors, typography → future design tokens doc
+- Visual design tokens, pin colors, typography → [[03-theme-tokens]] (doc02.03)
 - Framework-specific routing syntax → future system spec
 
 ## Verification

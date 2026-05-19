@@ -28,6 +28,7 @@ States in the JSON, keyed by `meta.surface`:
 | `AddLocationToCollection` | Pick which Collection to add an already-chosen Location to. |
 | `ImportFlow` | Import an external collection (stub). |
 | `Settings` | Providers, BYOK keys, sync target (stub). |
+| `LocationProvider` | Configure mapping providers — add a provider with its BYOK key, choose the default. Reached from `Settings`. |
 
 The inventory is not closed — surfaces are added when a use case demands one. Today's set covers the journeys in [[02-use-cases]] (doc01.02): the Location-first track (pin → `LocationDetail` → add-to-collection or open an entry) and the Collection-first track (`CollectionList` → `CollectionDetail` → `LocationLookup`).
 

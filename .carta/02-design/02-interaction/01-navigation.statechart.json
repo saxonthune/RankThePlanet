@@ -290,9 +290,30 @@
         "actions": []
       },
       "on": {
+        "TAP_MANAGE_PROVIDERS": {
+          "target": "LocationProvider",
+          "label": "Manage providers",
+          "description": "User opens location-provider configuration to add a provider or change the default (LocationProvider.addProvider, LocationProvider.switchProvider)."
+        },
         "BACK": {
           "target": "MapOverview",
           "description": "Return to the everything view."
+        }
+      }
+    },
+
+    "LocationProvider": {
+      "description": "Configure which mapping services RTP uses to resolve Locations. List configured providers, add one (pasting a BYOK key when a provider requires it), and choose the default. Adding and switching are in-view concept actions (meta.actions); only BACK moves the user. See doc01.03 §5.",
+      "tags": ["modal"],
+      "meta": {
+        "surface": "LocationProvider",
+        "reads": ["configured-providers", "default-provider"],
+        "actions": ["LocationProvider.addProvider", "LocationProvider.switchProvider"]
+      },
+      "on": {
+        "BACK": {
+          "target": "Settings",
+          "description": "Return to Settings."
         }
       }
     }

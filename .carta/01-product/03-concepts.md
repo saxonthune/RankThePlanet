@@ -1,6 +1,6 @@
 ---
 title: Concepts
-summary: Concept-driven design (Jackson): Collection, Location, Review, Map Overview
+summary: Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider
 tags: [product, concepts, design]
 deps: [doc01.02]
 ---
@@ -17,6 +17,7 @@ Concepts in this doc:
 - §2 [Location](#2-location)
 - §3 [Review](#3-review)
 - §4 [Map Overview](#4-map-overview)
+- §5 [Location Provider](#5-location-provider)
 
 A **Collection Entry** is the pairing `(Location, Review)` within a Collection. It is not a concept on its own — it's the unit that emerges when Collection, Location, and Review compose.
 
@@ -78,6 +79,7 @@ The Collection's review template lives in the Review concept (§3), not here. Th
 - `addToCollection(collection, data)` — make this Location a Collection Entry (this is `Collection.addEntry` viewed from the Location's side; see synchronization below).
 - `openExternally(target)` — hand off to an external map app (e.g. Google Maps, Apple Maps) for navigation, street view, or richer details. RTP does not reimplement those affordances; it cedes them by handoff.
 - `refresh()` — if `refreshable`, re-query the provider to update `cachedMetadata`.
+- `detectDuplicates()` — scan existing Locations for pairs that likely refer to the same real place (proximity + name similarity), surfacing merge candidates.
 - `merge(other)` — user-confirmed reconciliation when two Locations from different providers refer to the same real place.
 
 **Operational principle.** A user searches "Blue Bottle Mint Plaza" via the Google provider and resolves a Location. They add it to two Collections. Later they tap the Location and choose "Open in Google Maps"; the OS hands off to the Google Maps app, which opens at the same coordinates. Their Collection Entries in both Collections are unaffected.
@@ -87,6 +89,7 @@ The Collection's review template lives in the Review concept (§3), not here. Th
 - "Open in Google Maps" is one instance of `openExternally`. Apple Maps, OsmAnd, etc., are equally valid targets. The user picks; RTP does not privilege one.
 - A Location with no Collection memberships is allowed but normally garbage-collected. (Decide when this matters.)
 - `merge` is the user's tool for "looks like the same place." Never automatic.
+- Identity is a single `(sourceType, sourceId)` pair. A multi-identity model — one Location carrying several provider identities — would not disturb Collection Entries, since an entry references a Location by surrogate id, not by identity. Adopting it would move identity (with its `cachedMetadata` and `refreshable`) into a child record per provider, and `merge` would have the survivor absorb the other's identities rather than discard them. Flagged, not pre-built.
 
 ---
 
@@ -167,6 +170,30 @@ Instance:
 - Visited/Unvisited rendering only applies to Collection Entries whose schema has that field. Collection Entries without it render with the standard filled pin.
 - Pin appearance is driven by Collection `appearance`, not per-Collection-Entry. Per-Collection-Entry visual encoding (e.g. star count) is reserved for the Collection Entry detail view, not the overview map.
 - Color-collision handling (two Collections with similar colors) is an emergent UX problem to address when the schema-builder / appearance-picker is designed.
+
+---
+
+## 5. Location Provider
+
+**Purpose.** Let a user choose and configure which mapping services RTP uses to resolve Locations, so they control the cost, quality, and data-ownership tradeoffs themselves.
+
+**State.**
+
+- `configured` — the set of providers the user has set up. Each carries a `type` (`google`, `osm`, `apple`, `mapbox`, etc.), an optional `key` (BYOK credential, when the provider requires one), and an `enabled` flag.
+- `default` — the provider used for new `resolve` queries unless one is named explicitly.
+
+**Actions.**
+
+- `addProvider(type, key?)` — configure a provider, supplying a BYOK key if it requires one. Keyless providers (e.g. `osm`) need none.
+- `switchProvider(type)` — set `default` to an already-configured provider. Affects only future resolutions.
+
+**Operational principle.** A user pastes a Google Places key via `addProvider(google, key)` and resolves places against it. Later, wanting to leave Google, they `addProvider(osm)` (no key needed) and `switchProvider(osm)`. New searches now hit OSM; the Locations they already saved keep their Google `(sourceType, sourceId)` and cached snapshot, unaffected.
+
+**Notes.**
+
+- A keyless provider (`osm` via Nominatim) is the always-available fallback, so RTP works with zero configuration.
+- `switchProvider` changes the default only — it does not migrate or re-resolve existing Locations. Rebuilding a library against a new provider is a separate, per-place-confirmed flow (see §2 `merge`).
+- The full provider catalogue and the `LocationProvider` data-layer seam belong in a future providers doc; this concept covers only what the user does.
 
 ---
 

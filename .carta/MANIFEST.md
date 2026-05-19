@@ -35,7 +35,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.00 | `00-index.md` | Product specs — what we're building and why | product, index | — | — | — |
 | doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
 | doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | doc01.03 | — |
-| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview | product, concepts, design | doc01.02 | doc01.04, doc02.02.00, doc02.02.01, doc02.02.02.01, doc03.01, doc03.02 | — |
+| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04, doc02.02.00, doc02.02.01, doc02.02.02.01, doc03.01, doc03.02 | — |
 | doc01.04 | `04-development-philosophy.md` | How we work on RTP: two sources of truth, artifact chain, unfolding, concept-driven design, spec-before-code | product, philosophy, method, process | doc01.03 | — | — |
 
 ## 02-design — Design

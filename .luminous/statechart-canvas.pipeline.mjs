@@ -69,6 +69,7 @@ const CONCEPT_PALETTE = {
   Location:    { color: '#4C8DD8', tone: 'default' },
   Review:      { color: '#5BA85B', tone: 'danger'  },
   MapOverview: { color: '#9B6FCB', tone: 'muted'   },
+  LocationProvider: { color: '#D85C8D', tone: 'accent' },
 };
 const FALLBACK_CONCEPT = { color: '#888888', tone: 'muted' };
 

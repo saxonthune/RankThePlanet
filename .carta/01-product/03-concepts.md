@@ -111,7 +111,8 @@ Per Collection (template):
 
 Per Collection Entry (instance):
 
-- `data` — a map of `field-name → value`, conforming to the template at the recorded version.
+- `data` — a map of `field-name → value`, conforming to the template at the recorded version. Any subset of the template's fields may be filled; a single field is as valid as the whole form.
+- `status` — `unreviewed` or `reviewed`. An entry is `unreviewed` when the Location sits in the Collection but the user has not yet captured an evaluation; it becomes `reviewed` once the user saves any field. There is no "incomplete" state in between — a sparse Review is a finished Review.
 - `recorded_template_version` — the template version this instance was written against.
 - `created`, `last_modified`.
 
@@ -120,7 +121,7 @@ Per Collection Entry (instance):
 Template authoring (per Collection):
 
 - `defineTemplate(collection, fields)` — initial template at Collection creation.
-- `editTemplate(collection, newFields)` — modify. Existing instances reconcile (missing required fields prompt; removed fields archived but not destroyed).
+- `editTemplate(collection, newFields)` — modify. Existing instances keep conforming; removed fields are archived, not destroyed.
 - `useBuiltIn(collection, templateName)` — adopt a built-in template (Coffee Ranking, Wishlist, Geo Diary, etc.) as the starting point.
 
 Instance:
@@ -138,6 +139,7 @@ Instance:
 - Built-in templates (Coffee Ranking, Wishlist, Geo Diary) are starting points users can adopt and customize. Built-in field types (stars, power-ranking, visited/unvisited, date) are shared affordances across all templates.
 - One concept covers both template and instance for now. If sharing makes the template-author and reviewer different people, this may split into a separate **ReviewTemplate** concept — flagged but not pre-built.
 - A Review exists only as part of a Collection Entry. There are no orphan Reviews.
+- A Review is valid with any subset of its template's fields filled — like a Letterboxd review, it need not be complete to count. The only meaningful distinction is `reviewed` vs `unreviewed` (see Instance `status`). A field's `required` flag marks what the template author considers core; it is used to nudge the user, never to block saving a sparse Review.
 
 ---
 

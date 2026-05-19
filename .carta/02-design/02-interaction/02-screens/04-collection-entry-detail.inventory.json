@@ -1,0 +1,69 @@
+{
+  "surface": "CollectionEntryDetail",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Names the Entry by its Location and holds the Entry-level affordances — Back and Remove."
+    },
+    {
+      "id": "location",
+      "purpose": "The Entry's Location — display name, coordinates, cached provider metadata — and the handoffs that act on it."
+    },
+    {
+      "id": "review",
+      "purpose": "The Entry's Review, shown as the full template field set. Renders one of two states: reviewed (the user has saved data) or unreviewed (the Location is in the Collection but not yet evaluated — every field shown unset)."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "topBar",
+      "event": "BACK",
+      "target": "CollectionDetail"
+    },
+    {
+      "id": "remove-entry",
+      "label": "Remove the Collection Entry",
+      "region": "topBar",
+      "event": "TAP_REMOVE_ENTRY",
+      "target": "CollectionDetail",
+      "action": "Collection.removeEntry"
+    },
+    {
+      "id": "open-externally",
+      "label": "Open in an external map app",
+      "region": "location",
+      "action": "Location.openExternally"
+    },
+    {
+      "id": "refresh-location",
+      "label": "Refresh the Location's cached metadata",
+      "region": "location",
+      "action": "Location.refresh"
+    },
+    {
+      "id": "edit-review",
+      "label": "Edit the Review",
+      "region": "review",
+      "event": "TAP_EDIT_REVIEW",
+      "target": "ReviewForm",
+      "action": "Review.edit"
+    }
+  ],
+  "lists": [
+    {
+      "id": "review-fields",
+      "region": "review",
+      "iterates": "Review field",
+      "reads": "review",
+      "item": {
+        "shows": [
+          "the template field's label",
+          "the field's value, rendered for its type, or an unset marker when empty"
+        ]
+      },
+      "emptyState": "When the Entry is unreviewed, every template field shows unset and the region prompts the user toward Edit the Review."
+    }
+  ]
+}

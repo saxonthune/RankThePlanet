@@ -3,7 +3,7 @@
   "regions": [
     {
       "id": "topBar",
-      "purpose": "Names the Entry by its Location and holds the Entry-level affordances — Back and Remove."
+      "purpose": "Names the Entry by its Location and holds the Entry-level affordances — Back, View the Collection, and Remove."
     },
     {
       "id": "location",
@@ -29,6 +29,13 @@
       "event": "TAP_REMOVE_ENTRY",
       "target": "CollectionDetail",
       "action": "Collection.removeEntry"
+    },
+    {
+      "id": "view-collection",
+      "label": "View the Collection",
+      "region": "topBar",
+      "event": "VIEW_COLLECTION",
+      "target": "CollectionDetail"
     },
     {
       "id": "open-externally",

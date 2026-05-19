@@ -176,6 +176,11 @@
           "label": "Remove the Collection Entry",
           "description": "User removes this Collection Entry from the Collection (Collection.removeEntry). Does not delete the Location — it may exist in other Collections."
         },
+        "VIEW_COLLECTION": {
+          "target": "CollectionDetail",
+          "label": "View the Collection",
+          "description": "User opens the Collection that owns this Entry. Useful when the Entry was reached from a map pin rather than from CollectionDetail — it navigates to the owning Collection explicitly rather than following the back stack, which BACK does."
+        },
         "BACK": {
           "target": "CollectionDetail",
           "description": "Return to the owning Collection. (CollectionEntryDetail is also reachable from MapOverview; static BACK targets the Collection context — true back-stack is runtime history. See doc02.02.01.)"

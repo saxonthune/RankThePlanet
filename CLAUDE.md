@@ -81,3 +81,7 @@ node .luminous/statechart-canvas.pipeline.mjs
 ```
 
 The pipeline walks `.carta/` for `*.statechart.json` sidecars and emits a derived canvas pair (`*.canvas.graph.json` + `*.canvas.pack.json`) per sidecar under `.luminous/generated/`. That output tree is gitignored — edit the sidecar and re-run, never hand-edit the generated files.
+
+## Code map
+
+`make code-map` regenerates `.luminous/generated/code-map.md` — a compressed signature skeleton of the Kotlin sources under `app/composeApp/src/` (bodies stripped, grouped by package and file). Read it for a fast whole-codebase overview without opening every `.kt` file. It is a gitignored build artifact — re-run after code changes, never hand-edit. Spec: `doc01.04.03`.

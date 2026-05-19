@@ -33,13 +33,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.domain.CollectionId
-import com.saxonthune.ranktheplanet.nav.Screen
 
 @Composable
 fun CollectionListScreen(
     collections: CollectionRepository,
     entries: EntryRepository,
-    onNavigate: (Screen) -> Unit,
+    onNewCollection: () -> Unit,
+    onImport: () -> Unit,
+    onBack: () -> Unit,
     onOpenCollection: (CollectionId) -> Unit,
 ) {
     val vm = viewModel { CollectionListViewModel(collections, entries) }
@@ -61,13 +62,13 @@ fun CollectionListScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = { onNavigate(Screen.SchemaBuilder) }) {
+            TextButton(onClick = { onNewCollection() }) {
                 Text("New")
             }
-            TextButton(onClick = { onNavigate(Screen.ImportFlow) }) {
+            TextButton(onClick = { onImport() }) {
                 Text("Import")
             }
-            TextButton(onClick = { onNavigate(Screen.MapOverview) }) {
+            TextButton(onClick = { onBack() }) {
                 Text("Back")
             }
         }

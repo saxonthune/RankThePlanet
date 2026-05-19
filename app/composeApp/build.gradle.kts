@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlinSerialization)
     // Bundled with the Kotlin Multiplatform plugin; applied without a version.
     id("org.jetbrains.kotlin.native.cocoapods")
 }
@@ -49,6 +50,8 @@ kotlin {
             implementation(libs.kotlinx.collections.immutable)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.jetbrains.navigation.compose)
+            implementation(libs.kotlinx.serialization.core)
         }
         androidMain.dependencies {
             implementation(compose.preview)

@@ -26,7 +26,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.domain.EntryId
-import com.saxonthune.ranktheplanet.nav.Screen
 import com.saxonthune.ranktheplanet.ui.NotImplementedButton
 
 @Composable
@@ -34,9 +33,11 @@ fun CollectionEntryDetailScreen(
     entryId: EntryId,
     entries: EntryRepository,
     templates: TemplateRepository,
-    onNavigate: (Screen) -> Unit,
+    onEditReview: () -> Unit,
+    onRemoveEntry: () -> Unit,
+    onBack: () -> Unit,
 ) {
-    val vm = viewModel(key = entryId.value) {
+    val vm = viewModel {
         CollectionEntryDetailViewModel(entryId, entries, templates)
     }
     val state by vm.uiState.collectAsState()
@@ -75,8 +76,8 @@ fun CollectionEntryDetailScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = { onNavigate(Screen.CollectionDetail) }) { Text("Remove") }
-            TextButton(onClick = { onNavigate(Screen.CollectionDetail) }) { Text("Back") }
+            TextButton(onClick = { onRemoveEntry() }) { Text("Remove") }
+            TextButton(onClick = { onBack() }) { Text("Back") }
         }
 
         HorizontalDivider()
@@ -150,7 +151,7 @@ fun CollectionEntryDetailScreen(
                     )
                 }
             }
-            TextButton(onClick = { onNavigate(Screen.ReviewForm) }) { Text("Edit the Review") }
+            TextButton(onClick = { onEditReview() }) { Text("Edit the Review") }
         }
     }
 }

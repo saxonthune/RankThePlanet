@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.saxonthune.ranktheplanet.nav.Screen
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
@@ -74,7 +73,12 @@ private val PINS_GEOJSON = """
 private val MOCK_COLLECTIONS = listOf("Drip Coffee", "NYT Top 100", "Geo Diary")
 
 @Composable
-fun MapOverviewScreen(onNavigate: (Screen) -> Unit) {
+fun MapOverviewScreen(
+    onOpenCollections: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onInspectPin: () -> Unit,
+    onDropPin: () -> Unit,
+) {
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
             target = Position(longitude = -73.9855, latitude = 40.7580),
@@ -119,10 +123,10 @@ fun MapOverviewScreen(onNavigate: (Screen) -> Unit) {
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Button(onClick = { onNavigate(Screen.CollectionList) }) {
+                    Button(onClick = { onOpenCollections() }) {
                         Text("Collections")
                     }
-                    Button(onClick = { onNavigate(Screen.Settings) }) {
+                    Button(onClick = { onOpenSettings() }) {
                         Text("Settings")
                     }
                 }
@@ -162,13 +166,13 @@ fun MapOverviewScreen(onNavigate: (Screen) -> Unit) {
                 ) {
                     Button(
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigate(Screen.CollectionEntryDetail) },
+                        onClick = { onInspectPin() },
                     ) {
                         Text("Inspect a pin")
                     }
                     Button(
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigate(Screen.LocationDraft) },
+                        onClick = { onDropPin() },
                     ) {
                         Text("Drop a pin")
                     }

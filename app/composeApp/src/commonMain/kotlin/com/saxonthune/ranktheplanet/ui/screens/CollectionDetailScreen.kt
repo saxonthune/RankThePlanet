@@ -33,7 +33,6 @@ import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
-import com.saxonthune.ranktheplanet.nav.Screen
 
 @Composable
 fun CollectionDetailScreen(
@@ -41,10 +40,12 @@ fun CollectionDetailScreen(
     collections: CollectionRepository,
     entries: EntryRepository,
     templates: TemplateRepository,
-    onNavigate: (Screen) -> Unit,
+    onAddEntry: () -> Unit,
+    onEditTemplate: () -> Unit,
+    onBack: () -> Unit,
     onOpenEntry: (EntryId) -> Unit,
 ) {
-    val vm = viewModel(key = collectionId.value) {
+    val vm = viewModel {
         CollectionDetailViewModel(collectionId, collections, entries, templates)
     }
     val state by vm.uiState.collectAsState()
@@ -66,9 +67,9 @@ fun CollectionDetailScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = { onNavigate(Screen.LocationPicker) }) { Text("Add Entry") }
-            TextButton(onClick = { onNavigate(Screen.SchemaBuilder) }) { Text("Edit Template") }
-            TextButton(onClick = { onNavigate(Screen.CollectionList) }) { Text("Back") }
+            TextButton(onClick = { onAddEntry() }) { Text("Add Entry") }
+            TextButton(onClick = { onEditTemplate() }) { Text("Edit Template") }
+            TextButton(onClick = { onBack() }) { Text("Back") }
         }
 
         HorizontalDivider()

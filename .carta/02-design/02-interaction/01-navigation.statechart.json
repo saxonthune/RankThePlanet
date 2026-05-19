@@ -18,7 +18,7 @@
           },
           "on": {
             "TAP_PIN": {
-              "target": "EntryDetail",
+              "target": "CollectionEntryDetail",
               "description": "User taps a pin on the map to inspect that entry.",
               "actions": ["MapOverview.selectPin"]
             },
@@ -35,7 +35,7 @@
               "description": "User opens the list of Collections to manage them."
             },
             "TAP_ADD_HERE": {
-              "target": "#rtp-navigation.overlay.AddToCollection",
+              "target": "#rtp-navigation.overlay.AddLocationToCollection",
               "description": "User drops a pin at their current location (or a tapped map point) and chooses which Collection to add it to. Starts the Location-first flow from doc01.02 §3.",
               "actions": ["Location.dropPin"]
             },
@@ -59,8 +59,8 @@
               "description": "User opens a Collection to see its entries."
             },
             "TAP_NEW_COLLECTION": {
-              "target": "#rtp-navigation.overlay.SchemaBuilder",
-              "description": "User starts a new Collection. Opens the SchemaBuilder overlay to author the Review template before any entries can be added.",
+              "target": "#rtp-navigation.overlay.ReviewBuilder",
+              "description": "User starts a new Collection. Opens the ReviewBuilder overlay to author the Review template before any entries can be added.",
               "actions": ["Collection.create"]
             },
             "TAP_IMPORT": {
@@ -107,7 +107,7 @@
           },
           "on": {
             "TAP_ENTRY": {
-              "target": "EntryDetail",
+              "target": "CollectionEntryDetail",
               "description": "User opens a single entry to inspect its Location and Review."
             },
             "TAP_ADD_ENTRY": {
@@ -115,7 +115,7 @@
               "description": "User starts the Collection-first add flow. LocationPicker resolves a Location, then ReviewForm captures the per-entry Review."
             },
             "TAP_EDIT_TEMPLATE": {
-              "target": "#rtp-navigation.overlay.SchemaBuilder",
+              "target": "#rtp-navigation.overlay.ReviewBuilder",
               "description": "User opens the Review template editor for this Collection.",
               "actions": ["Review.editTemplate"]
             },
@@ -134,11 +134,11 @@
           }
         },
 
-        "EntryDetail": {
+        "CollectionEntryDetail": {
           "description": "One entry — the (Location, Review) pair. Read-mostly surface; mutation goes through the ReviewForm overlay. Hosts the 'open externally' handoff to Google Maps / Apple Maps / etc.",
           "tags": ["detail"],
           "meta": {
-            "surface": "EntryDetail",
+            "surface": "CollectionEntryDetail",
             "reads": ["entry", "location", "review"]
           },
           "on": {
@@ -225,11 +225,11 @@
           }
         },
 
-        "AddToCollection": {
+        "AddLocationToCollection": {
           "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to.",
           "tags": ["picker"],
           "meta": {
-            "surface": "AddToCollection",
+            "surface": "AddLocationToCollection",
             "reads": ["collections", "candidate-location"]
           },
           "on": {
@@ -239,7 +239,7 @@
               "actions": ["Location.addToCollection"]
             },
             "TAP_NEW_COLLECTION": {
-              "target": "SchemaBuilder",
+              "target": "ReviewBuilder",
               "description": "None of the existing Collections fit; create a new one.",
               "actions": ["Collection.create"]
             },
@@ -282,22 +282,22 @@
               }
             },
             "submitting": {
-              "description": "Submit in flight. Brief transient state; transitions both close the overlay and route nav to EntryDetail of the just-saved entry.",
+              "description": "Submit in flight. Brief transient state; transitions both close the overlay and route nav to CollectionEntryDetail of the just-saved entry.",
               "on": {
                 "SUBMITTED": {
                   "target": "#rtp-navigation.overlay.none",
-                  "description": "Submit succeeded; close the overlay. (Underlying nav routing to EntryDetail will be handled by an action once the visualizer tolerates multi-target transitions; see doc02.02.01.)"
+                  "description": "Submit succeeded; close the overlay. (Underlying nav routing to CollectionEntryDetail will be handled by an action once the visualizer tolerates multi-target transitions; see doc02.02.01.)"
                 }
               }
             }
           }
         },
 
-        "SchemaBuilder": {
+        "ReviewBuilder": {
           "description": "Author or edit a Collection's Review template — the schema that governs every Review in this Collection. Add/remove/reorder fields; pick field types (stars, enum, boolean, date, power-ranking, text). Adopt a built-in template as a starting point.",
           "tags": ["form"],
           "meta": {
-            "surface": "SchemaBuilder",
+            "surface": "ReviewBuilder",
             "reads": ["template"]
           },
           "on": {

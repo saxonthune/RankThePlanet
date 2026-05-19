@@ -61,10 +61,12 @@ CMP-bound system specs (state tiers, repository contracts, screens-as-Composable
 
 ## Statechart sidecar workflow
 
-When editing a `*.statechart.json` carta sidecar, run the build to keep the generated TS in sync:
+When editing a `*.statechart.json` carta sidecar:
 
 ```
-cd tools/statechart && npm run build
+cd tools/statechart
+make build    # codegen TS files (Stately VS Code extension); needs `npm install` once
+make viz      # render local HTML viewer to dist/ (Python stdlib only)
 ```
 
-Commit both the sidecar and the generated file in the same change. CI gate: `git diff tools/statechart/generated/` must be empty after `npm run build`.
+Commit both the sidecar and the generated TS in the same change. CI gate: `git diff tools/statechart/generated/` must be empty after `make build`. The `dist/` viewer output is gitignored.

@@ -34,3 +34,7 @@ replay_pid*
 # Node tooling
 node_modules/
 package-lock.json
+
+# Local statechart viewer output
+tools/statechart/dist/
+__pycache__/

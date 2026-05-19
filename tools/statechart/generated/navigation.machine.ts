@@ -9,7 +9,6 @@ import { createMachine } from 'xstate';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const navigationMachine = createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QCcAuAHAtAOwIYDcBLKXVQge2wDo98qBZXdAeXzGSLAHcBiAFQCCABQD6QgJIA5ANoAGALqJQ6crEJlKSkAA9EAVgDsAZioBOA6YBMsgIx7LN43psAaEAE9ENozdlU9ACyWplamskYB4XoAvtFuaFi0xKQU1LQMTKzsnLyCogDCzAAyRQCi+XzizJIifMwA4vVlcopIICpqGthaugjeelRGQxF6ABwBNsHGbp59wX4GNgBsRpaj9lNLsfEYOATJXTQEGSxsHITc-MIiAFIAqvSidSKFJeWV1S1aHeqpPV5GAbDEbjSbmIwzLw2AIBQajWSGJaOUaOSxGbYgBJ7IgkQ7pRinbIXXLXV5lCpVSQAZREACE7nw6jIFN9VL9NG1enpZLDZKMhkiHMZRijIQhjKYqJYgqMlnzFmNHBisUlcakjnQCVlzpc8iIBAARA0iAASpQASqUvm0fl1-ggfAETA5fI4DPMDAYxdDTEsqAi1ktRtLTBNJsrdqqUpQNSdtTkrqIqaVGVJ6lTrco2XbOYgAuN-fyjILHEYRa4PPpDFQ7EtDFZlls4pjI-s1TH0vlyAAbbtgADGXSKhFgqETL2K5I+zNaWc6f1zfWLfqMBm5gNkS0WSK9lfF+aocoRfO5TvhBgjiTb0bSxy7vYHQ5HY71klKAHUJ28KZ8WTbswuoC9I6zo2K6noerusxypYVAGMGeg+FMKKApe2IHOqnY9n2g6pMOo7juIjzMOafCZu0AEckBiAgVKYG2BBYSemKAR6H6MJbvBpiIbIsimKMaFRnid7YY+eHPjwtICPkADS5G2oBOh5qGhYCpMpblmKdYGGYrHrKx9iBN4gnXsJdD3jhXQGmAqC4IQ3bjqUkh8OaACa8mUd0i7QpuZhyqG0pyksljut6aIrhMej8Ty3HwpYJk4jesYWWJlDWbZ9njoaxpOS57l-nO7JedRDrQqB4HukxUFQtKNamGBESjPxTgxM2KqmZhIkPrhaU2XZDl6qUBriHwtSlI8RQCHwVoFRR85UUppVOnRFWQWK5g6esiEIYhpg+KYCUYR2XWWak6X9Y5AAaQgkWRs0KQtvRohYgzcfVRi8YYQzVeKwZUKxPKyAYAQGLIDh6K1OxXolZlUClPXYOdmV6lSJoCJaHnzcVi3PZKRhvd4n3GKuWnFjW0J1s4lhGUqbWtjDnXmaJCNIw5UmyZjRX2s4vJFiWwqinuoxrq93hLJEPi+PFdPQ0dt5M91Vl9fZVAALZMEIyDkAAVql2DjnUjRlGI5rMDc7yUpzOYlZY0qbVFEz1QEW7CxCe5gVucG8QDtshLbASHe28tw8zSsZd2VDds+ms63rBsNE0pQm2bFu-rOc1c4u-v26GNhOy70zu3y7HhDC+O+OWAky+hQexqU2CoMg7is45w2jZaABq4gflbinAWVK0MZVQM-WLkrWCK8H2MsPgXtXQmM1Q9eN83ysDdczBCE5IilJd03mpIAhFL3j1eJusHBeu4zO8FljenYm1rki3GAkEYyB0l6TL03Ld6paABilpUYiCKMwfIU1Lb3U8vaXwwVDzU3CNfJYt9vS2BsP4fGspFhhFvtLKGNdP7HG-qvcO45LT0GYB3JOuU3In2xr0HyfpfR8SCM7c+oUi58i9iKfGZYvpNnwQvY6dBiEt3ZnJKBWMYGRCYf5VhQUQp33dnYAYPJWL1WMAifGc9BEdWEVQKkNkyDYCgLASS0kJHpwevQvMwNVLFnUgLCsswQYDHWNxd0TU1xRUhi2WWtdyBnG7LgdwVAijkH7DeIQhB+wAGt2D8FclvEQABFO4Fp8pWOgYuZcfpZQhBPI4GESjZjQjzl7D6vELBNWWDovxBDDiBPYME0J4TIldGiXEhJBpTaiAkDOVkUiclBj9N7MGdhVh7RKV4YIsF3FoKBg1NcH9GlBJCWEiJUSYnxOQDwIQAgqTTREHcc0RQRAkREP-cQzRJGZxKrkqg6wgzGEiNxaEo8Kb+DRNTYWlgVhDCrrohmMYmnIBaRs9pqROk7L2eIWSIggF3CKHdLJQySqRFBv4MGw8mrcWpt6QwsJxgjPdIEViNgVnqlBeCtpWyum7PyKA5MdD7QYr8NyRRYRcWGW9CDUY-pgiTAMMgus-FKUgrWaEgQEAIB8HIPDLosL4VklTgM-8aLFqRHhFizlfIQg8r3A4NYh5+JWARCo4m4rqDUvWdK2V8rQ6pHHG+T8KqfxqsKtbTVQN2XYvmNy-FhreLoP0ntIGwsLBlitVQG1UqZVyoVU6xlzBmW3K9b0LVvrdUBr0GKW2EN-BBHqmDJ0gIQrRtjVQc0YAcj-3IMgVWVBIC-BMTwIaI1LndyKAaFli5WIg38NCNhHL1jeisLCEGNgmoBD2s4X0FbJVVprcSOtDam0QBbVAHgjLSjo07aUbtvb0Uzr8CiewZZQh8UBN6T0-KxbQmpmEfGtsF3NPWdW2t9bG3NuMVulGdxaT0BGkezVso-RCuBsLIMaIAh5q0f4Wdip+RktfWC99y7uCru-Ru3945wGSHyAekDXIjz+giJuKwQxFljqBiapq1hnAQ2Bqh8FH6V1fqoLAAArgAI1VuoXDVIANAcZENYj+hSOlwo2iD6iw4MDsmCKUMrtBQCPqUI61i6qT9gABZgHVrSLj9kIDdNKFct8Y0JpTRmqiu5oHIh+RWB7cl+YxTrB0sg6d+M2JOnqix9Z2m9MGaM92Ezuz22jWmlZ6a4mED5mWP6GETpqarDdGKRY6Dhh52WB7QEan2rAs02+0JgX9O4EM8ZhJdxkx0juNc0aUhYvxdGUl1YiEhQ-R82Ycwvm-lBh8Pl+mcsY1ad02ViroXunVBs4MuzGaApwVDJEYI2i-nrQHWuJ9YMxihisP5krY3guVYZUymb6q5vKSCItmEYM9rmDW0XA8gR+QIgdk1BE+2qDiFVioNA-9uzkF4AaabTWfU6qWPVQwIpuSjBYlFLFKIHDeeLCDT733fuoH+4D7dp3QeYo5RDh+0O+RilXPyl0YFuTCtWEEWIzZsDkBM-ANoBW5azfTYgTAecxSYGWjO22EPbCC5PNG2g7O+6IGCKT2qLymMonccKgO889HBy1GcHI4vT7ilHsU-09g+TF09NU0XJ09b4VQJrmxCB9JwRecgssAYfDpdo+EWwwZfTCz4gdZXhXkqOt6uHS3MDPTj1l77cwW5c17kh3BWUdh+J2FsHtn3w2sKKzOmvNWGsta6wRkH7ywYdIhRGOH4Va5UF7XJhG7iMJ+TcRNwrU6Af+qR2jjnvW+ebZjD9GiKdyxrAvOmX0PVNZwa2yR2iedKfa5fwbj-NenfFphElAn29MIQi529KsfloMUd6sWB9dE0-CF0EMagX9zPPUS+t+LV6YxFgIjrIGMUiFYTC8BMGIUsp9uL+AjxL5ZaT8wYjgSw3onsnocokQfIgIFceC6mKuI2xWNAlAYAv+iAR4fgEQ2kTEtsYEvKyCZgwaK2oYl8R+QKw2latKHS2y7AaBDoUOAB9gQBQooB7sEM6CgQEOYQ9gyCvocBrOASi6dqCa-u2M1i9ogI8EjBIUbEwBwqeatsJgiwwsecDgSIqwn2bGmGX6dBSWcydgaI9Gy+167sQUh46wDi8IDYyyx+qySBWhXAWG66m6uhbERe8IfEtS+urBswDGK4dgIoN8UwiEmhGGjhHG3GfGAmhAJidBVOJgCI+YnEDUJMQacogwXBD8SIQYYqthVKo2QW5WIWYWuhAMjyBhF68ws660TUg6K2xY4wDg6waOP29amOAOXAdBkh-K56TBshLBLEaIdEQw-EdYKwMoTYsQQAA */
   "id": "rtp-navigation",
   "type": "parallel",
   "description": "Top-level parallel machine. The user's experience at any moment is the product of the active `nav` state (which primary screen they are on) and the active `overlay` state (which sheet/modal is on top, if any). Events are defined on the surface where the user invokes them; cross-region targets use absolute paths.",
@@ -34,7 +33,7 @@ export const navigationMachine = createMachine({
           },
           "on": {
             "TAP_PIN": {
-              "target": "EntryDetail",
+              "target": "CollectionEntryDetail",
               "description": "User taps a pin on the map to inspect that entry.",
               "actions": [
                 "MapOverview.selectPin"
@@ -57,7 +56,7 @@ export const navigationMachine = createMachine({
               "description": "User opens the list of Collections to manage them."
             },
             "TAP_ADD_HERE": {
-              "target": "#rtp-navigation.overlay.AddToCollection",
+              "target": "#rtp-navigation.overlay.AddLocationToCollection",
               "description": "User drops a pin at their current location (or a tapped map point) and chooses which Collection to add it to. Starts the Location-first flow from doc01.02 §3.",
               "actions": [
                 "Location.dropPin"
@@ -86,8 +85,8 @@ export const navigationMachine = createMachine({
               "description": "User opens a Collection to see its entries."
             },
             "TAP_NEW_COLLECTION": {
-              "target": "#rtp-navigation.overlay.SchemaBuilder",
-              "description": "User starts a new Collection. Opens the SchemaBuilder overlay to author the Review template before any entries can be added.",
+              "target": "#rtp-navigation.overlay.ReviewBuilder",
+              "description": "User starts a new Collection. Opens the ReviewBuilder overlay to author the Review template before any entries can be added.",
               "actions": [
                 "Collection.create"
               ]
@@ -147,7 +146,7 @@ export const navigationMachine = createMachine({
           },
           "on": {
             "TAP_ENTRY": {
-              "target": "EntryDetail",
+              "target": "CollectionEntryDetail",
               "description": "User opens a single entry to inspect its Location and Review."
             },
             "TAP_ADD_ENTRY": {
@@ -155,7 +154,7 @@ export const navigationMachine = createMachine({
               "description": "User starts the Collection-first add flow. LocationPicker resolves a Location, then ReviewForm captures the per-entry Review."
             },
             "TAP_EDIT_TEMPLATE": {
-              "target": "#rtp-navigation.overlay.SchemaBuilder",
+              "target": "#rtp-navigation.overlay.ReviewBuilder",
               "description": "User opens the Review template editor for this Collection.",
               "actions": [
                 "Review.editTemplate"
@@ -179,13 +178,13 @@ export const navigationMachine = createMachine({
             }
           }
         },
-        "EntryDetail": {
+        "CollectionEntryDetail": {
           "description": "One entry — the (Location, Review) pair. Read-mostly surface; mutation goes through the ReviewForm overlay. Hosts the 'open externally' handoff to Google Maps / Apple Maps / etc.",
           "tags": [
             "detail"
           ],
           "meta": {
-            "surface": "EntryDetail",
+            "surface": "CollectionEntryDetail",
             "reads": [
               "entry",
               "location",
@@ -295,13 +294,13 @@ export const navigationMachine = createMachine({
             }
           }
         },
-        "AddToCollection": {
+        "AddLocationToCollection": {
           "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to.",
           "tags": [
             "picker"
           ],
           "meta": {
-            "surface": "AddToCollection",
+            "surface": "AddLocationToCollection",
             "reads": [
               "collections",
               "candidate-location"
@@ -316,7 +315,7 @@ export const navigationMachine = createMachine({
               ]
             },
             "TAP_NEW_COLLECTION": {
-              "target": "SchemaBuilder",
+              "target": "ReviewBuilder",
               "description": "None of the existing Collections fit; create a new one.",
               "actions": [
                 "Collection.create"
@@ -371,23 +370,23 @@ export const navigationMachine = createMachine({
               }
             },
             "submitting": {
-              "description": "Submit in flight. Brief transient state; transitions both close the overlay and route nav to EntryDetail of the just-saved entry.",
+              "description": "Submit in flight. Brief transient state; transitions both close the overlay and route nav to CollectionEntryDetail of the just-saved entry.",
               "on": {
                 "SUBMITTED": {
                   "target": "#rtp-navigation.overlay.none",
-                  "description": "Submit succeeded; close the overlay. (Underlying nav routing to EntryDetail will be handled by an action once the visualizer tolerates multi-target transitions; see doc02.02.01.)"
+                  "description": "Submit succeeded; close the overlay. (Underlying nav routing to CollectionEntryDetail will be handled by an action once the visualizer tolerates multi-target transitions; see doc02.02.01.)"
                 }
               }
             }
           }
         },
-        "SchemaBuilder": {
+        "ReviewBuilder": {
           "description": "Author or edit a Collection's Review template — the schema that governs every Review in this Collection. Add/remove/reorder fields; pick field types (stars, enum, boolean, date, power-ranking, text). Adopt a built-in template as a starting point.",
           "tags": [
             "form"
           ],
           "meta": {
-            "surface": "SchemaBuilder",
+            "surface": "ReviewBuilder",
             "reads": [
               "template"
             ]
@@ -443,4 +442,4 @@ export const navigationMachine = createMachine({
       }
     }
   }
-} as any as any);
+} as any);

@@ -1,0 +1,69 @@
+{
+  "id": "hello-world",
+  "version": "0.1.0",
+  "description": "Smallest possible Luminous pack — one node kind, one edge kind, one view. A smoke test that Luminous can resolve a co-located pack and render a graph.",
+  "nodeKinds": [
+    {
+      "id": "hello.note",
+      "label": "Note",
+      "props": {
+        "type": "object",
+        "properties": {
+          "text": { "type": "string" },
+          "detail": { "type": "string" }
+        },
+        "required": ["text"],
+        "additionalProperties": false
+      },
+      "render": {
+        "peek": { "type": "text", "value": "{content.text}", "style": "heading" },
+        "card": {
+          "type": "card",
+          "shape": "rectangle",
+          "padding": 12,
+          "children": [
+            { "type": "text", "value": "{content.text}", "style": "heading" },
+            { "type": "text", "value": "{content.detail}", "style": "caption", "tone": "muted" }
+          ]
+        }
+      }
+    }
+  ],
+  "edgeKinds": [
+    {
+      "id": "hello.link",
+      "label": "links",
+      "directed": true,
+      "props": { "type": "object", "additionalProperties": false },
+      "acceptsSource": ["hello.note"],
+      "acceptsTarget": ["hello.note"]
+    }
+  ],
+  "views": [
+    {
+      "id": "hello",
+      "name": "Hello",
+      "description": "Three notes and the links between them.",
+      "zoomToLevel": [
+        { "minZoom": 0, "level": "peek" },
+        { "minZoom": 0.4, "level": "card" },
+        { "minZoom": 1.2, "level": "open" },
+        { "minZoom": 3.0, "level": "deep" }
+      ],
+      "nodeRoles": { "hello.note": "spatial" },
+      "edgeRoles": { "hello.link": "arrow" },
+      "layers": {},
+      "layout": { "algorithm": "elk" }
+    }
+  ],
+  "layers": [],
+  "disclosure": [
+    {
+      "kind": "hello.note",
+      "peek": ["text"],
+      "card": ["text", "detail"],
+      "open": ["text", "detail"],
+      "deep": ["text", "detail"]
+    }
+  ]
+}

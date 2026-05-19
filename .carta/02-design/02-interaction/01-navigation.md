@@ -18,11 +18,11 @@ A **surface** is a UI region the user perceives as one place. It may render as a
 | `MapOverview` | Everything view; default landing | — | all Collections + entries | toggleCollection, selectPin, jumpToCollection |
 | `CollectionList` | Manage the user's Collections | — | Collections | Collection.create, Collection.import |
 | `CollectionDetail` | One Collection's entries (map + list projections) | `collection_id` | Collection.entries, appearance | Collection.addEntry, Collection.removeEntry, Collection.share, Collection.export, Review.editTemplate |
-| `EntryDetail` | One entry: full Location + Review | `entry_id` | Location, Review | Review.edit, Location.openExternally, Collection.removeEntry |
+| `CollectionEntryDetail` | One entry: full Location + Review | `entry_id` | Location, Review | Review.edit, Location.openExternally, Collection.removeEntry |
 | `ReviewForm` | Author/edit a Review instance against a template | `(collection_id, location_id)` | template, draft Review | Review.start, Review.edit, Review.submit, Review.clear |
-| `SchemaBuilder` | Author/edit a Collection's Review template | `collection_id` | template | Review.defineTemplate, Review.editTemplate, Review.useBuiltIn |
+| `ReviewBuilder` | Author/edit a Collection's Review template | `collection_id` | template | Review.defineTemplate, Review.editTemplate, Review.useBuiltIn |
 | `LocationPicker` | Resolve / drop / import a Location | `(mode, collection_id?)` | provider results | Location.resolve, Location.dropPin, Location.import |
-| `AddToCollection` | Pick which Collection to add a Location to | `location_id` | Collections list | Collection.addEntry (forwards) |
+| `AddLocationToCollection` | Pick which Collection to add a Location to | `location_id` | Collections list | Collection.addEntry (forwards) |
 | `Settings` | Providers, BYOK keys, sync target | — | settings | (settings actions, deferred) |
 
 The inventory is not closed — surfaces are added when a use case demands one. Today's set covers the three journeys in [[02-use-cases]] (doc01.02).
@@ -31,8 +31,8 @@ The inventory is not closed — surfaces are added when a use case demands one. 
 
 The machine is a **parallel statechart** with two regions. The user's experience at any moment is the product of the active `nav` state and the active `overlay` state.
 
-- **`nav`** — which primary screen the user is on. Initial: `MapOverview`. Members: `MapOverview`, `CollectionList`, `CollectionDetail` (with substates `mapProjection` / `listProjection`), `EntryDetail`, `Settings`.
-- **`overlay`** — which sheet/modal is currently on top. Initial: `none`. Members: `none`, `LocationPicker`, `AddToCollection`, `ReviewForm` (with substates `editing` / `submitting`), `SchemaBuilder`, `ImportFlow`.
+- **`nav`** — which primary screen the user is on. Initial: `MapOverview`. Members: `MapOverview`, `CollectionList`, `CollectionDetail` (with substates `mapProjection` / `listProjection`), `CollectionEntryDetail`, `Settings`.
+- **`overlay`** — which sheet/modal is currently on top. Initial: `none`. Members: `none`, `LocationPicker`, `AddLocationToCollection`, `ReviewForm` (with substates `editing` / `submitting`), `ReviewBuilder`, `ImportFlow`.
 
 Why this shape:
 
@@ -40,7 +40,7 @@ Why this shape:
 - The auto-layout algorithm produces two cleanly nested boxes side-by-side instead of a tangle of crossings.
 - Concept actions that don't change screen (`Collection.export`, `Location.openExternally`) are now obvious self-transitions; visually they don't compete with real navigation.
 
-Most transitions stay inside one region. Cross-region transitions use **absolute paths** like `#rtp-navigation.overlay.AddToCollection`. A few transitions target both regions at once (e.g. `ReviewForm.submitting.SUBMITTED` simultaneously closes the overlay and navigates the underlying nav to `EntryDetail`) — written as an array of paths.
+Most transitions stay inside one region. Cross-region transitions use **absolute paths** like `#rtp-navigation.overlay.AddLocationToCollection`. A few transitions target both regions at once (e.g. `ReviewForm.submitting.SUBMITTED` simultaneously closes the overlay and navigates the underlying nav to `CollectionEntryDetail`) — written as an array of paths.
 
 ## Statechart conventions
 

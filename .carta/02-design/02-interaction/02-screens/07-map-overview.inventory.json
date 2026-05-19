@@ -20,6 +20,10 @@
     {
       "id": "mapActions",
       "purpose": "Holds the drop-a-pin affordance, which starts the Location-first flow."
+    },
+    {
+      "id": "statusBar",
+      "purpose": "Present only when the surface is entered in add-to-collection mode. Names the target Collection — \"Adding to {collectionName}\" — and holds the affordance to abandon the add flow. Absent in the default browse mode."
     }
   ],
   "affordances": [
@@ -67,6 +71,13 @@
       "region": "mapActions",
       "event": "DROP_PIN",
       "target": "LocationDraft"
+    },
+    {
+      "id": "cancel-add",
+      "label": "Cancel adding",
+      "region": "statusBar",
+      "event": "CANCEL_ADD",
+      "target": "CollectionDetail"
     }
   ],
   "lists": [

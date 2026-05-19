@@ -18,7 +18,7 @@ Navigation should use **`org.jetbrains.androidx.navigation:navigation-compose`**
 Each statechart state maps to one `@Serializable` route type. A state with no entry data is a route `object`; a state that needs an identifier to render is a route `data class` carrying it:
 
 ```
-@Serializable object MapOverview
+@Serializable data class MapOverview(val addToCollectionId: String? = null)
 @Serializable object CollectionList
 @Serializable data class CollectionDetail(val collectionId: String)
 @Serializable data class CollectionEntryDetail(val entryId: String)
@@ -28,12 +28,27 @@ Each statechart state maps to one `@Serializable` route type. A state with no en
 
 A route's parameters carry exactly what a surface's `meta.reads` requires to identify *which* instance it shows — `CollectionDetail` reads one `collection`, so its route carries a `collectionId`. Domain id value classes (`CollectionId`, `EntryId`) are unwrapped to `String` at the route boundary and re-wrapped inside the screen, since routes are serialized.
 
+## Entry modes — one route, optional context
+
+A surface entered with an **entry context** ([[01-navigation]], doc02.02.01 — Entry modes) stays one route; the context is an optional route argument. `MapOverview` is the worked case: a nullable `addToCollectionId` distinguishes the landing surface (`MapOverview(null)`) from add-to-collection mode (`MapOverview(collectionId)`), which `CollectionDetail`'s add-entry callback pushes. One route, not two — a second route would fork the whole map screen.
+
+The `composable<MapOverview>` block resolves the nullable argument into a **sealed mode type** before handing it to the screen, so the screen branches on an exhaustive `when`, never on a raw nullable:
+
+```
+sealed interface MapMode {
+    data object Browse : MapMode
+    data class AddingToCollection(val collectionId: CollectionId) : MapMode
+}
+```
+
+The discipline the screen keeps: the map composable itself — camera, sources, pin layers — never sees `MapMode`; it renders identically in both modes. Only the chrome (the status bar) and the location drawer's outcome affordances are mode-dependent, each resolved in one `when (mode)`. This keeps the expensive, shared part of the surface unconditional and confines the variation to two small, enumerated places. New modes (a future move-an-entry flow, say) extend the sealed type and fail compilation until every `when` handles them.
+
 ## The `NavHost`
 
 `App()` holds a single `NavHost`. Each statechart state maps to one `composable<Route>` block; each transition on that state maps to one `navigate()` call (for a `target`) or `popBackStack()` (for a `BACK`-style return), supplied to the screen as a named callback:
 
 ```
-NavHost(navController, startDestination = MapOverview) {
+NavHost(navController, startDestination = MapOverview()) {
     composable<CollectionDetail> { entry ->
         val route = entry.toRoute<CollectionDetail>()
         CollectionDetailScreen(

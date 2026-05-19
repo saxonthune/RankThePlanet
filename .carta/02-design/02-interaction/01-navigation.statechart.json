@@ -5,11 +5,11 @@
   "states": {
 
     "MapOverview": {
-      "description": "The everything view. Default landing surface. Shows pins for every Collection Entry in every visible Collection, colored by Collection appearance and styled by visited/unvisited state. See doc01.03 §4.",
+      "description": "The everything view. Default landing surface. Shows pins for every Collection Entry in every visible Collection, colored by Collection appearance and styled by visited/unvisited state. The surface has two entry modes, determined by how the user arrived: the default browse mode (the landing surface), and an add-to-collection mode entered from CollectionDetail's TAP_ADD_ENTRY, in which a Collection is held as entry context (`collection-context`). The map, pins, and search are identical in both modes — add-to-collection mode only adds a status bar naming the target Collection and routes every Location the user opens back to that one Collection. Mode is a parameterized entry context, not a separate surface. See doc01.03 §4.",
       "tags": ["landing", "map"],
       "meta": {
         "surface": "MapOverview",
-        "reads": ["all-collections", "all-entries", "viewport", "provider-results"],
+        "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context"],
         "actions": [
           "MapOverview.open",
           "MapOverview.pan",
@@ -45,6 +45,12 @@
           "target": "Settings",
           "label": "Open Settings",
           "description": "User opens settings (providers, BYOK keys, sync target)."
+        },
+        "CANCEL_ADD": {
+          "target": "CollectionDetail",
+          "guard": "inAddMode",
+          "label": "Cancel adding",
+          "description": "Live only in add-to-collection mode (guard: `collection-context` is set). User abandons the add-to-collection flow from the status bar; return to the originating CollectionDetail without adding a Collection Entry."
         }
       }
     },
@@ -132,7 +138,7 @@
         "TAP_ADD_ENTRY": {
           "target": "MapOverview",
           "label": "Add a Collection Entry",
-          "description": "User starts the Collection-first add flow. The Collection is held in context; the user finds a Location with the map's search or drop-pin, lands on LocationDraft, and the binding flows through AddLocationToCollection (which pre-selects the originating Collection). The precise re-entry into ReviewForm is unfolded when Collection-first context-passing is specified."
+          "description": "User starts the Collection-first add flow. This enters MapOverview in add-to-collection mode: the Collection is held as entry context (`collection-context`). The map, pins, and search are unchanged; a status bar names the target Collection. Any Location the user opens — by tapping a pin, dropping a pin, or picking a search result — carries the context through LocationDraft into AddLocationToCollection, where the originating Collection is pre-selected, so PICK_COLLECTION confirms rather than chooses. CANCEL_ADD from the status bar abandons the flow back here."
         },
         "TAP_EDIT_TEMPLATE": {
           "target": "CollectionEditor",
@@ -241,7 +247,7 @@
     },
 
     "AddLocationToCollection": {
-      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to.",
+      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to. When reached in MapOverview's add-to-collection mode, the originating Collection is pre-selected from the entry context and PICK_COLLECTION confirms it rather than choosing.",
       "tags": ["picker"],
       "meta": {
         "surface": "AddLocationToCollection",

@@ -30,7 +30,13 @@ States in the JSON, keyed by `meta.surface`:
 | `Settings` | Providers, BYOK keys, sync target (stub). |
 | `LocationProvider` | Configure mapping providers — add a provider with its BYOK key, choose the default. Reached from `Settings`. |
 
-The inventory is not closed — surfaces are added when a use case demands one. Today's set covers the journeys in [[02-use-cases]] (doc01.02): the Location-first track — drop a pin or search on `MapOverview` → `LocationDraft` → add-to-collection, or tap an existing pin → `LocationDetail` — and the Collection-first track (`CollectionList` → `CollectionDetail`, whose add-entry re-enters the map flow).
+The inventory is not closed — surfaces are added when a use case demands one. Today's set covers the journeys in [[02-use-cases]] (doc01.02): the Location-first track — drop a pin or search on `MapOverview` → `LocationDraft` → add-to-collection, or tap an existing pin → `LocationDetail` — and the Collection-first track (`CollectionList` → `CollectionDetail`, whose add-entry re-enters `MapOverview` in add-to-collection mode).
+
+## Entry modes
+
+Most surfaces render the same way however they are reached. A few instead carry an **entry context** — a value supplied by the transition that opened them, which changes how the surface renders without making it a different state.
+
+`MapOverview` is the worked example. It is reached two ways: as the landing surface (browse mode), and from `CollectionDetail`'s `TAP_ADD_ENTRY` (add-to-collection mode), which hands it a `collection-context`. Add-to-collection mode is the *same* state — same pins, same search, same transitions — plus a status-bar region and a carried Collection that pre-selects the target downstream in `AddLocationToCollection`. Modelling it as a second state would fork every `MapOverview` transition; instead the mode is a parameter, and a mode-only transition (`CANCEL_ADD`) is a **guarded** transition (`guard: inAddMode`) live only when the context is set. The Compose projection of this — a nullable route argument resolved to a sealed mode type — is doc03.03; the surface's regions are doc02.02.02.07.
 
 ## Conventions
 

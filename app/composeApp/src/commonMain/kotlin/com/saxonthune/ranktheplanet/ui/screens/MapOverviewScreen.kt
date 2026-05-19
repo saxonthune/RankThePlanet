@@ -168,9 +168,9 @@ fun MapOverviewScreen(onNavigate: (Screen) -> Unit) {
                     }
                     Button(
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigate(Screen.AddLocationToCollection) },
+                        onClick = { onNavigate(Screen.LocationDraft) },
                     ) {
-                        Text("Add here")
+                        Text("Drop a pin")
                     }
                 }
             }

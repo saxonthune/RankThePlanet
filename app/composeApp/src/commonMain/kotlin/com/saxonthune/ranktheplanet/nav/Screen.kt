@@ -13,6 +13,7 @@ enum class Screen(val title: String) {
     SchemaBuilder("Review Template"),
     LocationPicker("Pick a Location"),
     AddLocationToCollection("Add to Collection"),
+    LocationDraft("Location Draft"),
     ImportFlow("Import"),
     Settings("Settings"),
 }

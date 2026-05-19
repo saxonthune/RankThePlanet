@@ -13,6 +13,7 @@ import com.saxonthune.ranktheplanet.ui.screens.CollectionDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEntryDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionListScreen
 import com.saxonthune.ranktheplanet.ui.screens.ImportFlowScreen
+import com.saxonthune.ranktheplanet.ui.screens.LocationDraftScreen
 import com.saxonthune.ranktheplanet.ui.screens.LocationPickerScreen
 import com.saxonthune.ranktheplanet.ui.screens.MapOverviewScreen
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormScreen
@@ -51,6 +52,7 @@ fun App() {
             Screen.SchemaBuilder -> SchemaBuilderScreen(go)
             Screen.LocationPicker -> LocationPickerScreen(go)
             Screen.AddLocationToCollection -> AddLocationToCollectionScreen(go)
+            Screen.LocationDraft -> LocationDraftScreen(go)
             Screen.ImportFlow -> ImportFlowScreen(go)
             Screen.Settings -> SettingsScreen(go)
         }

@@ -36,7 +36,9 @@ fun CollectionEntryDetailScreen(
     templates: TemplateRepository,
     onNavigate: (Screen) -> Unit,
 ) {
-    val vm = viewModel { CollectionEntryDetailViewModel(entryId, entries, templates) }
+    val vm = viewModel(key = entryId.value) {
+        CollectionEntryDetailViewModel(entryId, entries, templates)
+    }
     val state by vm.uiState.collectAsState()
 
     if (state.entry == null && !state.isLoading) {

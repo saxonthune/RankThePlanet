@@ -44,7 +44,9 @@ fun CollectionDetailScreen(
     onNavigate: (Screen) -> Unit,
     onOpenEntry: (EntryId) -> Unit,
 ) {
-    val vm = viewModel { CollectionDetailViewModel(collectionId, collections, entries, templates) }
+    val vm = viewModel(key = collectionId.value) {
+        CollectionDetailViewModel(collectionId, collections, entries, templates)
+    }
     val state by vm.uiState.collectAsState()
     var detailsExpanded by remember { mutableStateOf(false) }
 

@@ -29,3 +29,4 @@ Coverage stays honest: every `event` must be a real transition on that surface i
 
 - doc02.02.02.01 — Collection List: the surface that manages the user's Collections.
 - doc02.02.02.02 — Collection Detail: one Collection as a collapsible Details section and a sortable list of Entries.
+- doc02.02.02.03 — Settings: entry to provider config; sync target and BYOK keys remain stubs.

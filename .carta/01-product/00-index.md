@@ -29,3 +29,4 @@ These belong in a future system or operations group, created when the work deman
 - doc01.02 — Use Cases: user-mental-model walkthroughs (Drip Coffee ranking, NYT Top 100 import, Geo Diary).
 - doc01.03 — Concepts: concept-driven design (Jackson) for Collection, Location, Review, Map Overview.
 - doc01.04 — Development Philosophy: two sources of truth, artifact chain, unfolding, spec-before-code.
+- doc01.05 — Verification System: how docs declare machine-checkable verifications; the verify.mjs harness and the screen-inventory check.

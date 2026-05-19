@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.saxonthune.ranktheplanet.data.fake.FakeRepositories
 import com.saxonthune.ranktheplanet.data.fake.Fixtures
+import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
 import com.saxonthune.ranktheplanet.nav.Screen
 import com.saxonthune.ranktheplanet.nav.rememberNavState
@@ -38,8 +39,14 @@ fun App() {
                 entries = repos.entries,
                 templates = repos.templates,
                 onNavigate = go,
+                onOpenEntry = { id -> nav.go(Screen.CollectionEntryDetail, entryId = id) },
             )
-            Screen.CollectionEntryDetail -> CollectionEntryDetailScreen(go)
+            Screen.CollectionEntryDetail -> CollectionEntryDetailScreen(
+                entryId = nav.selectedEntryId ?: EntryId("ent-bluebottle"),
+                entries = repos.entries,
+                templates = repos.templates,
+                onNavigate = go,
+            )
             Screen.ReviewForm -> ReviewFormScreen(go)
             Screen.SchemaBuilder -> SchemaBuilderScreen(go)
             Screen.LocationPicker -> LocationPickerScreen(go)

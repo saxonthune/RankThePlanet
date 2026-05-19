@@ -26,6 +26,8 @@ data class Appearance(val color: String, val pinStyle: String)
 
 enum class FieldType { Stars, Text, Enum, Boolean, Date, PowerRanking }
 
+enum class ReviewStatus { Reviewed, Unreviewed }
+
 data class TemplateField(
     val name: String,
     val type: FieldType,
@@ -43,7 +45,8 @@ data class ReviewInstance(
     val data: ImmutableMap<String, String>,
     val recordedTemplateVersion: Int,
     val created: String,
-    val lastModified: String
+    val lastModified: String,
+    val status: ReviewStatus
 )
 
 data class ReviewDraft(val data: ImmutableMap<String, String>)

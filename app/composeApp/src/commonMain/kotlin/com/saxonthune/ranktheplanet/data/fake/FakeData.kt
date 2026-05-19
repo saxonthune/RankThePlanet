@@ -16,6 +16,7 @@ import com.saxonthune.ranktheplanet.domain.LocationId
 import com.saxonthune.ranktheplanet.domain.MapOverviewState
 import com.saxonthune.ranktheplanet.domain.ReviewDraft
 import com.saxonthune.ranktheplanet.domain.ReviewInstance
+import com.saxonthune.ranktheplanet.domain.ReviewStatus
 import com.saxonthune.ranktheplanet.domain.ReviewTemplate
 import com.saxonthune.ranktheplanet.domain.SourceType
 import com.saxonthune.ranktheplanet.domain.TemplateField
@@ -163,7 +164,8 @@ object Fixtures {
                 data = persistentMapOf("overall" to "5", "notes" to "Perfect filter, calm atmosphere"),
                 recordedTemplateVersion = 1,
                 created = "2024-01-15T09:00:00Z",
-                lastModified = "2024-01-15T09:00:00Z"
+                lastModified = "2024-01-15T09:00:00Z",
+                status = ReviewStatus.Reviewed
             ),
             added = "2024-01-10T08:00:00Z"
         ),
@@ -175,7 +177,8 @@ object Fixtures {
                 data = persistentMapOf("rating" to "5", "notes" to "Exceptional tasting menu", "visited" to "true"),
                 recordedTemplateVersion = 1,
                 created = "2024-02-14T20:00:00Z",
-                lastModified = "2024-02-14T20:00:00Z"
+                lastModified = "2024-02-14T20:00:00Z",
+                status = ReviewStatus.Reviewed
             ),
             added = "2024-02-01T10:00:00Z"
         ),
@@ -187,7 +190,8 @@ object Fixtures {
                 data = persistentMapOf("rating" to "4", "notes" to "Creative seasonal menu", "visited" to "true"),
                 recordedTemplateVersion = 1,
                 created = "2024-03-20T19:00:00Z",
-                lastModified = "2024-03-20T19:00:00Z"
+                lastModified = "2024-03-20T19:00:00Z",
+                status = ReviewStatus.Reviewed
             ),
             added = "2024-03-15T14:00:00Z"
         ),
@@ -202,7 +206,8 @@ object Fixtures {
                 ),
                 recordedTemplateVersion = 1,
                 created = "2024-04-12T15:30:00Z",
-                lastModified = "2024-04-12T15:30:00Z"
+                lastModified = "2024-04-12T15:30:00Z",
+                status = ReviewStatus.Reviewed
             ),
             added = "2024-04-12T15:30:00Z"
         ),
@@ -217,7 +222,8 @@ object Fixtures {
                 ),
                 recordedTemplateVersion = 1,
                 created = "2024-05-03T18:45:00Z",
-                lastModified = "2024-05-03T18:45:00Z"
+                lastModified = "2024-05-03T18:45:00Z",
+                status = ReviewStatus.Reviewed
             ),
             added = "2024-05-03T18:45:00Z"
         ),
@@ -232,7 +238,8 @@ object Fixtures {
                 ),
                 recordedTemplateVersion = 1,
                 created = "2024-06-22T13:00:00Z",
-                lastModified = "2024-06-22T13:00:00Z"
+                lastModified = "2024-06-22T13:00:00Z",
+                status = ReviewStatus.Reviewed
             ),
             added = "2024-06-22T13:00:00Z"
         ),
@@ -247,9 +254,23 @@ object Fixtures {
                 ),
                 recordedTemplateVersion = 1,
                 created = "2024-07-09T09:30:00Z",
-                lastModified = "2024-07-09T09:30:00Z"
+                lastModified = "2024-07-09T09:30:00Z",
+                status = ReviewStatus.Reviewed
             ),
             added = "2024-07-09T09:30:00Z"
+        ),
+        Entry(
+            id = EntryId("ent-geo-golden-gate"),
+            collectionId = geoDiaryId,
+            location = locations[3],
+            review = ReviewInstance(
+                data = persistentMapOf(),
+                recordedTemplateVersion = 1,
+                created = "2024-08-01T10:00:00Z",
+                lastModified = "2024-08-01T10:00:00Z",
+                status = ReviewStatus.Unreviewed
+            ),
+            added = "2024-08-01T10:00:00Z"
         )
     )
 
@@ -330,7 +351,8 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
                 data = review.data,
                 recordedTemplateVersion = collection.templateVersion,
                 created = FAKE_NOW,
-                lastModified = FAKE_NOW
+                lastModified = FAKE_NOW,
+                status = if (review.data.isEmpty()) ReviewStatus.Unreviewed else ReviewStatus.Reviewed
             ),
             added = FAKE_NOW
         )
@@ -361,7 +383,8 @@ class FakeEntryRepository(private val store: InMemoryStore) : EntryRepository {
         val updated = current.copy(
             review = current.review.copy(
                 data = data.toImmutableMap(),
-                lastModified = FAKE_NOW
+                lastModified = FAKE_NOW,
+                status = if (data.isEmpty()) ReviewStatus.Unreviewed else ReviewStatus.Reviewed
             )
         )
         store.entries.update { list -> list.map { if (it.id == entryId) updated else it } }

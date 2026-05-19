@@ -32,6 +32,7 @@ import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.domain.CollectionId
+import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.nav.Screen
 
 @Composable
@@ -41,6 +42,7 @@ fun CollectionDetailScreen(
     entries: EntryRepository,
     templates: TemplateRepository,
     onNavigate: (Screen) -> Unit,
+    onOpenEntry: (EntryId) -> Unit,
 ) {
     val vm = viewModel { CollectionDetailViewModel(collectionId, collections, entries, templates) }
     val state by vm.uiState.collectAsState()
@@ -155,7 +157,7 @@ fun CollectionDetailScreen(
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(state.entries, key = { it.id.value }) { row ->
-                    EntryRow(row = row, onClick = { onNavigate(Screen.CollectionEntryDetail) })
+                    EntryRow(row = row, onClick = { onOpenEntry(row.id) })
                     HorizontalDivider()
                 }
             }

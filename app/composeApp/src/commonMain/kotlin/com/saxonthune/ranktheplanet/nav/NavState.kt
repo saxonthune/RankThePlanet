@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.saxonthune.ranktheplanet.domain.CollectionId
+import com.saxonthune.ranktheplanet.domain.EntryId
 
 /**
  * Minimal navigation state for the UI mockup — a single current [Screen].
@@ -20,12 +21,20 @@ class NavState {
     var selectedCollectionId: CollectionId? by mutableStateOf(null)
         private set
 
+    var selectedEntryId: EntryId? by mutableStateOf(null)
+        private set
+
     fun go(target: Screen) {
         current = target
     }
 
     fun go(target: Screen, collectionId: CollectionId?) {
         selectedCollectionId = collectionId
+        current = target
+    }
+
+    fun go(target: Screen, entryId: EntryId) {
+        selectedEntryId = entryId
         current = target
     }
 }

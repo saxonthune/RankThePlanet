@@ -52,7 +52,8 @@ data class Entry(
     val id: EntryId,
     val collectionId: CollectionId,
     val location: Location,
-    val review: ReviewInstance
+    val review: ReviewInstance,
+    val added: String
 )
 
 data class Collection(

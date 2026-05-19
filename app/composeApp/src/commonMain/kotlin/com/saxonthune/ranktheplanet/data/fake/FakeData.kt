@@ -164,7 +164,8 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-01-15T09:00:00Z",
                 lastModified = "2024-01-15T09:00:00Z"
-            )
+            ),
+            added = "2024-01-10T08:00:00Z"
         ),
         Entry(
             id = EntryId("ent-perse"),
@@ -175,7 +176,8 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-02-14T20:00:00Z",
                 lastModified = "2024-02-14T20:00:00Z"
-            )
+            ),
+            added = "2024-02-01T10:00:00Z"
         ),
         Entry(
             id = EntryId("ent-lumon"),
@@ -186,7 +188,8 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-03-20T19:00:00Z",
                 lastModified = "2024-03-20T19:00:00Z"
-            )
+            ),
+            added = "2024-03-15T14:00:00Z"
         ),
         Entry(
             id = EntryId("ent-geo-central-park"),
@@ -200,7 +203,8 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-04-12T15:30:00Z",
                 lastModified = "2024-04-12T15:30:00Z"
-            )
+            ),
+            added = "2024-04-12T15:30:00Z"
         ),
         Entry(
             id = EntryId("ent-geo-high-line"),
@@ -214,7 +218,8 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-05-03T18:45:00Z",
                 lastModified = "2024-05-03T18:45:00Z"
-            )
+            ),
+            added = "2024-05-03T18:45:00Z"
         ),
         Entry(
             id = EntryId("ent-geo-prospect-park"),
@@ -228,7 +233,8 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-06-22T13:00:00Z",
                 lastModified = "2024-06-22T13:00:00Z"
-            )
+            ),
+            added = "2024-06-22T13:00:00Z"
         ),
         Entry(
             id = EntryId("ent-geo-domino-park"),
@@ -242,7 +248,8 @@ object Fixtures {
                 recordedTemplateVersion = 1,
                 created = "2024-07-09T09:30:00Z",
                 lastModified = "2024-07-09T09:30:00Z"
-            )
+            ),
+            added = "2024-07-09T09:30:00Z"
         )
     )
 
@@ -324,7 +331,8 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
                 recordedTemplateVersion = collection.templateVersion,
                 created = FAKE_NOW,
                 lastModified = FAKE_NOW
-            )
+            ),
+            added = FAKE_NOW
         )
         store.entries.update { it + entry }
         return Result.success(entry)

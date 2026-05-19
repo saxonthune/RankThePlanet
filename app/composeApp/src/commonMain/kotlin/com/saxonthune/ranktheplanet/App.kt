@@ -3,6 +3,7 @@ package com.saxonthune.ranktheplanet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.saxonthune.ranktheplanet.data.fake.FakeRepositories
+import com.saxonthune.ranktheplanet.data.fake.Fixtures
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
 import com.saxonthune.ranktheplanet.nav.Screen
 import com.saxonthune.ranktheplanet.nav.rememberNavState
@@ -25,8 +26,19 @@ fun App() {
         val repos = remember { FakeRepositories() }
         when (nav.current) {
             Screen.MapOverview -> MapOverviewScreen(go)
-            Screen.CollectionList -> CollectionListScreen(repos.collections, repos.entries, go)
-            Screen.CollectionDetail -> CollectionDetailScreen(go)
+            Screen.CollectionList -> CollectionListScreen(
+                collections = repos.collections,
+                entries = repos.entries,
+                onNavigate = go,
+                onOpenCollection = { id -> nav.go(Screen.CollectionDetail, id) },
+            )
+            Screen.CollectionDetail -> CollectionDetailScreen(
+                collectionId = nav.selectedCollectionId ?: Fixtures.dripCoffeeId,
+                collections = repos.collections,
+                entries = repos.entries,
+                templates = repos.templates,
+                onNavigate = go,
+            )
             Screen.CollectionEntryDetail -> CollectionEntryDetailScreen(go)
             Screen.ReviewForm -> ReviewFormScreen(go)
             Screen.SchemaBuilder -> SchemaBuilderScreen(go)

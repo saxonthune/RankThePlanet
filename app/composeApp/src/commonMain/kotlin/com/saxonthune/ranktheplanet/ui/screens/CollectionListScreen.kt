@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
+import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.nav.Screen
 
 @Composable
@@ -39,6 +40,7 @@ fun CollectionListScreen(
     collections: CollectionRepository,
     entries: EntryRepository,
     onNavigate: (Screen) -> Unit,
+    onOpenCollection: (CollectionId) -> Unit,
 ) {
     val vm = viewModel { CollectionListViewModel(collections, entries) }
     val state by vm.uiState.collectAsState()
@@ -95,7 +97,7 @@ fun CollectionListScreen(
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(state.collections, key = { it.id.value }) { row ->
-                    CollectionRow(row = row, onClick = { onNavigate(Screen.CollectionDetail) })
+                    CollectionRow(row = row, onClick = { onOpenCollection(row.id) })
                     HorizontalDivider()
                 }
             }

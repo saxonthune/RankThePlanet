@@ -73,7 +73,8 @@ The Collection's review template lives in the Review concept (§3), not here. Th
 
 **Actions.**
 
-- `resolve(query, provider)` — search a provider for a place; return a candidate Location.
+- `resolve(query, provider)` — forward search: query a provider with text; return candidate Locations.
+- `resolveNearby(coordinates, provider)` — reverse search: query a provider for places near a coordinate; return ranked candidate Locations. Used when the user has a point (a dropped pin) and wants to know what real places sit there.
 - `dropPin(coordinates)` — create a `manual` Location with a generated UUID.
 - `import(externalRef)` — adopt a Location from a KML placemark, GeoJSON feature, or shared URL.
 - `addToCollection(collection, data)` — make this Location a Collection Entry (this is `Collection.addEntry` viewed from the Location's side; see synchronization below).
@@ -88,6 +89,7 @@ The Collection's review template lives in the Review concept (§3), not here. Th
 
 - "Open in Google Maps" is one instance of `openExternally`. Apple Maps, OsmAnd, etc., are equally valid targets. The user picks; RTP does not privilege one.
 - A Location with no Collection memberships is allowed but normally garbage-collected. (Decide when this matters.)
+- A dropped pin need not be resolved. Keeping it coordinates-only yields a `manual` Location — a first-class outcome, not a degraded one. `resolveNearby` only *offers* provider candidates; adopting one is the user's choice. The uncommitted candidate before that choice is interaction-layer draft state (the `candidate-location` a surface holds), not a concept state.
 - `merge` is the user's tool for "looks like the same place." Never automatic.
 - Identity is a single `(sourceType, sourceId)` pair. A multi-identity model — one Location carrying several provider identities — would not disturb Collection Entries, since an entry references a Location by surrogate id, not by identity. Adopting it would move identity (with its `cachedMetadata` and `refreshable`) into a child record per provider, and `merge` would have the survivor absorb the other's identities rather than discard them. Flagged, not pre-built.
 

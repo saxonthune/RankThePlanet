@@ -24,13 +24,13 @@ States in the JSON, keyed by `meta.surface`:
 | `CollectionEntryDetail` | One Collection Entry: the (Location, Review) pair. |
 | `ReviewForm` | Author/edit a Review instance against the template. |
 | `SchemaBuilder` | Author/edit a Collection's Review template. |
-| `LocationLookup` | Resolve/drop/import a Location — a map-projection surface with lookup chrome. |
+| `LocationDraft` | A dropped pin or picked search result, not yet committed — coordinates plus nearby resolution candidates, rendered as a sheet over the map. |
 | `AddLocationToCollection` | Pick which Collection to add an already-chosen Location to. |
 | `ImportFlow` | Import an external collection (stub). |
 | `Settings` | Providers, BYOK keys, sync target (stub). |
 | `LocationProvider` | Configure mapping providers — add a provider with its BYOK key, choose the default. Reached from `Settings`. |
 
-The inventory is not closed — surfaces are added when a use case demands one. Today's set covers the journeys in [[02-use-cases]] (doc01.02): the Location-first track (pin → `LocationDetail` → add-to-collection or open an entry) and the Collection-first track (`CollectionList` → `CollectionDetail` → `LocationLookup`).
+The inventory is not closed — surfaces are added when a use case demands one. Today's set covers the journeys in [[02-use-cases]] (doc01.02): the Location-first track — drop a pin or search on `MapOverview` → `LocationDraft` → add-to-collection, or tap an existing pin → `LocationDetail` — and the Collection-first track (`CollectionList` → `CollectionDetail`, whose add-entry re-enters the map flow).
 
 ## Conventions
 
@@ -53,4 +53,4 @@ It walks `.carta/` for `*.statechart.json` sidecars and emits a derived Luminous
 
 ## Status
 
-Happy-path slice covering the Drip Coffee and Geo Diary use cases. NYT Top 100 import (`ImportFlow`), `Settings`, and secondary affordances remain stubs.
+Happy-path slice covering the Drip Coffee and Geo Diary use cases. NYT Top 100 import (`ImportFlow`) and secondary affordances remain stubs. Retiring `LocationLookup` left `Location.import` (single-Location adoption from a KML placemark or shared URL) without a surface — it is an uncovered concept action until the import flow is unfolded.

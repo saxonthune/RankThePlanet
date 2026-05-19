@@ -1,0 +1,65 @@
+{
+  "surface": "LocationDraft",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Marks the surface as an uncommitted draft and holds the affordance to discard it."
+    },
+    {
+      "id": "coordinates",
+      "purpose": "Shows the candidate's raw coordinates and holds the keep-as-is and add-to-collection affordances."
+    },
+    {
+      "id": "candidates",
+      "purpose": "The nearby real places resolution offered for the dropped point, browsable as a list."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "close",
+      "label": "Close",
+      "region": "topBar",
+      "event": "CLOSE",
+      "target": "MapOverview"
+    },
+    {
+      "id": "find-nearby",
+      "label": "Find nearby places",
+      "region": "candidates",
+      "action": "Location.resolveNearby"
+    },
+    {
+      "id": "keep-coordinates",
+      "label": "Keep coordinates only",
+      "region": "coordinates",
+      "action": "Location.dropPin"
+    },
+    {
+      "id": "add-to-collection",
+      "label": "Add to a Collection",
+      "region": "coordinates",
+      "event": "ADD_TO_COLLECTION",
+      "target": "AddLocationToCollection"
+    }
+  ],
+  "lists": [
+    {
+      "id": "candidates",
+      "region": "candidates",
+      "iterates": "Location",
+      "reads": "nearby-candidates",
+      "item": {
+        "shows": [
+          "candidate Location.displayName",
+          "category or address from cachedMetadata, when the provider supplied it",
+          "distance from the dropped point"
+        ],
+        "affordance": {
+          "id": "adopt-candidate",
+          "label": "Adopt this candidate"
+        }
+      },
+      "emptyState": "When resolution returns no nearby places — or has not run yet — the region says so; the coordinates can still be kept as-is via Keep coordinates only."
+    }
+  ]
+}

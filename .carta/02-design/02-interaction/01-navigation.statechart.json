@@ -9,7 +9,7 @@
       "tags": ["landing", "map"],
       "meta": {
         "surface": "MapOverview",
-        "reads": ["all-collections", "all-entries", "viewport"],
+        "reads": ["all-collections", "all-entries", "viewport", "provider-results"],
         "actions": [
           "MapOverview.open",
           "MapOverview.pan",
@@ -17,7 +17,7 @@
           "MapOverview.selectPin",
           "MapOverview.toggleCollection",
           "MapOverview.jumpToCollection",
-          "Location.dropPin"
+          "Location.resolve"
         ]
       },
       "on": {
@@ -31,10 +31,15 @@
           "label": "Browse Collections",
           "description": "User opens the list of Collections to manage them."
         },
-        "TAP_ADD_HERE": {
-          "target": "AddLocationToCollection",
+        "DROP_PIN": {
+          "target": "LocationDraft",
           "label": "Drop a pin here",
-          "description": "User drops a pin at their current location (or a tapped map point) and chooses which Collection to add it to. Starts the Location-first flow from doc01.02 §3. The drop gesture is Location.dropPin (see meta.actions)."
+          "description": "User places a point on the map (current location or a tapped spot). This produces an uncommitted candidate — not yet a Location — and opens LocationDraft over the map. Starts the Location-first flow from doc01.02 §3."
+        },
+        "PICK_SEARCH_RESULT": {
+          "target": "LocationDraft",
+          "label": "Pick a search result",
+          "description": "User types into the map's search field (Location.resolve, see meta.actions), then picks one candidate from the result list. The picked candidate opens in LocationDraft for inspection before it is committed."
         },
         "TAP_SETTINGS": {
           "target": "Settings",
@@ -125,9 +130,9 @@
           "description": "User opens a single Collection Entry to inspect its Location and Review."
         },
         "TAP_ADD_ENTRY": {
-          "target": "LocationLookup",
+          "target": "MapOverview",
           "label": "Add a Collection Entry",
-          "description": "User starts the Collection-first add flow. LocationLookup resolves a Location, then ReviewForm captures the per-Collection-Entry Review (Collection.addEntry)."
+          "description": "User starts the Collection-first add flow. The Collection is held in context; the user finds a Location with the map's search or drop-pin, lands on LocationDraft, and the binding flows through AddLocationToCollection (which pre-selects the originating Collection). The precise re-entry into ReviewForm is unfolded when Collection-first context-passing is specified."
         },
         "TAP_EDIT_TEMPLATE": {
           "target": "SchemaBuilder",
@@ -188,7 +193,7 @@
         },
         "CANCEL": {
           "target": "CollectionDetail",
-          "description": "User cancels without saving; the draft is discarded. (Reachable from LocationPicker, AddLocationToCollection, and CollectionEntryDetail; static CANCEL targets the Collection context.)"
+          "description": "User cancels without saving; the draft is discarded. (Reachable from AddLocationToCollection and CollectionEntryDetail; static CANCEL targets the Collection context.)"
         }
       }
     },
@@ -214,23 +219,23 @@
       }
     },
 
-    "LocationLookup": {
-      "description": "Resolve, drop, or import a Location. A map-projection surface — like MapOverview but with lookup chrome (search field, result list, confirm affordance) instead of the everything-view controls. Search via a configured provider, drop a manual pin, or import from a URL / file (KML, share link).",
-      "tags": ["picker", "map"],
+    "LocationDraft": {
+      "description": "A candidate Location not yet committed — a point dropped on the map or a search result picked from MapOverview. Shows the coordinates and offers nearby resolution candidates (Location.resolveNearby). The user keeps the coordinates as-is (Location.dropPin commits a manual Location) or adopts a resolved candidate. Rendered as a sheet over the map — the map stays visible — which is a downstream choice (see doc02.02.01). See doc01.03 §2.",
+      "tags": ["modal", "map"],
       "meta": {
-        "surface": "LocationLookup",
-        "reads": ["provider-results"],
-        "actions": ["Location.resolve", "Location.dropPin", "Location.import"]
+        "surface": "LocationDraft",
+        "reads": ["candidate-location", "nearby-candidates"],
+        "actions": ["Location.dropPin", "Location.resolveNearby"]
       },
       "on": {
-        "PICK_RESULT": {
-          "target": "ReviewForm",
-          "label": "Pick a Location",
-          "description": "User picks one candidate Location; advance to fill out the Review."
+        "ADD_TO_COLLECTION": {
+          "target": "AddLocationToCollection",
+          "label": "Add to a Collection",
+          "description": "User commits the candidate — keeping the coordinates as a manual Location, or having adopted a resolved one — and proceeds to pick which Collection to add it to."
         },
         "CLOSE": {
-          "target": "CollectionDetail",
-          "description": "Cancel the add flow."
+          "target": "MapOverview",
+          "description": "Discard the candidate; return to the everything view."
         }
       }
     },

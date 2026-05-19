@@ -31,3 +31,4 @@ Coverage stays honest: every `event` must be a real transition on that surface i
 - doc02.02.02.02 — Collection Detail: one Collection as a collapsible Details section and a sortable list of Entries.
 - doc02.02.02.03 — Settings: entry to provider config; sync target and BYOK keys remain stubs.
 - doc02.02.02.04 — Collection Entry Detail: one Entry as its Location, Review handoffs, and the full template field set; reviewed vs unreviewed.
+- doc02.02.02.05 — Location Draft: an uncommitted dropped pin or search result — coordinates, nearby resolution candidates, keep-or-adopt.

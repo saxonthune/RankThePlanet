@@ -28,7 +28,7 @@
       "label": "Add a Collection Entry",
       "region": "topBar",
       "event": "TAP_ADD_ENTRY",
-      "target": "LocationLookup",
+      "target": "MapOverview",
       "action": "Collection.addEntry"
     },
     {

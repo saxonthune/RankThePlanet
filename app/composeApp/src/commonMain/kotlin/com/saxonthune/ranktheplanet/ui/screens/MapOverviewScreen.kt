@@ -260,44 +260,49 @@ fun MapOverviewScreen(
                     state.collectionRows.forEach { col ->
                         key(col.id.value) {
                             val colPins = state.pins.filter { it.color == col.color }
-                            val geojson = buildPinsGeoJson(colPins)
-                            val source = rememberGeoJsonSource(
-                                data = GeoJsonData.JsonString(geojson),
-                            )
-                            CircleLayer(
-                                id = "pins-${col.id.value}",
-                                source = source,
-                                radius = const(8.dp),
-                                color = const(col.color),
-                                strokeWidth = const(2.dp),
-                                strokeColor = const(pinStroke),
-                                onClick = { features ->
-                                    val entryId = features.firstOrNull()
-                                        ?.properties
-                                        ?.get("entryId")
-                                        ?.jsonPrimitive
-                                        ?.contentOrNull
-                                    if (entryId != null) {
-                                        vm.selectPin(EntryId(entryId))
-                                        ClickResult.Consume
-                                    } else {
-                                        ClickResult.Pass
-                                    }
-                                },
-                            )
-                            SymbolLayer(
-                                id = "pin-labels-${col.id.value}",
-                                source = source,
-                                minZoom = 12f,
-                                textField = format(span(feature["name"].asString())),
-                                textSize = const(12.sp),
-                                textOffset = offset(0f.em, 1.2f.em),
-                                textAnchor = const(SymbolAnchor.Top),
-                                textOptional = const(true),
-                                iconAllowOverlap = const(true),
-                                textHaloColor = const(pinStroke),
-                                textHaloWidth = const(1.dp),
-                            )
+                            if (colPins.isNotEmpty()) {
+                                val geojson = buildPinsGeoJson(colPins)
+                                val source = rememberGeoJsonSource(
+                                    data = GeoJsonData.JsonString(geojson),
+                                )
+                                CircleLayer(
+                                    id = "pins-${col.id.value}",
+                                    source = source,
+                                    radius = const(8.dp),
+                                    color = const(col.color),
+                                    strokeWidth = const(2.dp),
+                                    strokeColor = const(pinStroke),
+                                    onClick = { features ->
+                                        val entryId = features.firstOrNull()
+                                            ?.properties
+                                            ?.get("entryId")
+                                            ?.jsonPrimitive
+                                            ?.contentOrNull
+                                        if (entryId != null) {
+                                            vm.selectPin(EntryId(entryId))
+                                            ClickResult.Consume
+                                        } else {
+                                            ClickResult.Pass
+                                        }
+                                    },
+                                )
+                                // DIAGNOSTIC: minZoom = 0f and textAllowOverlap = true to test if labels render at all.
+                                // Restore minZoom = 12f and remove textAllowOverlap once confirmed.
+                                SymbolLayer(
+                                    id = "pin-labels-${col.id.value}",
+                                    source = source,
+                                    minZoom = 0f,
+                                    textField = format(span(feature["name"].asString())),
+                                    textSize = const(12.sp),
+                                    textOffset = offset(0f.em, 1.2f.em),
+                                    textAnchor = const(SymbolAnchor.Top),
+                                    textAllowOverlap = const(true),
+                                    textOptional = const(true),
+                                    iconAllowOverlap = const(true),
+                                    textHaloColor = const(pinStroke),
+                                    textHaloWidth = const(1.dp),
+                                )
+                            }
                         }
                     }
                 }

@@ -81,11 +81,18 @@
         "TAP_ENTRY": {
           "target": "EntryDrawer",
           "label": "Pick an entry",
-          "description": "User taps one of the Entries in the right-hand list, picking which Collection's context to peek at. Opens EntryDrawer for that Entry."
+          "description": "User taps one of the Entries in the right-hand list, picking which Collection's context to peek at. Opens EntryDrawer for that Entry.",
+          "propagates": ["collection-context"]
         },
         "BACK": {
           "target": "MapOverview",
           "description": "Dismiss the peek — typically the swipe-down or scrim-tap gesture on the bottom sheet — and return to the bare map."
+        },
+        "CANCEL_ADD": {
+          "target": "CollectionDetail",
+          "guard": "inAddMode",
+          "label": "Cancel adding",
+          "description": "Live only in add-to-collection mode. User abandons the entire add flow from this peek; drop the carried Collection and return to the originating CollectionDetail (Rule 3, doc02.04)."
         }
       }
     },
@@ -120,6 +127,12 @@
           "target": "MapOverview",
           "label": "Dismiss",
           "description": "Close the drawer and return to the bare map — typically the bottom-sheet's swipe-down or scrim-tap gesture, not a dedicated button."
+        },
+        "CANCEL_ADD": {
+          "target": "CollectionDetail",
+          "guard": "inAddMode",
+          "label": "Cancel adding",
+          "description": "Live only in add-to-collection mode. User abandons the entire add flow from this drawer; drop the carried Collection and return to the originating CollectionDetail (Rule 3, doc02.04)."
         }
       }
     },
@@ -301,7 +314,14 @@
         },
         "CLOSE": {
           "target": "MapOverview",
-          "description": "Discard the candidate; return to the everything view."
+          "label": "Go back",
+          "description": "Discard the candidate and dismiss the sheet, returning to MapOverview. In add-to-collection mode this returns to MapOverview-in-add-mode; the flow continues. Distinct from CANCEL_ADD, which abandons the whole flow."
+        },
+        "CANCEL_ADD": {
+          "target": "CollectionDetail",
+          "guard": "inAddMode",
+          "label": "Cancel adding",
+          "description": "Live only in add-to-collection mode (guard: `collection-context` is set). User abandons the entire add flow from this sheet; drop the carried Collection and return to the originating CollectionDetail. Mirrors MapOverview's CANCEL_ADD so the user can cancel from any depth in the flow (Rule 3, doc02.04)."
         }
       }
     },

@@ -45,6 +45,7 @@ sealed interface PinSheet {
 
 data class PinUi(
     val entryId: EntryId,
+    val locationName: String,
     val lat: Double,
     val lng: Double,
     val color: Color,
@@ -140,6 +141,7 @@ class MapOverviewViewModel(
                 val col = collectionMap[entry.collectionId] ?: return@mapNotNull null
                 PinUi(
                     entryId = entry.id,
+                    locationName = entry.location.displayName,
                     lat = entry.location.coordinates.lat,
                     lng = entry.location.coordinates.lng,
                     color = parseAppearanceColor(col.appearance.color),

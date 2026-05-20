@@ -7,23 +7,31 @@
     },
     {
       "id": "menuButton",
-      "purpose": "A button in the top-left corner that opens the app menu drawer."
+      "purpose": "A button in the top-left navigationIcon slot. In browse mode it shows the menu (hamburger) icon and opens the app menu drawer; suppressed in add-to-collection mode (replaced by closeButton).",
+      "appearsInModes": ["browse"]
+    },
+    {
+      "id": "closeButton",
+      "purpose": "A button in the top-left navigationIcon slot in add-to-collection mode. Shows the close (X) icon and cancels the add-to-collection flow, dropping the carried Collection and returning to CollectionDetail. Replaces menuButton during the flow.",
+      "appearsInModes": ["addToCollection"]
     },
     {
       "id": "search",
-      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the menu button. Tapping it widens the field and raises the keyboard; submitting resolves Location candidates."
+      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the navigationIcon. Tapping it widens the field and raises the keyboard; submitting resolves Location candidates. Present in both modes — finding a place is part of completing the add flow."
     },
     {
       "id": "bottomBar",
-      "purpose": "A panel along the bottom of the surface holding entry to the Collection list."
+      "purpose": "A panel along the bottom of the surface holding entry to the Collection list. Suppressed in add-to-collection mode (replaced by statusBar in the same slot) so the user cannot start a second flow.",
+      "appearsInModes": ["browse"]
     },
     {
       "id": "menuDrawer",
-      "purpose": "A left-hand drawer, opened from the menu button — the app menu. Holds a Filter section — a field to search the user's Collections by name and a list of Collections, each toggleable to show or hide its pins — and an entry to Settings."
+      "purpose": "A left-hand drawer, opened from the menuButton — the app menu. Holds a Filter section — a field to search the user's Collections by name and a list of Collections, each toggleable to show or hide its pins — and an entry to Settings. Suppressed in add-to-collection mode (no menuButton to open it).",
+      "appearsInModes": ["browse"]
     },
     {
       "id": "statusBar",
-      "purpose": "Names the target Collection — \"Adding to {collectionName}\" — and holds the affordance to abandon the add flow.",
+      "purpose": "Occupies the bottom slot of the surface in add-to-collection mode (replacing bottomBar), naming the target Collection — \"Adding to {collectionName}\".",
       "appearsInModes": ["addToCollection"],
       "reactsToContext": ["collection-context"]
     }
@@ -51,7 +59,8 @@
     {
       "id": "open-menu",
       "label": "Open the app menu",
-      "region": "menuButton"
+      "region": "menuButton",
+      "appearsInModes": ["browse"]
     },
     {
       "id": "search-locations",
@@ -62,26 +71,29 @@
     {
       "id": "search-collections",
       "label": "Search the collection list",
-      "region": "menuDrawer"
+      "region": "menuDrawer",
+      "appearsInModes": ["browse"]
     },
     {
       "id": "open-collections",
       "label": "Browse Collections",
       "region": "bottomBar",
       "event": "TAP_COLLECTIONS_BUTTON",
-      "target": "CollectionList"
+      "target": "CollectionList",
+      "appearsInModes": ["browse"]
     },
     {
       "id": "open-settings",
       "label": "Open Settings",
       "region": "menuDrawer",
       "event": "TAP_SETTINGS",
-      "target": "Settings"
+      "target": "Settings",
+      "appearsInModes": ["browse"]
     },
     {
       "id": "cancel-add",
       "label": "Cancel adding",
-      "region": "statusBar",
+      "region": "closeButton",
       "event": "CANCEL_ADD",
       "target": "CollectionDetail",
       "appearsInModes": ["addToCollection"]
@@ -133,6 +145,7 @@
       "region": "menuDrawer",
       "iterates": "Collection",
       "reads": "all-collections",
+      "appearsInModes": ["browse"],
       "item": {
         "shows": [
           "the Collection's name",

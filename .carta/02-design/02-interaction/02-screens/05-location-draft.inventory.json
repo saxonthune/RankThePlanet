@@ -3,7 +3,7 @@
   "regions": [
     {
       "id": "topBar",
-      "purpose": "Marks the surface as an uncommitted draft and holds the affordance to discard it."
+      "purpose": "Marks the surface as an uncommitted draft and holds the dismiss affordances. In add-to-collection mode it carries both Go back (dismiss this sheet, return to MapOverview-in-add-mode) and Cancel adding (kill the whole flow); in browse mode it carries only Close."
     },
     {
       "id": "coordinates",
@@ -17,10 +17,18 @@
   "affordances": [
     {
       "id": "close",
-      "label": "Close",
+      "label": "Go back",
       "region": "topBar",
       "event": "CLOSE",
       "target": "MapOverview"
+    },
+    {
+      "id": "cancel-add",
+      "label": "Cancel adding",
+      "region": "topBar",
+      "event": "CANCEL_ADD",
+      "target": "CollectionDetail",
+      "appearsInModes": ["addToCollection"]
     },
     {
       "id": "find-nearby",

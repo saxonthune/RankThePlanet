@@ -56,7 +56,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc02.00 | `00-index.md` |  |  | — | — | — |
 | doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc01.05, doc02.03, doc03.01 | — |
 | doc02.03 | `03-theme-tokens.md` | Three-tier design token system (primitive, semantic, provider) for the CMP theme: RtpColors, RtpSpacing, RtpTypography and the RtpTheme accessor | design, theme, tokens, styling, cmp | doc02.01 | — | — |
-| doc02.04 | `04-surface-composition-rules.md` | Two design rules for how surfaces compose: same-surface-different-mode, and overlay-surfaces-are-not-routes | design, interaction, composition, rules | doc02.02.01, doc01.05 | — | — |
+| doc02.04 | `04-surface-composition-rules.md` | Three design rules for how surfaces compose — same-surface-different-mode, overlay-surfaces-are-not-routes, flows-are-modal | design, interaction, composition, rules | doc02.02.01, doc01.05 | — | — |
 
 ### Interaction
 

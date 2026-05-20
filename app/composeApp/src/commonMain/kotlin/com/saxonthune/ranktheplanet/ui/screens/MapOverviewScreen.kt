@@ -73,6 +73,8 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
@@ -86,9 +88,18 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
+import org.maplibre.compose.expressions.dsl.asString
 import org.maplibre.compose.expressions.dsl.const
+import org.maplibre.compose.expressions.dsl.feature
+import org.maplibre.compose.expressions.dsl.format
+import org.maplibre.compose.expressions.dsl.offset
+import org.maplibre.compose.expressions.dsl.span
+import org.maplibre.compose.expressions.value.SymbolAnchor
 import org.maplibre.compose.layers.CircleLayer
+import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.map.MaplibreMap
+import org.maplibre.compose.map.MapOptions
+import org.maplibre.compose.map.OrnamentOptions
 import androidx.compose.runtime.key
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.rememberGeoJsonSource
@@ -113,9 +124,31 @@ private fun formatLatLng(lat: Double, lng: Double): String {
     return "${format3dp(abs(lat))}°$ns, ${format3dp(abs(lng))}°$ew"
 }
 
+private fun escapeJsonString(value: String): String {
+    val sb = StringBuilder(value.length + 2)
+    for (c in value) {
+        when (c) {
+            '\\' -> sb.append("\\\\")
+            '"' -> sb.append("\\\"")
+            '\n' -> sb.append("\\n")
+            '\r' -> sb.append("\\r")
+            '\t' -> sb.append("\\t")
+            else -> if (c.code < 0x20) {
+                sb.append("\\u")
+                sb.append(c.code.toString(16).padStart(4, '0'))
+            } else {
+                sb.append(c)
+            }
+        }
+    }
+    return sb.toString()
+}
+
+
 private fun buildPinsGeoJson(pins: List<PinUi>): String {
     val features = pins.joinToString(",") { pin ->
-        """{"type":"Feature","geometry":{"type":"Point","coordinates":[${pin.lng},${pin.lat}]},"properties":{"entryId":"${pin.entryId.value}"}}"""
+        val name = escapeJsonString(pin.locationName)
+        """{"type":"Feature","geometry":{"type":"Point","coordinates":[${pin.lng},${pin.lat}]},"properties":{"entryId":"${pin.entryId.value}","name":"$name"}}"""
     }
     return """{"type":"FeatureCollection","features":[$features]}"""
 }
@@ -251,7 +284,8 @@ fun MapOverviewScreen(
                 MaplibreMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraState = cameraState,
-                    baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/liberty"),
+                    baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/positron"),
+                    options = MapOptions(ornamentOptions = OrnamentOptions.OnlyLogo),
                     onMapLongClick = { _, _ ->
                         onDropPin()
                         ClickResult.Consume
@@ -284,6 +318,19 @@ fun MapOverviewScreen(
                                         ClickResult.Pass
                                     }
                                 },
+                            )
+                            SymbolLayer(
+                                id = "pin-labels-${col.id.value}",
+                                source = source,
+                                minZoom = 12f,
+                                textField = format(span(feature["name"].asString())),
+                                textSize = const(12.sp),
+                                textOffset = offset(0f.em, 1.2f.em),
+                                textAnchor = const(SymbolAnchor.Top),
+                                textOptional = const(true),
+                                iconAllowOverlap = const(true),
+                                textHaloColor = const(pinStroke),
+                                textHaloWidth = const(1.dp),
                             )
                         }
                     }

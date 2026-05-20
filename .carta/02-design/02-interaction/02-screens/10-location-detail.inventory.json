@@ -41,5 +41,5 @@
       "emptyState": "A Location with no Entries cannot be reached from MapOverview — pins exist only where there is at least one Entry. With exactly one Entry, the surface renders the EntryDrawer directly and this list is never shown."
     }
   ],
-  "deferred": ["Location.openExternally", "Location.refresh"]
+  "deferred": ["Location.openExternally", "Location.refresh", "CANCEL_ADD"]
 }

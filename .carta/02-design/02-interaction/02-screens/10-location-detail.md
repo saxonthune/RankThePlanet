@@ -16,6 +16,6 @@ The surface is a skinny bottom sheet split into two halves. The **locationSummar
 
 The peek is meaningful only when a Location has multiple Entries. When the tapped Location has exactly one Entry, the surface renders the `EntryDrawer` directly instead of the split peek — this is a downstream rendering choice ([[01-navigation]], doc02.02.01) and stays out of the statechart. *Dismiss* is the bottom-sheet's swipe-down or scrim-tap gesture and is modeled as `BACK` → `MapOverview`.
 
-`LocationDetail` carries no mode parameter. Pin-tap behavior in `MapOverview`'s add-to-collection mode is a separate open design ([[07-map-overview]], doc02.02.02.07) — the current statechart keeps `TAP_PIN` mode-free and routes through this surface regardless.
+`LocationDetail` is traversed by the add-to-collection flow: `MapOverview`'s `TAP_PIN` declares `propagates: ["collection-context"]`, so the surface receives the carried Collection when entered from add-mode. Per Rule 3 ([[04-surface-composition-rules]], doc02.04), the inventory must offer a `CANCEL_ADD` affordance in add-mode so the user can abandon the flow from this peek. The statechart declares the `CANCEL_ADD` transition (target `CollectionDetail`, guard `inAddMode`); the inventory lists `CANCEL_ADD` in `deferred` because the visual treatment of an in-add-mode peek is yet to unfold.
 
 The surface's two in-view concept actions, `Location.openExternally` and `Location.refresh`, were inherited from the earlier full-screen framing and have no peek affordance; they are listed in the sidecar's `deferred` array.

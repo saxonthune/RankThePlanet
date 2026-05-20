@@ -41,5 +41,6 @@
       "target": "MapOverview"
     }
   ],
-  "lists": []
+  "lists": [],
+  "deferred": ["CANCEL_ADD"]
 }

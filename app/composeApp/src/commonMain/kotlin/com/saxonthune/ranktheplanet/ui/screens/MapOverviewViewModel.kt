@@ -115,15 +115,16 @@ class MapOverviewViewModel(
         }
     }
 
-    val uiState: StateFlow<MapOverviewUiState> = combine(
-        combine(collectionsRepo.observeAll(), entriesRepo.observeAll(), hiddenCollections) { cols, ents, hidden ->
-            Triple(cols, ents, hidden)
-        },
-        combine(searchResults, isSearching, _pinSheet) { r, s, p -> Triple(r, s, p) },
-        _error,
-    ) { core, extra, error ->
-        val (collectionList, entryList, hidden) = core
-        val (results, searching, sheet) = extra
+    private data class DerivedBase(
+        val pins: ImmutableList<PinUi>,
+        val collectionRows: ImmutableList<CollectionFilterRowUi>,
+    )
+
+    private val derivedBase: StateFlow<DerivedBase> = combine(
+        collectionsRepo.observeAll(),
+        entriesRepo.observeAll(),
+        hiddenCollections,
+    ) { collectionList, entryList, hidden ->
         val collectionMap = collectionList.associateBy { it.id }
         val collectionRows = collectionList.map { col ->
             CollectionFilterRowUi(
@@ -145,9 +146,23 @@ class MapOverviewViewModel(
                     visited = entry.review != null,
                 )
             }.toImmutableList()
+        DerivedBase(pins, collectionRows)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        DerivedBase(persistentListOf(), persistentListOf()),
+    )
+
+    val uiState: StateFlow<MapOverviewUiState> = combine(
+        derivedBase,
+        searchResults,
+        isSearching,
+        _pinSheet,
+        _error,
+    ) { base, results, searching, sheet, error ->
         MapOverviewUiState(
-            pins = pins,
-            collectionRows = collectionRows,
+            pins = base.pins,
+            collectionRows = base.collectionRows,
             searchResults = results.toImmutableList(),
             isSearching = searching,
             isLoading = false,

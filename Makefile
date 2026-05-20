@@ -25,6 +25,7 @@ export JAVA_HOME
 .DEFAULT_GOAL := build
 
 .PHONY: help build clean rebuild install run sync tasks stop adb-devices wrapper \
+        verify \
         ios-build ios-run ios-debug ios-logs ios-crash ios-pod-install ios-clean \
         ios-device-build ios-device-run ios-devices \
         code-map
@@ -41,6 +42,7 @@ help:
 	@echo "  stop          Stop the Gradle daemon"
 	@echo "  adb-devices   List attached Android devices/emulators"
 	@echo "  wrapper       Print Gradle wrapper version"
+	@echo "  verify        Compile Android + commonMain metadata (off-macOS proxy for iOS)"
 	@echo "  code-map      Regenerate the agent-consumable Kotlin code map"
 	@echo ""
 	@echo "iOS targets (override sim with: make ios-run SIM='iPhone 16 Pro'):"
@@ -85,6 +87,12 @@ adb-devices:
 
 wrapper:
 	$(GRADLE) --version
+
+# Compile the Android target + commonMain metadata. Off macOS the iOS targets
+# are disabled (cinterop for MapLibre needs macOS), so this is the strongest
+# local check that commonMain code will survive an iOS build.
+verify:
+	$(GRADLE) :composeApp:compileDebugKotlinAndroid :composeApp:compileCommonMainKotlinMetadata
 
 # Regenerate .luminous/generated/code-map.md from the Kotlin sources.
 code-map:

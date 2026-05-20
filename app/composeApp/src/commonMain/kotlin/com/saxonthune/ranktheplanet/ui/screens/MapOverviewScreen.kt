@@ -1,14 +1,10 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -310,34 +306,28 @@ fun MapOverviewScreen(
             sheetState = sheetState,
             dragHandle = { BottomSheetDefaults.DragHandle() },
         ) {
-            AnimatedContent(
-                targetState = state.pinSheet,
-                transitionSpec = { fadeIn() togetherWith fadeOut() },
-                label = "sheet-content",
-            ) { sheet ->
-                when (sheet) {
-                    is PinSheet.Peek -> LocationDetailPeek(
-                        peek = sheet,
-                        onPickEntry = { vm.openEntryFromPeek(it) },
-                    )
-                    is PinSheet.Entry -> EntryDrawerSheet(
-                        entry = sheet.entry,
-                        onOpenFullDetail = { entryId ->
-                            vm.dismissSheet()
-                            onOpenFullDetail(entryId)
-                        },
-                        onViewCollection = { collectionId ->
-                            vm.dismissSheet()
-                            onViewCollection(collectionId)
-                        },
-                        onEditReview = {
-                            vm.dismissSheet()
-                            onEditReview()
-                        },
-                        onDismiss = { vm.dismissSheet() },
-                    )
-                    is PinSheet.None -> {}
-                }
+            when (val sheet = state.pinSheet) {
+                is PinSheet.Peek -> LocationDetailPeek(
+                    peek = sheet,
+                    onPickEntry = { vm.openEntryFromPeek(it) },
+                )
+                is PinSheet.Entry -> EntryDrawerSheet(
+                    entry = sheet.entry,
+                    onOpenFullDetail = { entryId ->
+                        vm.dismissSheet()
+                        onOpenFullDetail(entryId)
+                    },
+                    onViewCollection = { collectionId ->
+                        vm.dismissSheet()
+                        onViewCollection(collectionId)
+                    },
+                    onEditReview = {
+                        vm.dismissSheet()
+                        onEditReview()
+                    },
+                    onDismiss = { vm.dismissSheet() },
+                )
+                is PinSheet.None -> {}
             }
         }
     }

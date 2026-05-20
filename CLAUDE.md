@@ -82,6 +82,10 @@ node .luminous/statechart-canvas.pipeline.mjs
 
 The pipeline walks `.carta/` for `*.statechart.json` sidecars and emits a derived canvas pair (`*.canvas.graph.json` + `*.canvas.pack.json`) per sidecar under `.luminous/generated/`. That output tree is gitignored — edit the sidecar and re-run, never hand-edit the generated files.
 
+## Verifying Kotlin changes locally
+
+Off macOS the iOS Kotlin/Native targets are disabled (MapLibre cinterop needs macOS), so `:composeApp:compileKotlinJvm` is not a sufficient check — it only validates the jvm source set and misses commonMain rules that iOS enforces. Use `make verify` instead: it runs `:composeApp:compileDebugKotlinAndroid` + `:composeApp:compileCommonMainKotlinMetadata`, which together cover commonMain strictly and catch nearly all issues that would otherwise surface at iOS compile time. The remaining iOS-only risk (iosMain, cinterop, cocoapods) can only be checked on macOS.
+
 ## Code map
 
 `make code-map` regenerates `.luminous/generated/code-map.md` — a compressed signature skeleton of the Kotlin sources under `app/composeApp/src/` (bodies stripped, grouped by package and file). Read it for a fast whole-codebase overview without opening every `.kt` file. It is a gitignored build artifact — re-run after code changes, never hand-edit. Spec: `doc01.04.03`.

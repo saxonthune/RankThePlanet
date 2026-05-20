@@ -323,6 +323,9 @@ This is the load-bearing dependency. It is a Compose-first wrapper around MapLib
 - One `UiState` per screen, exposed as `StateFlow` from a `ViewModel`.
 - `expect`/`actual` reserved for tiny shims; everything bigger goes through an `interface` + DI.
 
+### Verifying Kotlin changes off macOS
+The iOS Kotlin/Native targets are disabled when not on macOS, because MapLibre cinterop needs macOS. `:composeApp:compileKotlinJvm` is **not** a sufficient check there — it only sees the jvm source set. Run `make verify` (= `:composeApp:compileDebugKotlinAndroid` + `:composeApp:compileCommonMainKotlinMetadata`); together they enforce commonMain strictly and catch the failures that would otherwise blow up at iOS compile time. The remaining iOS-only risk (`iosMain`, cinterop, cocoapods) can only be checked on macOS.
+
 ---
 
 ## 12. Heuristics for architecture conversations

@@ -43,6 +43,16 @@ sealed interface PinSheet {
     data class Entry(val entry: EntrySummaryUi) : PinSheet
 }
 
+sealed interface LocationDraftSheet {
+    data object None : LocationDraftSheet
+    data class Open(
+        val lat: Double,
+        val lng: Double,
+        val displayName: String? = null,
+        val adoptedCandidate: String? = null,
+    ) : LocationDraftSheet
+}
+
 data class PinUi(
     val entryId: EntryId,
     val locationName: String,
@@ -72,6 +82,7 @@ data class MapOverviewUiState(
     val isSearching: Boolean = false,
     val isLoading: Boolean = true,
     val pinSheet: PinSheet = PinSheet.None,
+    val draft: LocationDraftSheet = LocationDraftSheet.None,
     val error: String? = null,
 )
 
@@ -85,6 +96,7 @@ class MapOverviewViewModel(
     private val searchResults = MutableStateFlow<List<SearchResultUi>>(emptyList())
     private val isSearching = MutableStateFlow(false)
     private val _pinSheet = MutableStateFlow<PinSheet>(PinSheet.None)
+    private val _draft = MutableStateFlow<LocationDraftSheet>(LocationDraftSheet.None)
     private val _error = MutableStateFlow<String?>(null)
 
     private val _latestCollections = MutableStateFlow<List<Collection>>(emptyList())
@@ -156,22 +168,26 @@ class MapOverviewViewModel(
     )
 
     val uiState: StateFlow<MapOverviewUiState> = combine(
-        derivedBase,
-        searchResults,
-        isSearching,
-        _pinSheet,
-        _error,
-    ) { base, results, searching, sheet, error ->
-        MapOverviewUiState(
-            pins = base.pins,
-            collectionRows = base.collectionRows,
-            searchResults = results.toImmutableList(),
-            isSearching = searching,
-            isLoading = false,
-            pinSheet = sheet,
-            error = error,
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapOverviewUiState())
+        combine(
+            derivedBase,
+            searchResults,
+            isSearching,
+            _pinSheet,
+            _error,
+        ) { base, results, searching, sheet, error ->
+            MapOverviewUiState(
+                pins = base.pins,
+                collectionRows = base.collectionRows,
+                searchResults = results.toImmutableList(),
+                isSearching = searching,
+                isLoading = false,
+                pinSheet = sheet,
+                error = error,
+            )
+        },
+        _draft,
+    ) { state, draft -> state.copy(draft = draft) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapOverviewUiState())
 
     fun toggleCollection(id: CollectionId) {
         hiddenCollections.value = hiddenCollections.value.let { hidden ->
@@ -238,5 +254,23 @@ class MapOverviewViewModel(
 
     fun dismissSheet() {
         _pinSheet.value = PinSheet.None
+    }
+
+    fun startDraft(lat: Double, lng: Double, displayName: String? = null) {
+        _draft.value = LocationDraftSheet.Open(lat, lng, displayName)
+    }
+
+    fun dismissDraft() {
+        _draft.value = LocationDraftSheet.None
+    }
+
+    fun adoptCandidate(name: String) {
+        val current = _draft.value as? LocationDraftSheet.Open ?: return
+        _draft.value = current.copy(adoptedCandidate = name)
+    }
+
+    fun keepCoordinates() {
+        val current = _draft.value as? LocationDraftSheet.Open ?: return
+        _draft.value = current.copy(adoptedCandidate = null)
     }
 }

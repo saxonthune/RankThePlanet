@@ -17,7 +17,6 @@ import com.saxonthune.ranktheplanet.nav.CollectionDetail
 import com.saxonthune.ranktheplanet.nav.CollectionEntryDetail
 import com.saxonthune.ranktheplanet.nav.CollectionList
 import com.saxonthune.ranktheplanet.nav.ImportFlow
-import com.saxonthune.ranktheplanet.nav.LocationDraft
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.nav.MapOverview
 import com.saxonthune.ranktheplanet.nav.ReviewForm
@@ -28,7 +27,6 @@ import com.saxonthune.ranktheplanet.ui.screens.CollectionDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEntryDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionListScreen
 import com.saxonthune.ranktheplanet.ui.screens.ImportFlowScreen
-import com.saxonthune.ranktheplanet.ui.screens.LocationDraftScreen
 import com.saxonthune.ranktheplanet.ui.screens.MapOverviewScreen
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEditorScreen
@@ -71,7 +69,7 @@ fun App() {
                     onOpenFullDetail = { entryId -> navController.navigate(CollectionEntryDetail(entryId.value)) },
                     onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
                     onEditReview = { navController.navigate(ReviewForm) },
-                    onDropPin = { navController.navigate(LocationDraft) },
+                    onAddToCollection = { navController.navigate(AddLocationToCollection(addToCollectionId = route.addToCollectionId)) },
                 )
             }
             composable<CollectionList> {
@@ -121,17 +119,13 @@ fun App() {
                     onCancel = { navController.popBackStack() },
                 )
             }
-            composable<AddLocationToCollection> {
+            composable<AddLocationToCollection> { backStackEntry ->
+                val route = backStackEntry.toRoute<AddLocationToCollection>()
                 AddLocationToCollectionScreen(
+                    addToCollectionId = route.addToCollectionId,
                     onPickCollection = { navController.navigate(ReviewForm) },
                     onNewCollection = { navController.navigate(CollectionEditor) },
                     onCancel = { navController.popBackStack() },
-                )
-            }
-            composable<LocationDraft> {
-                LocationDraftScreen(
-                    onClose = { navController.popBackStack() },
-                    onAddToCollection = { navController.navigate(AddLocationToCollection) },
                 )
             }
             composable<ImportFlow> {

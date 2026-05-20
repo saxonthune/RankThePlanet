@@ -46,6 +46,7 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.materialIconsExtended)
             implementation(compose.ui)
+            implementation("org.jetbrains.compose.ui:ui-backhandler:1.9.2")
             implementation(compose.components.resources)
             implementation(libs.maplibre.compose)
             implementation(libs.kotlinx.collections.immutable)

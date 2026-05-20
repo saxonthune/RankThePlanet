@@ -14,6 +14,7 @@ import com.saxonthune.ranktheplanet.ui.RtpDrillDownScaffold
 
 @Composable
 fun AddLocationToCollectionScreen(
+    addToCollectionId: String?,
     onPickCollection: () -> Unit,
     onNewCollection: () -> Unit,
     onCancel: () -> Unit,

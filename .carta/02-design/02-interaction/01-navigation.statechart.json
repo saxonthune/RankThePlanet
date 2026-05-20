@@ -9,6 +9,15 @@
       "tags": ["landing", "map"],
       "meta": {
         "surface": "MapOverview",
+        "modality": "fullScreen",
+        "hostsSheets": ["LocationDraft", "LocationDetail", "EntryDrawer"],
+        "modes": {
+          "browse": "Default; entered as the landing surface or via BACK from any descendant. No carried context.",
+          "addToCollection": "Entered from CollectionDetail's TAP_ADD_ENTRY. `collection-context` is set and propagates to every Location-opening transition."
+        },
+        "context": {
+          "collection-context": "Optional Collection carried into add-to-collection mode. Source: CollectionDetail's TAP_ADD_ENTRY. Consumed by: the statusBar region (display) and AddLocationToCollection's pre-selection."
+        },
         "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context"],
         "actions": [
           "MapOverview.open",
@@ -24,7 +33,8 @@
         "TAP_PIN": {
           "target": "LocationDetail",
           "label": "Inspect a pin",
-          "description": "User taps a pin to inspect that Location. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows. A pin is a Location, which may appear in several Collections — LocationDetail fans out to those Collection Entries rather than assuming one."
+          "description": "User taps a pin to inspect that Location. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows. A pin is a Location, which may appear in several Collections — LocationDetail fans out to those Collection Entries rather than assuming one.",
+          "propagates": ["collection-context"]
         },
         "TAP_COLLECTIONS_BUTTON": {
           "target": "CollectionList",
@@ -34,12 +44,14 @@
         "DROP_PIN": {
           "target": "LocationDraft",
           "label": "Drop a pin",
-          "description": "User long-presses a spot on the map to place a point. This produces an uncommitted candidate — not yet a Location — and opens LocationDraft over the map. Starts the Location-first flow from doc01.02 §3. The long-press gesture on the map is the only trigger; there is no dedicated drop-pin button."
+          "description": "User long-presses a spot on the map to place a point. This produces an uncommitted candidate — not yet a Location — and opens LocationDraft over the map. Starts the Location-first flow from doc01.02 §3. The long-press gesture on the map is the only trigger; there is no dedicated drop-pin button.",
+          "propagates": ["collection-context"]
         },
         "PICK_SEARCH_RESULT": {
           "target": "LocationDraft",
           "label": "Pick a search result",
-          "description": "User types into the map's search field (Location.resolve, see meta.actions), then picks one candidate from the result list. The picked candidate opens in LocationDraft for inspection before it is committed."
+          "description": "User types into the map's search field (Location.resolve, see meta.actions), then picks one candidate from the result list. The picked candidate opens in LocationDraft for inspection before it is committed.",
+          "propagates": ["collection-context"]
         },
         "TAP_SETTINGS": {
           "target": "Settings",
@@ -60,6 +72,8 @@
       "tags": ["peek", "map"],
       "meta": {
         "surface": "LocationDetail",
+        "modality": "sheet",
+        "host": "MapOverview",
         "reads": ["location", "entries-for-location", "collections-with-location"],
         "actions": ["Location.openExternally", "Location.refresh"]
       },
@@ -81,6 +95,8 @@
       "tags": ["peek", "map"],
       "meta": {
         "surface": "EntryDrawer",
+        "modality": "sheet",
+        "host": "MapOverview",
         "reads": ["entry", "location", "review", "collection"],
         "actions": ["Review.edit"]
       },
@@ -113,6 +129,7 @@
       "tags": ["list"],
       "meta": {
         "surface": "CollectionList",
+        "modality": "fullScreen",
         "reads": ["collections"],
         "actions": ["Collection.create", "Collection.import"]
       },
@@ -144,6 +161,7 @@
       "tags": ["detail"],
       "meta": {
         "surface": "CollectionDetail",
+        "modality": "fullScreen",
         "reads": ["collection", "entries", "appearance"],
         "actions": [
           "Collection.addEntry",
@@ -165,7 +183,8 @@
         "TAP_ADD_ENTRY": {
           "target": "MapOverview",
           "label": "Add a Collection Entry",
-          "description": "User starts the Collection-first add flow. This enters MapOverview in add-to-collection mode: the Collection is held as entry context (`collection-context`). The map, pins, and search are unchanged; a status bar names the target Collection. Any Location the user opens — by tapping a pin, dropping a pin, or picking a search result — carries the context through LocationDraft into AddLocationToCollection, where the originating Collection is pre-selected, so PICK_COLLECTION confirms rather than chooses. CANCEL_ADD from the status bar abandons the flow back here."
+          "description": "User starts the Collection-first add flow. This enters MapOverview in add-to-collection mode: the Collection is held as entry context (`collection-context`). The map, pins, and search are unchanged; a status bar names the target Collection. Any Location the user opens — by tapping a pin, dropping a pin, or picking a search result — carries the context through LocationDraft into AddLocationToCollection, where the originating Collection is pre-selected, so PICK_COLLECTION confirms rather than chooses. CANCEL_ADD from the status bar abandons the flow back here.",
+          "propagates": ["collection-context"]
         },
         "TAP_EDIT_TEMPLATE": {
           "target": "CollectionEditor",
@@ -184,6 +203,7 @@
       "tags": ["detail"],
       "meta": {
         "surface": "CollectionEntryDetail",
+        "modality": "fullScreen",
         "reads": ["entry", "location", "review"],
         "actions": [
           "Review.edit",
@@ -220,6 +240,7 @@
       "tags": ["form"],
       "meta": {
         "surface": "ReviewForm",
+        "modality": "fullScreen",
         "reads": ["template", "draft-review"],
         "actions": ["Review.start", "Review.edit", "Review.submit", "Review.clear"]
       },
@@ -241,6 +262,7 @@
       "tags": ["form"],
       "meta": {
         "surface": "CollectionEditor",
+        "modality": "fullScreen",
         "reads": ["collection", "template"],
         "actions": ["Collection.create", "Collection.edit", "Review.defineTemplate", "Review.editTemplate", "Review.useBuiltIn"]
       },
@@ -258,18 +280,24 @@
     },
 
     "LocationDraft": {
-      "description": "A candidate Location not yet committed — a point dropped on the map or a search result picked from MapOverview. Shows the coordinates and offers nearby resolution candidates (Location.resolveNearby). The user keeps the coordinates as-is (Location.dropPin commits a manual Location) or adopts a resolved candidate. Rendered as a sheet over the map — the map stays visible — which is a downstream choice (see doc02.02.01). See doc01.03 §2.",
-      "tags": ["modal", "map"],
+      "description": "A candidate Location not yet committed — a point dropped on the map or a search result picked from MapOverview. Shows the coordinates and offers nearby resolution candidates (Location.resolveNearby). The user keeps the coordinates as-is (Location.dropPin commits a manual Location) or adopts a resolved candidate. Rendered as a sheet over MapOverview — the map stays visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). See doc01.03 §2.",
+      "tags": ["sheet", "map"],
       "meta": {
         "surface": "LocationDraft",
-        "reads": ["candidate-location", "nearby-candidates"],
+        "modality": "sheet",
+        "host": "MapOverview",
+        "context": {
+          "collection-context": "Forwarded by MapOverview's DROP_PIN / PICK_SEARCH_RESULT when add-to-collection mode is active. Not consumed by this surface; carried onward to AddLocationToCollection so the originating Collection is pre-selected."
+        },
+        "reads": ["candidate-location", "nearby-candidates", "collection-context"],
         "actions": ["Location.dropPin", "Location.resolveNearby"]
       },
       "on": {
         "ADD_TO_COLLECTION": {
           "target": "AddLocationToCollection",
           "label": "Add to a Collection",
-          "description": "User commits the candidate — keeping the coordinates as a manual Location, or having adopted a resolved one — and proceeds to pick which Collection to add it to."
+          "description": "User commits the candidate — keeping the coordinates as a manual Location, or having adopted a resolved one — and proceeds to pick which Collection to add it to.",
+          "propagates": ["collection-context"]
         },
         "CLOSE": {
           "target": "MapOverview",
@@ -283,7 +311,11 @@
       "tags": ["picker"],
       "meta": {
         "surface": "AddLocationToCollection",
-        "reads": ["collections", "candidate-location"],
+        "modality": "fullScreen",
+        "context": {
+          "collection-context": "Forwarded from LocationDraft's ADD_TO_COLLECTION. Consumed: pre-selects the Collection in the picker so PICK_COLLECTION confirms rather than chooses."
+        },
+        "reads": ["collections", "candidate-location", "collection-context"],
         "actions": ["Location.addToCollection", "Collection.addEntry", "Collection.create"]
       },
       "on": {
@@ -309,6 +341,7 @@
       "tags": ["modal"],
       "meta": {
         "surface": "ImportFlow",
+        "modality": "fullScreen",
         "actions": ["Collection.import"]
       },
       "on": {
@@ -329,6 +362,7 @@
       "tags": ["modal"],
       "meta": {
         "surface": "Settings",
+        "modality": "fullScreen",
         "reads": ["settings"],
         "actions": []
       },
@@ -350,6 +384,7 @@
       "tags": ["modal"],
       "meta": {
         "surface": "LocationProvider",
+        "modality": "fullScreen",
         "reads": ["configured-providers", "default-provider"],
         "actions": ["LocationProvider.addProvider", "LocationProvider.switchProvider"]
       },

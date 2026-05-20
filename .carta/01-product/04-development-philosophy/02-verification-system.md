@@ -43,4 +43,15 @@ A surface is rarely inventoried all at once. An inventory may carry a `deferred`
 
 ## How it grows
 
-Each affordance in an inventory already pairs an action with a target, so the inventory is, in effect, an action inventory the verifier walks entry by entry. The system unfolds along two axes: new verifier `kind`s as other artifact pairs become worth checking (the action-to-concept coverage that [[01-navigation]] anticipates is the natural next one), and stricter checks within `screen-inventory` as the inventory schema firms up. Neither is built before a concrete piece of work needs it.
+Each affordance in an inventory already pairs an action with a target, so the inventory is, in effect, an action inventory the verifier walks entry by entry. The system unfolds along two axes: new verifier `kind`s as other artifact pairs become worth checking, and stricter checks within `screen-inventory` as the inventory schema firms up. Neither is built before a concrete piece of work needs it.
+
+### Candidate verifier kinds
+
+The schema fields introduced for [[01-navigation]] (doc02.02.01) and [[00-index]] (doc02.02.02.00) — modality, host, modes, context, propagates, appearsInModes, reactsToContext — admit further mechanical consistency checks. Each is a one-pass walk of the statechart plus inventories.
+
+- **`modality-host`** could check that every state with `modality != fullScreen` names a real `host`, and that every `host`'s `hostsSheets` matches its inbound sheet/drawer/overlay states.
+- **`context-chain`** could check that every key in a state's `meta.context` is either consumed (named by an affordance's `appearsInModes` or `reactsToContext` in the inventory, or in `meta.actions`) or forwarded by an outgoing transition's `propagates`. Catches the silent-drop failure named in [[04-surface-composition-rules]] (doc02.04).
+- **`mode-coverage`** could check that every mode named in a state's `meta.modes` is referenced by at least one region or affordance in the inventory's `appearsInModes`.
+- **`action-concept`** could diff `Concept.action` strings against doc01.03's concept-action lists to catch orphan actions (gulf of execution) and phantom tags (stale concept reference).
+
+A kind earns implementation when a concrete piece of work — typically the unfolding of a new surface — would benefit from the check.

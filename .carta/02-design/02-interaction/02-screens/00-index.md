@@ -17,13 +17,15 @@ Inventories stay platform-agnostic, same as the rest of the interaction layer (d
 
 A `*.inventory.json` has three arrays, all keyed to the surface's statechart entry:
 
-- **`regions`** — named areas of the surface (`topBar`, `content`), each with a purpose.
-- **`affordances`** — what the user can act on. Each has a `region`, a `label`, and either an `event` (a transition from the statechart) or stays a self-action. Events carrying a concept action name it in `action`, matching the surface's `meta.actions`.
-- **`lists`** — repeated content. Each names what domain type it `iterates`, which `meta.reads` key it `reads`, the per-item affordance, and an empty state.
+- **`regions`** — named areas of the surface (`topBar`, `content`), each with a purpose. Optional fields:
+  - **`appearsInModes`** — array of mode keys (from the statechart state's `meta.modes`) in which this region appears. Absent = always present.
+  - **`reactsToContext`** — array of context keys (from `meta.context`) whose value shapes this region's content (e.g. the statusBar reads `collection-context` to render "Adding to {name}").
+- **`affordances`** — what the user can act on. Each has a `region`, a `label`, and either an `event` (a transition from the statechart) or stays a self-action. Events carrying a concept action name it in `action`, matching the surface's `meta.actions`. Optional `appearsInModes` gates the affordance per-mode the same way.
+- **`lists`** — repeated content. Each names what domain type it `iterates`, which `meta.reads` key it `reads`, the per-item affordance, and an empty state. Optional `appearsInModes` available.
 
-Coverage stays honest: every `event` must be a real transition on that surface in the statechart, and every `action` must appear in its `meta.actions`.
+Coverage stays honest: every `event` must be a real transition on that surface in the statechart, every `action` must appear in its `meta.actions`, every mode named in `appearsInModes` must exist in the state's `meta.modes`, and every key in `reactsToContext` must exist in `meta.context`.
 
-- **`deferred`** (optional) — a list of statechart events and `meta.actions` the surface knowingly has not inventoried yet. The `screen-inventory` verifier treats deferred items as acknowledged gaps rather than failures, and reports their count as a backlog metric. Use `deferred` for affordances that exist in the statechart but are not yet built (e.g. a toggle whose UI is not yet designed).
+- **`deferred`** (optional, top-level) — a list of statechart events and `meta.actions` the surface knowingly has not inventoried yet. The `screen-inventory` verifier treats deferred items as acknowledged gaps rather than failures, and reports their count as a backlog metric. Use `deferred` for affordances that exist in the statechart but are not yet built (e.g. a toggle whose UI is not yet designed).
 
 ## Contents
 

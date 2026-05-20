@@ -24,8 +24,19 @@ What this means day-to-day:
 - Don't scaffold empty groups for "future architecture."
 - Don't invent content to fill thin docs.
 - When behavior changes, the spec change comes first; the code follows mechanically.
-- Write specs in the present tense of intent — describe how things *should be*, not when they were built, what they replace, or what is "currently"/"now"/"mockup-era"/"will soon" true. Temporal framing rots and makes specs brittle; intent statements stay correct. For genuinely unbuilt ideas, use conditional phrasing ("could", "a candidate") and flag them as not-yet-built.
 - Sidecar JSONs (state machines, schemas) live next to their host `.md` in the same bundle, not in a separate directory.
+
+## No temporal language in docs
+
+This rule is load-bearing and easy to violate. Every carta doc is written in the **present tense of intent** — describe how things *should be*, never when they were built, what they replace, what is "currently"/"now"/"today"/"pending"/"not yet"/"will soon"/"in the future" true, or how the doc changed. Temporal framing rots: the doc that says "will soon" is wrong the moment "soon" passes, and the reader has no way to tell.
+
+For genuinely unbuilt ideas, use **conditional phrasing** and flag them as not-yet-built: "a candidate verifier kind", "the surface could declare X", "one approach would be". Conditional voice stays correct whether the idea ships or not.
+
+For historical context (why this exists, what it replaces, an incident that motivated it), put it in the **commit message or PR description**, not the doc.
+
+Detection: agents finding any of the words above in a doc they're editing should rewrite the surrounding sentence in intent voice. If the resulting sentence has no content, the original sentence was decoration — delete it.
+
+See also the saved memory `feedback_carta_no_temporal_language.md` and doc00.03's writing-style section.
 
 ## Working with the carta workspace
 

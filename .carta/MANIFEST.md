@@ -36,6 +36,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
 | doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | doc01.03 | — |
 | doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04.01, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc03.01, doc03.02, doc03.04 | — |
+| doc01.05 | `05-cmp-composition-research.md` | Research session: how to design shared CMP surfaces that bend to context (mode parameter, sheet-not-route), with a Tier-1..4 audit of reference apps to compare against | product, research, cmp, patterns, references | doc02.01, doc02.02.01 | doc02.04 | — |
 
 ### Development Philosophy
 
@@ -53,8 +54,9 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.00 | `00-index.md` |  |  | — | — | — |
-| doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc02.03, doc03.01 | — |
+| doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc01.05, doc02.03, doc03.01 | — |
 | doc02.03 | `03-theme-tokens.md` | Three-tier design token system (primitive, semantic, provider) for the CMP theme: RtpColors, RtpSpacing, RtpTypography and the RtpTheme accessor | design, theme, tokens, styling, cmp | doc02.01 | — | — |
+| doc02.04 | `04-surface-composition-rules.md` | Two design rules for how surfaces compose: same-surface-different-mode, and overlay-surfaces-are-not-routes | design, interaction, composition, rules | doc02.02.01, doc01.05 | — | — |
 
 ### Interaction
 
@@ -62,7 +64,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.02.00 | `02-interaction/00-index.md` | Platform-agnostic UI design — surfaces, navigation graph, action coverage | design, interaction, index | doc01.03 | — | — |
-| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.04.02, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc03.03 | statechart.json |
+| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.04.02, doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.04, doc03.03 | statechart.json |
 | doc02.02.02.00 | `02-interaction/02-screens/00-index.md` | Per-surface affordance inventories — regions, affordances, lists | design, interaction, screens, index | doc02.02.01 | doc01.04.02 | — |
 | doc02.02.02.01 | `02-interaction/02-screens/01-collection-list.md` | Affordance inventory for the CollectionList surface — regions, affordances, lists | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.02 | `02-interaction/02-screens/02-collection-detail.md` | Affordance inventory for the CollectionDetail surface — Details section, sortable entry list | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
@@ -95,17 +97,18 @@ Quick lookup for file-path→doc mapping:
 | `ai` | doc00.04 |
 | `architecture` | doc02.01 |
 | `background` | doc01.01 |
-| `cmp` | doc02.01, doc02.03, doc03.03 |
+| `cmp` | doc01.05, doc02.01, doc02.03, doc03.03 |
 | `code-map` | doc01.04.03 |
+| `composition` | doc02.04 |
 | `concepts` | doc01.03 |
 | `contract` | doc03.02 |
 | `conventions` | doc00.03 |
 | `coverage` | doc01.04.02 |
 | `data` | doc03.02 |
-| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.03 |
+| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.03, doc02.04 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
 | `index` | doc00.00, doc01.00, doc02.02.00, doc02.02.02.00, doc03.00 |
-| `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10 |
+| `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.04 |
 | `interfaces` | doc03.02 |
 | `licensing` | doc03.04 |
 | `location` | doc03.04 |
@@ -117,14 +120,17 @@ Quick lookup for file-path→doc mapping:
 | `navigation` | doc02.02.01, doc03.03 |
 | `odbl` | doc03.04 |
 | `osm` | doc03.04 |
+| `patterns` | doc01.05 |
 | `philosophy` | doc00.02, doc01.04.00, doc01.04.01 |
 | `pipeline` | doc01.04.03 |
 | `process` | doc01.04.00, doc01.04.01, doc01.04.02 |
-| `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04.00, doc01.04.01, doc01.04.02 |
+| `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04.00, doc01.04.01, doc01.04.02, doc01.05 |
 | `providers` | doc03.04 |
+| `references` | doc01.05 |
 | `repository` | doc03.02 |
-| `research` | doc01.01 |
+| `research` | doc01.01, doc01.05 |
 | `retrieval` | doc00.04 |
+| `rules` | doc02.04 |
 | `schema` | doc03.01 |
 | `screens` | doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10 |
 | `sqlcipher` | doc03.01 |

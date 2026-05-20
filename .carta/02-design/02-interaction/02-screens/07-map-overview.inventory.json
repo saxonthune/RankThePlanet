@@ -23,7 +23,9 @@
     },
     {
       "id": "statusBar",
-      "purpose": "Present only when the surface is entered in add-to-collection mode. Names the target Collection — \"Adding to {collectionName}\" — and holds the affordance to abandon the add flow. Absent in the default browse mode."
+      "purpose": "Names the target Collection — \"Adding to {collectionName}\" — and holds the affordance to abandon the add flow.",
+      "appearsInModes": ["addToCollection"],
+      "reactsToContext": ["collection-context"]
     }
   ],
   "affordances": [
@@ -81,7 +83,8 @@
       "label": "Cancel adding",
       "region": "statusBar",
       "event": "CANCEL_ADD",
-      "target": "CollectionDetail"
+      "target": "CollectionDetail",
+      "appearsInModes": ["addToCollection"]
     }
   ],
   "lists": [

@@ -10,6 +10,8 @@ verify: [{"kind":"screen-inventory","sidecar":"10-location-detail.inventory.json
 
 The affordance inventory for the `LocationDetail` surface — a skinny bottom-sheet peek of one Location and every Collection Entry that references it, opened by tapping a pin on `MapOverview` ([[03-concepts]], doc01.03 §2). **The source of truth is the carta sidecar `10-location-detail.inventory.json`** ([[00-index]], doc02.02.02.00 explains the shape); this `.md` is a lean companion.
 
+`LocationDetail` renders as a sheet (`meta.modality: sheet`) hosted by `MapOverview` (`meta.host: MapOverview`); the sheet's state lives in the host's UiState rather than being its own route ([[04-surface-composition-rules]], doc02.04).
+
 The surface is a skinny bottom sheet split into two halves. The **locationSummary** region (left half) shows the Location — its display name and coordinates. The **entries** region (right half) is a vertically scrolling list of every Entry that references this Location, one per Collection; each row shows the owning Collection's name and appearance color and the Entry's visited/unvisited state. Tapping a row picks that Entry and opens the [[09-entry-drawer]] ([[01-navigation]], doc02.02.01: `TAP_ENTRY` → `EntryDrawer`).
 
 The peek is meaningful only when a Location has multiple Entries. When the tapped Location has exactly one Entry, the surface renders the `EntryDrawer` directly instead of the split peek — this is a downstream rendering choice ([[01-navigation]], doc02.02.01) and stays out of the statechart. *Dismiss* is the bottom-sheet's swipe-down or scrim-tap gesture and is modeled as `BACK` → `MapOverview`.

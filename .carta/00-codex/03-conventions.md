@@ -90,6 +90,7 @@ MANIFEST.md is the **machine-readable retrieval index** — a flat table with re
 
 ## Writing Style
 
+- **No temporal language.** Write in the present tense of intent — describe how things *should be*, never when they were built, what they replace, or what is "currently" / "now" / "today" / "pending" / "not yet" / "will soon" / "in the future" true. Temporal framing rots; intent statements stay correct. For genuinely unbuilt ideas, use conditional phrasing ("could", "a candidate", "one approach would be") and flag them as not-yet-built. For historical context (why this exists, what it replaces), put it in the commit message, not the doc. This rule is the most common style violation in this workspace; it outranks the rest of this list.
 - **One concept per file.** If a file covers two distinct things, split it.
 - **Reference, don't repeat.** If a concept has a canonical doc, link to it with `docXX.YY` instead of re-explaining.
 - **Describe behavior, not implementation.** Docs should be clear enough to write a test from.

@@ -1,5 +1,6 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.saxonthune.ranktheplanet.data.CollectionRepository
@@ -10,6 +11,7 @@ import com.saxonthune.ranktheplanet.domain.Collection
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.Entry
 import com.saxonthune.ranktheplanet.domain.EntryId
+import com.saxonthune.ranktheplanet.ui.theme.parseAppearanceColor
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -18,13 +20,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class EntrySummaryUi(
     val entryId: EntryId,
     val collectionId: CollectionId,
     val collectionName: String,
-    val collectionColor: String,
+    val collectionColor: Color,
     val locationName: String,
     val visited: Boolean,
 )
@@ -44,14 +47,14 @@ data class PinUi(
     val entryId: EntryId,
     val lat: Double,
     val lng: Double,
-    val color: String,
+    val color: Color,
     val visited: Boolean,
 )
 
 data class CollectionFilterRowUi(
     val id: CollectionId,
     val name: String,
-    val color: String,
+    val color: Color,
     val shown: Boolean,
 )
 
@@ -68,6 +71,7 @@ data class MapOverviewUiState(
     val isSearching: Boolean = false,
     val isLoading: Boolean = true,
     val pinSheet: PinSheet = PinSheet.None,
+    val error: String? = null,
 )
 
 class MapOverviewViewModel(
@@ -80,16 +84,34 @@ class MapOverviewViewModel(
     private val searchResults = MutableStateFlow<List<SearchResultUi>>(emptyList())
     private val isSearching = MutableStateFlow(false)
     private val _pinSheet = MutableStateFlow<PinSheet>(PinSheet.None)
+    private val _error = MutableStateFlow<String?>(null)
 
     private val _latestCollections = MutableStateFlow<List<Collection>>(emptyList())
     private val _latestEntries = MutableStateFlow<List<Entry>>(emptyList())
 
     init {
+        loadData()
+    }
+
+    fun retry() {
+        _error.value = null
+        loadData()
+    }
+
+    private fun loadData() {
         viewModelScope.launch {
-            collectionsRepo.observeAll().collect { _latestCollections.value = it }
+            try {
+                collectionsRepo.observeAll().collect { _latestCollections.value = it }
+            } catch (t: Throwable) {
+                _error.value = t.message ?: "Unknown error"
+            }
         }
         viewModelScope.launch {
-            entriesRepo.observeAll().collect { _latestEntries.value = it }
+            try {
+                entriesRepo.observeAll().collect { _latestEntries.value = it }
+            } catch (t: Throwable) {
+                _error.value = t.message ?: "Unknown error"
+            }
         }
     }
 
@@ -98,7 +120,8 @@ class MapOverviewViewModel(
             Triple(cols, ents, hidden)
         },
         combine(searchResults, isSearching, _pinSheet) { r, s, p -> Triple(r, s, p) },
-    ) { core, extra ->
+        _error,
+    ) { core, extra, error ->
         val (collectionList, entryList, hidden) = core
         val (results, searching, sheet) = extra
         val collectionMap = collectionList.associateBy { it.id }
@@ -106,7 +129,7 @@ class MapOverviewViewModel(
             CollectionFilterRowUi(
                 id = col.id,
                 name = col.name,
-                color = col.appearance.color,
+                color = parseAppearanceColor(col.appearance.color),
                 shown = col.id !in hidden,
             )
         }.toImmutableList()
@@ -118,7 +141,7 @@ class MapOverviewViewModel(
                     entryId = entry.id,
                     lat = entry.location.coordinates.lat,
                     lng = entry.location.coordinates.lng,
-                    color = col.appearance.color,
+                    color = parseAppearanceColor(col.appearance.color),
                     visited = entry.review != null,
                 )
             }.toImmutableList()
@@ -129,6 +152,7 @@ class MapOverviewViewModel(
             isSearching = searching,
             isLoading = false,
             pinSheet = sheet,
+            error = error,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapOverviewUiState())
 
@@ -172,7 +196,7 @@ class MapOverviewViewModel(
                 entryId = e.id,
                 collectionId = e.collectionId,
                 collectionName = col.name,
-                collectionColor = col.appearance.color,
+                collectionColor = parseAppearanceColor(col.appearance.color),
                 locationName = e.location.displayName,
                 visited = e.review != null,
             )

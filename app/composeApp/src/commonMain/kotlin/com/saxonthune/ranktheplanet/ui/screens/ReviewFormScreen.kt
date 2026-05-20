@@ -4,17 +4,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -27,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.saxonthune.ranktheplanet.ui.RtpModalScaffold
 
 private enum class FieldType { SCORE, TEXT, ENUM, BOOLEAN, DATE, POWER_RANKING }
 
@@ -60,32 +56,16 @@ private val MOCK_DRAFT = mapOf(
 fun ReviewFormScreen(onSave: () -> Unit, onCancel: () -> Unit) {
     val values = remember { mutableStateMapOf<String, String>().apply { putAll(MOCK_DRAFT) } }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Review · Blue Bottle Mint Plaza",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.weight(1f),
-            )
-            TextButton(onClick = onCancel) {
-                Text("Cancel")
-            }
-        }
-
-        HorizontalDivider()
-
+    RtpModalScaffold(
+        title = "Review · Blue Bottle Mint Plaza",
+        onCancel = onCancel,
+        onSave = onSave,
+        saveLabel = "Save",
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -97,21 +77,6 @@ fun ReviewFormScreen(onSave: () -> Unit, onCancel: () -> Unit) {
                     onEdit = { values[field.name] = it },
                     onClear = { values.remove(field.name) },
                 )
-            }
-        }
-
-        HorizontalDivider()
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-        ) {
-            Button(
-                onClick = onSave,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Save the Review")
             }
         }
     }

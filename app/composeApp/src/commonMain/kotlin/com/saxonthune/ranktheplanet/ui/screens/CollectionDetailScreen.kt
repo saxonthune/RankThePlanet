@@ -2,26 +2,29 @@ package com.saxonthune.ranktheplanet.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,6 +36,11 @@ import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
+import com.saxonthune.ranktheplanet.ui.RtpDrillDownScaffold
+import com.saxonthune.ranktheplanet.ui.RtpEmptyState
+import com.saxonthune.ranktheplanet.ui.RtpErrorState
+import com.saxonthune.ranktheplanet.ui.RtpSkeletonRow
+import kotlinx.coroutines.delay
 
 @Composable
 fun CollectionDetailScreen(
@@ -51,117 +59,122 @@ fun CollectionDetailScreen(
     val state by vm.uiState.collectAsState()
     var detailsExpanded by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = state.collection?.name ?: "Collection",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.weight(1f),
-            )
-            TextButton(onClick = { onAddEntry() }) { Text("Add Entry") }
-            TextButton(onClick = { onEditCollection() }) { Text("Edit the Collection") }
-            TextButton(onClick = { onBack() }) { Text("Back") }
+    val showSkeletons by produceState(false, state.isLoading) {
+        if (state.isLoading) {
+            delay(400)
+            value = true
+        } else {
+            value = false
         }
+    }
 
-        HorizontalDivider()
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { detailsExpanded = !detailsExpanded }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Details",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text = if (detailsExpanded) "▲" else "▼",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-
-        if (detailsExpanded) {
-            state.collection?.let { col ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text("Entries: ${state.entries.size}", style = MaterialTheme.typography.bodyMedium)
-                    Text("Created: ${col.created}", style = MaterialTheme.typography.bodySmall)
-                    Text("Last modified: ${col.lastModified}", style = MaterialTheme.typography.bodySmall)
-                    Text("Template version: ${col.templateVersion}", style = MaterialTheme.typography.bodySmall)
-                    Text("Color: ${col.appearance.color}", style = MaterialTheme.typography.bodySmall)
-                    Text("Pin style: ${col.appearance.pinStyle}", style = MaterialTheme.typography.bodySmall)
-                    Text("Visible: ${col.isVisible}", style = MaterialTheme.typography.bodySmall)
-                }
+    RtpDrillDownScaffold(
+        title = state.collection?.name ?: "Collection",
+        onBack = onBack,
+        actions = {
+            IconButton(onClick = onEditCollection) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit collection")
             }
-        }
-
-        HorizontalDivider()
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            FilterChip(
-                selected = false,
-                onClick = {},
-                label = { Text("Near Me") },
-                enabled = false,
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onAddEntry,
+                text = { Text("Add entry") },
+                icon = { Icon(Icons.Default.Add, contentDescription = null) },
             )
-            FilterChip(
-                selected = state.sortMode == SortMode.DateAdded,
-                onClick = { vm.setSort(SortMode.DateAdded) },
-                label = { Text("Date Added") },
-            )
-            FilterChip(
-                selected = state.sortMode == SortMode.ReviewTime,
-                onClick = { vm.setSort(SortMode.ReviewTime) },
-                label = { Text("Review Time") },
-            )
-            if (state.scoreFieldName != null) {
-                FilterChip(
-                    selected = state.sortMode == SortMode.Score,
-                    onClick = { vm.setSort(SortMode.Score) },
-                    label = { Text("Score") },
-                )
-            }
-        }
-
-        if (state.entries.isEmpty() && !state.isLoading) {
-            Box(
+        },
+    ) { paddingValues ->
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center,
+                    .fillMaxWidth()
+                    .clickable { detailsExpanded = !detailsExpanded }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "No entries yet. Tap Add Entry to start.",
+                    text = "Details",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = if (detailsExpanded) "▲" else "▼",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-        } else {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(state.entries, key = { it.id.value }) { row ->
-                    EntryRow(row = row, onClick = { onOpenEntry(row.id) })
-                    HorizontalDivider()
+
+            if (detailsExpanded) {
+                state.collection?.let { col ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text("Entries: ${state.entries.size}", style = MaterialTheme.typography.bodyMedium)
+                        Text("Created: ${col.created}", style = MaterialTheme.typography.bodySmall)
+                        Text("Last modified: ${col.lastModified}", style = MaterialTheme.typography.bodySmall)
+                        Text("Template version: ${col.templateVersion}", style = MaterialTheme.typography.bodySmall)
+                        Text("Color: ${col.appearance.color}", style = MaterialTheme.typography.bodySmall)
+                        Text("Pin style: ${col.appearance.pinStyle}", style = MaterialTheme.typography.bodySmall)
+                        Text("Visible: ${col.isVisible}", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(
+                    selected = false,
+                    onClick = {},
+                    label = { Text("Near Me") },
+                    enabled = false,
+                )
+                FilterChip(
+                    selected = state.sortMode == SortMode.DateAdded,
+                    onClick = { vm.setSort(SortMode.DateAdded) },
+                    label = { Text("Date Added") },
+                )
+                FilterChip(
+                    selected = state.sortMode == SortMode.ReviewTime,
+                    onClick = { vm.setSort(SortMode.ReviewTime) },
+                    label = { Text("Review Time") },
+                )
+                if (state.scoreFieldName != null) {
+                    FilterChip(
+                        selected = state.sortMode == SortMode.Score,
+                        onClick = { vm.setSort(SortMode.Score) },
+                        label = { Text("Score") },
+                    )
+                }
+            }
+
+            when {
+                state.error != null -> RtpErrorState(
+                    message = state.error!!,
+                    onRetry = vm::retry,
+                )
+                state.isLoading && state.entries.isEmpty() && showSkeletons -> Column {
+                    repeat(5) { RtpSkeletonRow() }
+                }
+                state.entries.isEmpty() && !state.isLoading -> RtpEmptyState(
+                    icon = Icons.Default.Place,
+                    title = "No entries yet",
+                    body = "Add places you want to remember, rate, and revisit.",
+                    actionLabel = "Add your first entry",
+                    onAction = onAddEntry,
+                )
+                else -> LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(state.entries, key = { it.id.value }) { row ->
+                        EntryRow(row = row, onClick = { onOpenEntry(row.id) })
+                        HorizontalDivider()
+                    }
                 }
             }
         }

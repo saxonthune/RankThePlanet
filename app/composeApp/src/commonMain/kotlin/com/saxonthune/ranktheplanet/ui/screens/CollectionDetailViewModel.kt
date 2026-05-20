@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 enum class SortMode { DateAdded, ReviewTime, Score }
 
@@ -35,66 +37,88 @@ data class CollectionDetailUiState(
     val scoreFieldName: String? = null,
     val sortMode: SortMode = SortMode.DateAdded,
     val isLoading: Boolean = true,
+    val error: String? = null,
 )
 
 class CollectionDetailViewModel(
-    collectionId: CollectionId,
-    collections: CollectionRepository,
-    entries: EntryRepository,
-    templates: TemplateRepository,
+    private val collectionId: CollectionId,
+    private val collections: CollectionRepository,
+    private val entries: EntryRepository,
+    private val templates: TemplateRepository,
 ) : ViewModel() {
 
     private val _sortMode = MutableStateFlow(SortMode.DateAdded)
+    private val _state = MutableStateFlow(CollectionDetailUiState())
+    val uiState: StateFlow<CollectionDetailUiState> = _state
 
-    val uiState: StateFlow<CollectionDetailUiState> = combine(
-        collections.observe(collectionId),
-        entries.observeByCollection(collectionId),
-        templates.observe(collectionId),
-        _sortMode,
-    ) { collection, entryList, template, sortMode ->
-        val scoreFieldName = template?.fields
-            ?.firstOrNull { it.type == FieldType.Score || it.type == FieldType.PowerRanking }
-            ?.name
+    init {
+        load()
+    }
 
-        val rows = entryList.map { entry ->
-            val score = scoreFieldName
-                ?.let { entry.review?.data?.get(it) }
-                ?.toDoubleOrNull()
-            val summary = entry.review?.data?.entries
-                ?.filter { (k, _) -> k != scoreFieldName }
-                ?.firstOrNull()
-                ?.value
-                ?.take(60)
-                ?: ""
-            EntryRowUi(
-                id = entry.id,
-                displayName = entry.location.displayName,
-                reviewSummary = summary,
-                score = score,
-                added = entry.added,
-                reviewLastModified = entry.review?.lastModified ?: "",
-            )
-        }
-
-        val sorted = when (sortMode) {
-            SortMode.DateAdded -> rows.sortedByDescending { it.added }
-            SortMode.ReviewTime -> rows.sortedByDescending { it.reviewLastModified }
-            SortMode.Score -> rows.sortedWith(
-                compareByDescending<EntryRowUi> { it.score != null }
-                    .thenByDescending { it.score ?: 0.0 }
-            )
-        }
-
-        CollectionDetailUiState(
-            collection = collection,
-            entries = sorted.toImmutableList(),
-            scoreFieldName = scoreFieldName,
-            sortMode = sortMode,
-            isLoading = false,
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CollectionDetailUiState())
+    fun retry() {
+        _state.update { it.copy(error = null, isLoading = true) }
+        load()
+    }
 
     fun setSort(mode: SortMode) {
         _sortMode.value = mode
+    }
+
+    private fun load() {
+        viewModelScope.launch {
+            try {
+                combine(
+                    collections.observe(collectionId),
+                    entries.observeByCollection(collectionId),
+                    templates.observe(collectionId),
+                    _sortMode,
+                ) { collection, entryList, template, sortMode ->
+                    val scoreFieldName = template?.fields
+                        ?.firstOrNull { it.type == FieldType.Score || it.type == FieldType.PowerRanking }
+                        ?.name
+
+                    val rows = entryList.map { entry ->
+                        val score = scoreFieldName
+                            ?.let { entry.review?.data?.get(it) }
+                            ?.toDoubleOrNull()
+                        val summary = entry.review?.data?.entries
+                            ?.filter { (k, _) -> k != scoreFieldName }
+                            ?.firstOrNull()
+                            ?.value
+                            ?.take(60)
+                            ?: ""
+                        EntryRowUi(
+                            id = entry.id,
+                            displayName = entry.location.displayName,
+                            reviewSummary = summary,
+                            score = score,
+                            added = entry.added,
+                            reviewLastModified = entry.review?.lastModified ?: "",
+                        )
+                    }
+
+                    val sorted = when (sortMode) {
+                        SortMode.DateAdded -> rows.sortedByDescending { it.added }
+                        SortMode.ReviewTime -> rows.sortedByDescending { it.reviewLastModified }
+                        SortMode.Score -> rows.sortedWith(
+                            compareByDescending<EntryRowUi> { it.score != null }
+                                .thenByDescending { it.score ?: 0.0 }
+                        )
+                    }
+
+                    CollectionDetailUiState(
+                        collection = collection,
+                        entries = sorted.toImmutableList(),
+                        scoreFieldName = scoreFieldName,
+                        sortMode = sortMode,
+                        isLoading = false,
+                    )
+                }.collect { next ->
+                    _state.value = next
+                }
+            } catch (t: Throwable) {
+                _state.update { it.copy(isLoading = false, error = t.message ?: "Unknown error") }
+            }
+        }
     }
 }

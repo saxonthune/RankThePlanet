@@ -284,7 +284,7 @@ fun MapOverviewScreen(
                 MaplibreMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraState = cameraState,
-                    baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/positron"),
+                    baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/bright"),
                     options = MapOptions(ornamentOptions = OrnamentOptions.OnlyLogo),
                     onMapLongClick = { _, _ ->
                         onDropPin()

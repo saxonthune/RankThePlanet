@@ -5,10 +5,13 @@ import com.saxonthune.ranktheplanet.data.secure.SecureStore
 import com.saxonthune.ranktheplanet.data.secure.SecureStoreKeys
 import com.saxonthune.ranktheplanet.domain.SourceType
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface LocationProviderRegistry {
     fun providerFor(type: SourceType): LocationProvider?
     fun default(): LocationProvider
+    val defaultFlow: StateFlow<LocationProvider>
     fun configured(): List<LocationProvider>
     fun setDefault(type: SourceType)
     fun addProvider(provider: LocationProvider)
@@ -21,7 +24,9 @@ class DefaultLocationProviderRegistry private constructor(
 ) : LocationProviderRegistry {
 
     private val providers = mutableMapOf<SourceType, LocationProvider>()
-    private var defaultType: SourceType = SourceType.Osm
+    private val _defaultFlow: MutableStateFlow<LocationProvider>
+    override val defaultFlow: StateFlow<LocationProvider>
+        get() = _defaultFlow
 
     @kotlin.concurrent.Volatile private var googleApiKeySnapshot: String? = null
 
@@ -32,6 +37,7 @@ class DefaultLocationProviderRegistry private constructor(
             apiKey = { googleApiKeySnapshot },
         )
         providers[SourceType.Fake] = FakeLocationProvider()
+        _defaultFlow = MutableStateFlow(providers[SourceType.Osm]!!)
     }
 
     private suspend fun refreshGoogleApiKey() {
@@ -49,12 +55,12 @@ class DefaultLocationProviderRegistry private constructor(
 
     override fun providerFor(type: SourceType): LocationProvider? = providers[type]
 
-    override fun default(): LocationProvider = providers[defaultType]!!
+    override fun default(): LocationProvider = _defaultFlow.value
 
     override fun configured(): List<LocationProvider> = providers.values.toList()
 
     override fun setDefault(type: SourceType) {
-        if (providers.containsKey(type)) defaultType = type
+        providers[type]?.let { _defaultFlow.value = it }
     }
 
     override fun addProvider(provider: LocationProvider) {

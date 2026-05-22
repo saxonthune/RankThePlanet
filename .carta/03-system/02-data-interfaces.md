@@ -57,7 +57,7 @@ Method names track concept actions so the future `coverage.mjs` (doc02.02.01) ke
 
 | Interface | Responsibility | First implementation |
 |---|---|---|
-| `CollectionRepository` / `EntryRepository` / `LocationRepository` / `TemplateRepository` | typed, concept-shaped read + write API | SQLCipher-backed |
+| `CollectionRepository` / `EntryRepository` / `LocationRepository` ([[05-location-repository]]) / `TemplateRepository` | typed, concept-shaped read + write API | SQLCipher-backed |
 | `OverviewProjection` | read the memoized overview cache: `loadOverview()`, `observeOverview()` | `PassthroughOverviewProjection` — queries the local store on demand |
 | `ProjectionMaintainer` | keep the overview cache fresh from the mutation stream | no-op (passthrough needs none) |
 | `OpLog` | append-only op store; query `since(hash)`, `all()` | table in the local store |

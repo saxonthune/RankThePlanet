@@ -50,7 +50,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
-import com.saxonthune.ranktheplanet.data.location.LocationProvider
+import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.nav.MapMode
@@ -134,7 +134,7 @@ fun MapOverviewScreen(
     collections: CollectionRepository,
     entries: EntryRepository,
     templates: TemplateRepository,
-    locationProvider: LocationProvider,
+    providerRegistry: LocationProviderRegistry,
     onCancelAdd: () -> Unit,
     onOpenCollections: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -143,7 +143,7 @@ fun MapOverviewScreen(
     onEditReview: () -> Unit,
     onAddToCollection: () -> Unit,
 ) {
-    val vm = viewModel { MapOverviewViewModel(collections, entries, locationProvider, templates) }
+    val vm = viewModel { MapOverviewViewModel(collections, entries, providerRegistry, templates) }
     val state by vm.uiState.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -374,6 +374,8 @@ fun MapOverviewScreen(
             LocationDraftSheet(
                 draft = currentDraft,
                 mode = mode,
+                nearbyCandidates = state.nearbyCandidates,
+                isResolvingNearby = state.isResolvingNearby,
                 onDismiss = { vm.dismissDraft() },
                 onCancelAdd = {
                     vm.dismissDraft()
@@ -383,6 +385,7 @@ fun MapOverviewScreen(
                     vm.dismissDraft()
                     onAddToCollection()
                 },
+                onFindNearby = { vm.findNearby() },
                 onAdoptCandidate = { vm.adoptCandidate(it) },
                 onKeepCoordinates = { vm.keepCoordinates() },
             )

@@ -8,7 +8,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.saxonthune.ranktheplanet.data.fake.FakeLocationProvider
 import com.saxonthune.ranktheplanet.data.fake.FakeRepositories
 import com.saxonthune.ranktheplanet.data.location.DefaultLocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
@@ -49,13 +48,13 @@ fun App() {
     RtpTheme {
         val navController = rememberNavController()
         val repos = remember { FakeRepositories() }
-        val locationProvider = remember { FakeLocationProvider() }
         val secureStore = remember { createSecureStore() }
         val registry by produceState<LocationProviderRegistry?>(initialValue = null, secureStore) {
             value = DefaultLocationProviderRegistry.create(secureStore)
         }
         NavHost(navController = navController, startDestination = MapOverview()) {
             composable<MapOverview> { backStackEntry ->
+                val r = registry ?: return@composable
                 val route = backStackEntry.toRoute<MapOverview>()
                 val collectionId = route.addToCollectionId
                 val collectionName by produceState<String?>(initialValue = collectionId, collectionId) {
@@ -78,7 +77,7 @@ fun App() {
                     collections = repos.collections,
                     entries = repos.entries,
                     templates = repos.templates,
-                    locationProvider = locationProvider,
+                    providerRegistry = r,
                     onCancelAdd = { navController.popBackStack() },
                     onOpenCollections = { navController.navigate(CollectionList) },
                     onOpenSettings = { navController.navigate(Settings) },

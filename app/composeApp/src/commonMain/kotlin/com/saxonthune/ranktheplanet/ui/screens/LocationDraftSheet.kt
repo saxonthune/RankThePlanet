@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,21 +24,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.saxonthune.ranktheplanet.nav.MapMode
 
-private data class NearbyCandidate(val name: String, val detail: String, val distance: String)
-
-private val MOCK_NEARBY = listOf(
-    NearbyCandidate("Bryant Park", "Park", "0.1 mi"),
-    NearbyCandidate("New York Public Library", "Library", "0.2 mi"),
-    NearbyCandidate("Sardi's", "Restaurant · American", "0.3 mi"),
-)
-
 @Composable
 fun LocationDraftSheet(
     draft: LocationDraftSheet.Open,
     mode: MapMode,
+    nearbyCandidates: List<NearbyCandidateUi>,
+    isResolvingNearby: Boolean,
     onDismiss: () -> Unit,
     onCancelAdd: () -> Unit,
     onAddToCollection: () -> Unit,
+    onFindNearby: () -> Unit,
     onAdoptCandidate: (String) -> Unit,
     onKeepCoordinates: () -> Unit,
 ) {
@@ -111,41 +108,51 @@ fun LocationDraftSheet(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = { /* stub: provider integration is out of scope */ }) {
-                Text("Find nearby places")
+            if (isResolvingNearby) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+            } else {
+                TextButton(onClick = onFindNearby) {
+                    Text(if (nearbyCandidates.isEmpty()) "Find nearby places" else "Refresh")
+                }
             }
         }
 
-        if (MOCK_NEARBY.isEmpty()) {
+        if (nearbyCandidates.isEmpty()) {
             Text(
-                text = "No nearby places — the coordinates can still be kept as-is.",
+                text = if (isResolvingNearby) {
+                    "Searching nearby…"
+                } else {
+                    "No nearby places — the coordinates can still be kept as-is."
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
         } else {
             Column(modifier = Modifier.fillMaxWidth()) {
-                MOCK_NEARBY.forEach { candidate ->
+                nearbyCandidates.forEach { candidate ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onAdoptCandidate(candidate.name) }
+                            .clickable { onAdoptCandidate(candidate.displayName) }
                             .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = candidate.name,
+                                text = candidate.displayName,
                                 style = MaterialTheme.typography.bodyLarge,
                             )
-                            Text(
-                                text = "${candidate.detail} · ${candidate.distance}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                            if (candidate.detail != null) {
+                                Text(
+                                    text = candidate.detail,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
-                        if (draft.adoptedCandidate == candidate.name) {
+                        if (draft.adoptedCandidate == candidate.displayName) {
                             Text(
                                 text = "Adopted",
                                 style = MaterialTheme.typography.labelMedium,

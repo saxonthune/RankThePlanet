@@ -36,7 +36,9 @@ class ManageProvidersViewModel(
     val uiState: StateFlow<ManageProvidersUiState> = _state
 
     init {
-        refresh()
+        viewModelScope.launch {
+            registry.defaultFlow.collect { refresh() }
+        }
     }
 
     fun refresh() {

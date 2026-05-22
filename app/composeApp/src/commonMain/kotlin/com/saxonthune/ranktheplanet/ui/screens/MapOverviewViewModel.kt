@@ -6,10 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
-import com.saxonthune.ranktheplanet.data.location.LocationProvider
+import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.location.ProviderResult
 import com.saxonthune.ranktheplanet.domain.Collection
 import com.saxonthune.ranktheplanet.domain.CollectionId
+import com.saxonthune.ranktheplanet.domain.Coordinates
 import com.saxonthune.ranktheplanet.domain.Entry
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.domain.ReviewTemplate
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -81,6 +83,13 @@ data class SearchResultUi(
     val lng: Double,
 )
 
+data class NearbyCandidateUi(
+    val displayName: String,
+    val lat: Double,
+    val lng: Double,
+    val detail: String?,
+)
+
 data class MapOverviewUiState(
     val pins: ImmutableList<PinUi> = persistentListOf(),
     val collectionRows: ImmutableList<CollectionFilterRowUi> = persistentListOf(),
@@ -89,21 +98,26 @@ data class MapOverviewUiState(
     val isLoading: Boolean = true,
     val pinSheet: PinSheet = PinSheet.None,
     val draft: LocationDraftSheet = LocationDraftSheet.None,
+    val nearbyCandidates: ImmutableList<NearbyCandidateUi> = persistentListOf(),
+    val isResolvingNearby: Boolean = false,
     val error: String? = null,
 )
 
 class MapOverviewViewModel(
     private val collectionsRepo: CollectionRepository,
     private val entriesRepo: EntryRepository,
-    private val locationProvider: LocationProvider,
+    private val providerRegistry: LocationProviderRegistry,
     private val templatesRepo: TemplateRepository,
 ) : ViewModel() {
 
     private val hiddenCollections = MutableStateFlow<Set<CollectionId>>(emptySet())
     private val searchResults = MutableStateFlow<List<SearchResultUi>>(emptyList())
     private val isSearching = MutableStateFlow(false)
+    private val lastQuery = MutableStateFlow<String?>(null)
     private val _pinSheet = MutableStateFlow<PinSheet>(PinSheet.None)
     private val _draft = MutableStateFlow<LocationDraftSheet>(LocationDraftSheet.None)
+    private val _nearbyCandidates = MutableStateFlow<List<NearbyCandidateUi>>(emptyList())
+    private val _isResolvingNearby = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
 
     private val _latestCollections = MutableStateFlow<List<Collection>>(emptyList())
@@ -112,6 +126,12 @@ class MapOverviewViewModel(
 
     init {
         loadData()
+        viewModelScope.launch {
+            providerRegistry.defaultFlow.drop(1).collect {
+                lastQuery.value?.takeIf { it.isNotBlank() }?.let { search(it) }
+                if (_draft.value is LocationDraftSheet.Open) findNearby()
+            }
+        }
     }
 
     fun retry() {
@@ -208,8 +228,16 @@ class MapOverviewViewModel(
                 error = error,
             )
         },
-        _draft,
-    ) { state, draft -> state.copy(draft = draft) }
+        combine(_draft, _nearbyCandidates, _isResolvingNearby) { draft, nearby, resolving ->
+            Triple(draft, nearby.toImmutableList(), resolving)
+        },
+    ) { state, draftBundle ->
+        state.copy(
+            draft = draftBundle.first,
+            nearbyCandidates = draftBundle.second,
+            isResolvingNearby = draftBundle.third,
+        )
+    }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapOverviewUiState())
 
     fun toggleCollection(id: CollectionId) {
@@ -219,9 +247,10 @@ class MapOverviewViewModel(
     }
 
     fun search(query: String) {
+        lastQuery.value = query
         viewModelScope.launch {
             isSearching.value = true
-            val result = locationProvider.resolve(query)
+            val result = providerRegistry.default().resolve(query)
             searchResults.value = when (result) {
                 is ProviderResult.Ok -> result.value.map { candidate ->
                     SearchResultUi(
@@ -293,10 +322,33 @@ class MapOverviewViewModel(
 
     fun startDraft(lat: Double, lng: Double, displayName: String? = null) {
         _draft.value = LocationDraftSheet.Open(lat, lng, displayName)
+        findNearby()
     }
 
     fun dismissDraft() {
         _draft.value = LocationDraftSheet.None
+        _nearbyCandidates.value = emptyList()
+        _isResolvingNearby.value = false
+    }
+
+    fun findNearby() {
+        val open = _draft.value as? LocationDraftSheet.Open ?: return
+        viewModelScope.launch {
+            _isResolvingNearby.value = true
+            val result = providerRegistry.default().resolveNearby(Coordinates(open.lat, open.lng))
+            _nearbyCandidates.value = when (result) {
+                is ProviderResult.Ok -> result.value.map { c ->
+                    NearbyCandidateUi(
+                        displayName = c.displayName,
+                        lat = c.coordinates.lat,
+                        lng = c.coordinates.lng,
+                        detail = c.sourceType.name,
+                    )
+                }
+                is ProviderResult.Failed -> emptyList()
+            }
+            _isResolvingNearby.value = false
+        }
     }
 
     fun adoptCandidate(name: String) {

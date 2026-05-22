@@ -61,6 +61,17 @@ class ProviderConfigViewModel(
                 )
             }
         }
+        viewModelScope.launch {
+            registry.defaultFlow.collect {
+                val isDefault = isCurrentDefault
+                _state.update { state ->
+                    state.copy(
+                        isDefault = isDefault,
+                        statusText = buildStatusText(mode, state.isConfigured, isDefault),
+                    )
+                }
+            }
+        }
     }
 
     fun onKeyDraftChange(value: String) {
@@ -87,13 +98,6 @@ class ProviderConfigViewModel(
 
     fun onSetAsDefault() {
         registry.setDefault(providerType)
-        val isDefault = isCurrentDefault
-        _state.update { state ->
-            state.copy(
-                isDefault = isDefault,
-                statusText = buildStatusText(mode, state.isConfigured, isDefault),
-            )
-        }
     }
 }
 

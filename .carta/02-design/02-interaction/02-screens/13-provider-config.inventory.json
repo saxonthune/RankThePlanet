@@ -1,0 +1,48 @@
+{
+  "surface": "ProviderConfig",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Names the provider being configured and holds Back to ManageProviders.",
+      "reactsToContext": ["provider-context"]
+    },
+    {
+      "id": "status",
+      "purpose": "One-line read of provider-state — configured / not configured / default — phrased for the specific provider.",
+      "reactsToContext": ["provider-context"]
+    },
+    {
+      "id": "setup",
+      "purpose": "Provider-specific setup fields. In google mode: a Paste API key field with Save key action. In osm mode: read-only metadata (endpoint host, attribution).",
+      "reactsToContext": ["provider-context"]
+    },
+    {
+      "id": "actions",
+      "purpose": "Cross-provider actions — Set as default — gated on whether the action is meaningful for this provider's current state.",
+      "reactsToContext": ["provider-context"]
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "topBar",
+      "event": "BACK",
+      "target": "ManageProviders"
+    },
+    {
+      "id": "save-key",
+      "label": "Save key",
+      "region": "setup",
+      "action": "LocationProvider.addProvider",
+      "appearsInModes": ["google"]
+    },
+    {
+      "id": "set-as-default",
+      "label": "Set as default",
+      "region": "actions",
+      "action": "LocationProvider.switchProvider"
+    }
+  ],
+  "lists": []
+}

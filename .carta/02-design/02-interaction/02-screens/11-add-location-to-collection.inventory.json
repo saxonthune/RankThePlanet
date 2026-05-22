@@ -1,0 +1,62 @@
+{
+  "surface": "AddLocationToCollection",
+  "regions": [
+    {
+      "id": "candidate",
+      "purpose": "Reflects the candidate Location being added (display name or raw coordinates). Read-only confirmation that the user is still adding the right place; not editable here."
+    },
+    {
+      "id": "collections",
+      "purpose": "The user's Collections, browsable as a vertical list — the pick. Holds the New Collection affordance as the first row so creating a new Collection mid-flow is one tap away without leaving the sheet. Also holds the Back affordance for stepping back to LocationDraftSheet without dropping the candidate."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "collections",
+      "event": "BACK",
+      "target": "LocationDraftSheet"
+    },
+    {
+      "id": "close",
+      "label": "Close",
+      "region": "collections",
+      "event": "CLOSE",
+      "target": "MapOverview"
+    },
+    {
+      "id": "new-collection",
+      "label": "New Collection",
+      "region": "collections",
+      "event": "TAP_NEW_COLLECTION",
+      "target": "CollectionEditor",
+      "action": "Collection.create"
+    }
+  ],
+  "lists": [
+    {
+      "id": "collections",
+      "region": "collections",
+      "iterates": "Collection",
+      "reads": "collections",
+      "item": {
+        "shows": [
+          "Collection.name",
+          "Collection.appearance (color, pinStyle) as a visual marker",
+          "entry count for the Collection",
+          "a pre-selected indicator when this Collection matches collection-context (addToCollection mode)"
+        ],
+        "affordance": {
+          "id": "pick-collection",
+          "label": "Pick this Collection",
+          "event": "PICK_COLLECTION",
+          "target": "ReviewForm",
+          "action": "Location.addToCollection"
+        }
+      },
+      "emptyState": "When the user has no Collections, the region shows a hint pointing at New Collection. The candidate Location is held in the host's UiState; tapping New Collection enters CollectionEditor and the flow resumes on its DONE."
+    }
+  ],
+  "deferred": ["Collection.addEntry"]
+}

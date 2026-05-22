@@ -1,13 +1,13 @@
 ---
 title: Surface composition rules
-summary: Three design rules for how surfaces compose — same-surface-different-mode, overlay-surfaces-are-not-routes, flows-are-modal
+summary: Two design rules for how surfaces compose — same-surface-different-mode, overlay-surfaces-are-not-routes
 tags: [design, interaction, composition, rules]
 deps: [doc02.02.01, doc01.05]
 ---
 
 # Surface composition rules
 
-Three rules govern how surfaces compose in RankThePlanet. Stated prescriptively here; researched and justified in [[05-cmp-composition-research]] (doc01.05).
+Two rules govern how surfaces compose in RankThePlanet. Stated prescriptively here; researched and justified in [[05-cmp-composition-research]] (doc01.05).
 
 ## Rule 1 — Same surface, different mode
 
@@ -44,40 +44,12 @@ CMP projection: the host screen owns a sealed `…Sheet` type on its UiState (or
 
 **Worked example.** `LocationDraftSheet` is `modality: sheet`, `host: MapOverview`. The CMP projection adds a `draft: LocationDraftSheet` entry to `MapOverviewUiState` (alongside `pinSheet`); the sheet reads `collection-context` from the same UiState and propagates it when the user picks "Add to a Collection." There is no `composable<LocationDraftSheet>` in the NavHost.
 
-## Rule 3 — Flows are modal: no nesting
-
-> While the user is in a multi-step flow, the host suppresses every transition that would start a second flow. The flow surface offers exactly two ways out: **complete** or **cancel**.
-
-A *flow* is a sequence of surfaces driven by carried context to a single committing terminal — the user is "in the middle of something" until they reach the terminal or back out. Examples: the add-to-collection flow (`CollectionDetail` → `MapOverview` (add-mode) → `LocationDraftSheet` → `AddLocationToCollection` → `ReviewForm` → committed). The collection-editor and review-form flows are similar.
-
-While a flow is active, every surface it traverses:
-
-- **Suppresses** any affordance that would start a competing flow. Inventories encode this with `appearsInModes` — affordances live in the browse mode only.
-- **Offers complete** — the terminal transition that commits the flow's work (e.g., `PICK_COLLECTION` then `SUBMIT`).
-- **Offers cancel** — a single explicit affordance (typically an X icon in the navigationIcon slot of a top bar) whose transition is `CANCEL_*` with a `guard: inFlowMode`, returning to the flow's originating surface and dropping the carried context.
-
-A dismiss-gesture on a sheet (swipe-down, scrim-tap) is **not** cancel — it only dismisses the sheet, returning the user to the host, which is still in the flow. Sheets in a flow therefore offer both a dismiss-gesture (go back one step) and an explicit cancel affordance (kill the whole flow).
-
-Why this rule:
-
-- Flows carry state in nav arguments and UiState. Letting the user start a second flow mid-stream forces the system to either model nested flows (a combinatorial explosion of mode states) or drop the first flow silently (data loss the user did not consent to).
-- The user's mental model is single-tasking. "I am adding a place to a Collection" is one intent; offering a "go to Settings" button mid-flow violates the intent.
-- Explicit cancel is a contract: the user knows how to exit, and the system knows when to drop carried context.
-
-**Worked example.** In `MapOverview`'s `addToCollection` mode:
-
-- The `menuButton`, `menuDrawer`, and `bottomBar` regions (and every affordance inside them) declare `appearsInModes: ["browse"]` — suppressed.
-- A new `closeButton` region (X icon, top-left navigationIcon slot) declares `appearsInModes: ["addToCollection"]` and hosts the `CANCEL_ADD` affordance.
-- The `statusBar` region declares `appearsInModes: ["addToCollection"]` and occupies the bottomBar slot, naming the target Collection.
-- The `search` and `map` regions remain in both modes — search and pan-zoom are part of *completing* the flow (finding the place to add), not starting a second flow.
-- Sheets reached during the flow (`LocationDraftSheet`, `LocationSheet`, `EntrySheet`) carry the same `CANCEL_ADD` transition guarded `inAddMode`, so the user can cancel from any sheet.
-
 ## Consequences for the rest of the stack
 
 - **Route definitions** only exist for full-screen surfaces (`modality: fullScreen`). Sheets, drawers, and overlays do not.
 - **ViewModels** are scoped to full-screen surfaces. Sheets read from and event into their host's ViewModel; a sheet that grows ViewModel-shaped responsibilities is the rung-3 signal to reconsider whether it should be a full screen.
 - **System back** on Android in a host with an open sheet dismisses the sheet (not the host). Wire a `BackHandler` per sheet to intercept.
-- **Verification.** Candidate verifier kinds in [[02-verification-system]] (doc01.04.02) cover modality/host consistency, context propagation, and per-mode coverage; a `flow-coverage` kind could additionally enforce that every flow-traversed surface declares a `CANCEL_*` transition with the matching guard.
+- **Verification.** Candidate verifier kinds in [[02-verification-system]] (doc01.04.02) cover modality/host consistency, context propagation, and per-mode coverage.
 
 ## When these rules don't apply
 

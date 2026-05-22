@@ -100,6 +100,37 @@ The public Nominatim instance enforces a [usage policy](https://operations.osmfo
 
 The endpoint is overridable: a self-hoster can point the `osm` provider at their own Photon and Nominatim instances. The override is endpoint configuration, never a second provider slot.
 
+## BYOK provider: `google`
+
+Google Places is the first BYOK provider. The user supplies an API key on the `ProviderConfig` surface in `google` mode ([[../02-design/02-interaction/02-screens/13-provider-config]], doc02.02.02.13); the surface invokes `addProvider(Google, key)` on the registry, which constructs a `GoogleLocationProvider` and registers it under `SourceType.Google`. With a key registered, the user may switch the default to `google` from the same surface (`switchProvider`).
+
+### Endpoint mapping
+
+`GoogleLocationProvider` is backed by the Places API (New) — a single Google product family that maps cleanly onto the two seam methods. The legacy Places API is out of scope; new keys default to the new API.
+
+- **Text Search** (`places:searchText`) backs `resolve(query)` — forward search across the full place catalogue.
+- **Nearby Search** (`places:searchNearby`) backs `resolveNearby(coordinates)` — proximity search around a coordinate.
+
+Both endpoints accept a field mask via the `X-Goog-FieldMask` header; the provider requests only the fields needed to build a candidate (`places.id`, `places.displayName`, `places.location`, `places.formattedAddress`) plus a small tail of fields safe to cache (see below). The API key travels in the `X-Goog-Api-Key` header — never in the URL — so it does not land in logs.
+
+A candidate carries `sourceType = Google`, `sourceId = place.id` (the stable `places/XXXX` resource name), and a minimal `cachedMetadata` payload conforming to the caching rule below.
+
+### Endpoint constraints
+
+The Places API (New) has its own usage shape that the implementation respects:
+
+- Keys are billed per request, scoped by SKU (Text Search and Nearby Search are separate SKUs with different per-1000-call prices). The provider does not throttle artificially — the user owns their quota — but does coalesce identical-query bursts client-side.
+- A field mask is **required** on every request; omitting it returns a 400. The provider always sends one.
+- The contractual ceiling on retained fields is encoded in the field mask itself: requesting only cacheable fields keeps the cached payload compliant by construction.
+
+### Key storage
+
+Where the API key persists across launches is a Settings store concern — a small secrets seam (Android Keystore-backed EncryptedSharedPreferences, iOS Keychain, jvm file stub) that ProviderConfig calls into when *Save key* fires. That seam is not specified here; this doc only states the requirement: a saved key survives process death and is never logged. Until that seam exists, the registry can hold the key in memory only — usable for a session, lost on restart.
+
+## `manual`
+
+Not a provider — `SourceType.Manual` records a Location with no provider involved (dropped pin, or a Photon result with no `osm_id`). It is never a provider type and never appears in the `ManageProviders` row list.
+
 ## Caching follows the provider
 
 `Location.cachedMetadata` is a provider snapshot taken at adoption time; `Location.refreshable` marks whether the source can be re-queried (doc01.03 §2). Whether RTP may *retain* that snapshot is provider-specific — caching policy is a property of `SourceType`:
@@ -128,5 +159,6 @@ RTP's stance: every export embeds the computed attribution manifest; the app doe
 
 ## Not yet built
 
-- The full provider catalogue beyond `osm` (`google`, `apple`, `mapbox`, `here`, `foursquare`, …) — candidates surveyed in doc01.01. Only `osm` and `manual` are needed for a zero-config first version.
+- The rest of the provider catalogue (`apple`, `mapbox`, `here`, `foursquare`, …) — candidates surveyed in doc01.01. Only `osm`, `google`, and `manual` are addressed in this doc.
+- The Settings store seam that persists BYOK keys across launches — referenced from the `google` subsection but not specified here. It unfolds when the first cross-platform secrets need arise.
 - The other external seams named in doc03.02 — `ImportSource`, `ExportFormat`, `TileSource`, `FieldType` — could each unfold their own doc when a work item demands it.

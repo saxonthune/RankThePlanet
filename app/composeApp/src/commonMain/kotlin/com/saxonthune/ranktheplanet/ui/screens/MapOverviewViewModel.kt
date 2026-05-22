@@ -60,6 +60,7 @@ sealed interface LocationDraftSheet {
 
 data class PinUi(
     val entryId: EntryId,
+    val collectionId: CollectionId,
     val locationName: String,
     val lat: Double,
     val lng: Double,
@@ -174,6 +175,7 @@ class MapOverviewViewModel(
                 val col = collectionMap[entry.collectionId] ?: return@mapNotNull null
                 PinUi(
                     entryId = entry.id,
+                    collectionId = entry.collectionId,
                     locationName = entry.location.displayName,
                     lat = entry.location.coordinates.lat,
                     lng = entry.location.coordinates.lng,

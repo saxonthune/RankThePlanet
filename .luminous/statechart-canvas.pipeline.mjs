@@ -27,14 +27,21 @@
 // `parse`; output quirks (Luminous `kind`, `render`, palette colors) live
 // only in `projectGraph`. Neither leaks.
 //
-//   discover()            ()              → SidecarRef[]   {path}
-//   read(ref)             SidecarRef      → RawSidecar      {path, sourceRel, text}
-//   parse(raw)            RawSidecar      → Statechart      (asserted)
-//   extract(chart, ctx)   Statechart      → NavModel        (asserted)  ← THE boundary
-//   projectGraph(model)   NavModel        → Graph
-//   projectPack()         ()              → Pack
-//   validate(graph,pack)  (Graph,Pack)    → issue[]         (build gate)
-//   emit(...)             ...             → files written
+//   discover()                       ()              → SidecarRef[]   {path}
+//   read(ref)                        SidecarRef      → RawSidecar      {path, sourceRel, text}
+//   parse(raw)                       RawSidecar      → Statechart      (asserted)
+//   loadInventoryLabels(ref)         SidecarRef      → LabelMap        sibling 02-screens/*.inventory.json
+//   extract(chart, labels, ctx)      (Statechart, LabelMap) → NavModel  (asserted)  ← THE boundary
+//   projectGraph(model)              NavModel        → Graph
+//   projectPack()                    ()              → Pack
+//   validate(graph,pack)             (Graph,Pack)    → issue[]         (build gate)
+//   emit(...)                        ...             → files written
+//
+// Transition labels are sourced from the inventories, not the statechart.
+// Affordances declare `label` per gesture; the statechart's transition entry
+// no longer needs to repeat it (one source of truth). For transitions with
+// no covering affordance (system-driven, stub flows), the statechart's
+// `t.label` is kept and used as the fallback.
 //
 // NavModel:
 //   screens     : { id, surface, name, description, tags[], reads[] }[]
@@ -102,6 +109,46 @@ async function read(ref) {
   };
 }
 
+// ── stage: loadInventoryLabels ────────────────────────────────────────────────
+// For a navigation statechart, sibling `02-screens/*.inventory.json` files
+// declare per-surface affordances. Each affordance with an `event` contributes
+// (surface, event) → label to the LabelMap. The map is consulted by `extract`
+// when a transition has no on-disk label.
+//
+// If multiple affordances on the same surface fire the same event with
+// different labels, the first one (by inventory file order, then declaration
+// order) wins and the divergence is warned.
+async function loadInventoryLabels(ref) {
+  const screensDir = join(dirname(ref.path), '02-screens');
+  if (!existsSync(screensDir)) return new Map();
+  const labels = new Map(); // Map<surface, Map<event, label>>
+  const files = (await readdir(screensDir)).filter((f) => f.endsWith('.inventory.json')).sort();
+  for (const f of files) {
+    const text = await readFile(join(screensDir, f), 'utf8');
+    let inv;
+    try { inv = JSON.parse(text); }
+    catch (e) { warn(`${f}: invalid JSON — ${e.message}`); continue; }
+    const surface = inv.surface;
+    if (!surface) continue;
+    if (!labels.has(surface)) labels.set(surface, new Map());
+    const byEvent = labels.get(surface);
+    const consider = (aff) => {
+      if (!aff?.event || !aff?.label) return;
+      if (byEvent.has(aff.event)) {
+        const existing = byEvent.get(aff.event);
+        if (existing !== aff.label) {
+          warn(`${f}: ${surface}.${aff.event} has divergent affordance labels ('${existing}' vs '${aff.label}') — keeping first.`);
+        }
+        return;
+      }
+      byEvent.set(aff.event, aff.label);
+    };
+    for (const aff of inv.affordances ?? []) consider(aff);
+    for (const list of inv.lists ?? []) consider(list.item?.affordance);
+  }
+  return labels;
+}
+
 // ── stage: parse ──────────────────────────────────────────────────────────────
 function parse(raw) {
   let chart;
@@ -149,7 +196,7 @@ const conceptId = (name) => `concept.${name}`;
 const actionId  = (state, fullName) => `action.${state}.${fullName}`;
 const transitionId = (fromId, toId, event) => `edge.transition.${fromId}.${toId}.${event}`;
 
-function extract(chart, ctx) {
+function extract(chart, labels, ctx) {
   // chart is already known flat, with valid object-form transitions —
   // assertStatechart guaranteed it in `parse`.
   const screens = [];
@@ -186,14 +233,19 @@ function extract(chart, ctx) {
       });
     }
 
+    const surfaceLabels = labels.get(state) ?? new Map();
     for (const [event, t] of Object.entries(def.on ?? {})) {
       if (t.target === undefined) continue; // self-transition — in-place, not navigation
+      // Source of truth for the gesture's label is the affordance in the
+      // inventory; the statechart's `t.label` is a fallback for transitions
+      // no affordance fires (system-driven, deferred, stub-flow).
+      const label = surfaceLabels.get(event) ?? t.label ?? '';
       transitions.push({
         id: transitionId(screenId(state), screenId(t.target), event),
         fromId: screenId(state),
         toId: screenId(t.target),
         event,
-        label: t.label ?? '',
+        label,
         description: t.description ?? '',
       });
     }
@@ -500,7 +552,8 @@ async function buildOne(ref, dumpStage) {
   const chart = parse(raw);
   if (dumpStage === 'statechart') return { dump: chart };
 
-  const model = extract(chart, raw.sourceRel);
+  const labels = await loadInventoryLabels(ref);
+  const model = extract(chart, labels, raw.sourceRel);
   if (dumpStage === 'navmodel') return { dump: model };
 
   const base = basename(ref.path).replace(/\.statechart\.json$/, '');

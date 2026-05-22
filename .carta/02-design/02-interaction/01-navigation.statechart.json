@@ -10,7 +10,7 @@
       "meta": {
         "surface": "MapOverview",
         "modality": "fullScreen",
-        "hostsSheets": ["LocationDraftSheet", "LocationSheet", "EntrySheet"],
+        "hostsSheets": ["LocationDraftSheet", "LocationSheet", "EntrySheet", "AddLocationToCollection"],
         "modes": {
           "browse": "Default; entered as the landing surface or via BACK from any descendant. No carried context.",
           "addToCollection": "Entered from CollectionDetail's TAP_ADD_ENTRY. `collection-context` is set and propagates to every Location-opening transition."
@@ -32,36 +32,30 @@
       "on": {
         "TAP_PIN": {
           "target": "LocationSheet",
-          "label": "Inspect a pin",
           "description": "User taps a pin to inspect that Location. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows. A pin is a Location, which may appear in several Collections — LocationSheet fans out to those Collection Entries rather than assuming one.",
           "propagates": ["collection-context"]
         },
         "TAP_COLLECTIONS_BUTTON": {
           "target": "CollectionList",
-          "label": "Browse Collections",
           "description": "User opens the list of Collections to manage them."
         },
         "DROP_PIN": {
           "target": "LocationDraftSheet",
-          "label": "Drop a pin",
           "description": "User long-presses a spot on the map to place a point. This produces an uncommitted candidate — not yet a Location — and opens LocationDraftSheet over the map. Starts the Location-first flow from doc01.02 §3. The long-press gesture on the map is the only trigger; there is no dedicated drop-pin button.",
           "propagates": ["collection-context"]
         },
         "PICK_SEARCH_RESULT": {
           "target": "LocationDraftSheet",
-          "label": "Pick a search result",
           "description": "User types into the map's search field (Location.resolve, see meta.actions), then picks one candidate from the result list. The picked candidate opens in LocationDraftSheet for inspection before it is committed.",
           "propagates": ["collection-context"]
         },
         "TAP_SETTINGS": {
           "target": "Settings",
-          "label": "Open Settings",
           "description": "User opens settings (providers, BYOK keys, sync target)."
         },
         "CANCEL_ADD": {
           "target": "CollectionDetail",
           "guard": "inAddMode",
-          "label": "Cancel adding",
           "description": "Live only in add-to-collection mode (guard: `collection-context` is set). User abandons the add-to-collection flow from the status bar; return to the originating CollectionDetail without adding a Collection Entry."
         }
       }
@@ -80,7 +74,6 @@
       "on": {
         "TAP_ENTRY": {
           "target": "EntrySheet",
-          "label": "Pick an entry",
           "description": "User taps one of the Entries in the right-hand list, picking which Collection's context to peek at. Opens EntrySheet for that Entry.",
           "propagates": ["collection-context"]
         },
@@ -92,7 +85,7 @@
           "target": "CollectionDetail",
           "guard": "inAddMode",
           "label": "Cancel adding",
-          "description": "Live only in add-to-collection mode. User abandons the entire add flow from this peek; drop the carried Collection and return to the originating CollectionDetail (Rule 3, doc02.04)."
+          "description": "Live only in add-to-collection mode. User abandons the entire add flow from this peek; drop the carried Collection and return to the originating CollectionDetail."
         }
       }
     },
@@ -110,29 +103,25 @@
       "on": {
         "TAP_OPEN_DETAIL": {
           "target": "CollectionEntryDetail",
-          "label": "Open full detail",
           "description": "User opens the canonical CollectionEntryDetail screen for the complete view — the (Location, Review) pair with every template field and the Entry-level affordances."
         },
         "VIEW_COLLECTION": {
           "target": "CollectionDetail",
-          "label": "View the Collection",
           "description": "User opens the Collection that owns this Entry."
         },
         "TAP_EDIT_REVIEW": {
           "target": "ReviewForm",
-          "label": "Edit the Review",
           "description": "User opens the form to edit the Entry's Review (Review.edit) directly from the drawer."
         },
         "DISMISS": {
           "target": "MapOverview",
-          "label": "Dismiss",
           "description": "Close the drawer and return to the bare map — typically the bottom-sheet's swipe-down or scrim-tap gesture, not a dedicated button."
         },
         "CANCEL_ADD": {
           "target": "CollectionDetail",
           "guard": "inAddMode",
           "label": "Cancel adding",
-          "description": "Live only in add-to-collection mode. User abandons the entire add flow from this drawer; drop the carried Collection and return to the originating CollectionDetail (Rule 3, doc02.04)."
+          "description": "Live only in add-to-collection mode. User abandons the entire add flow from this drawer; drop the carried Collection and return to the originating CollectionDetail."
         }
       }
     },
@@ -149,17 +138,14 @@
       "on": {
         "TAP_COLLECTION": {
           "target": "CollectionDetail",
-          "label": "Open a Collection",
           "description": "User opens a Collection to see its Collection Entries."
         },
         "TAP_NEW_COLLECTION": {
           "target": "CollectionEditor",
-          "label": "New Collection",
           "description": "User starts a new Collection (Collection.create). Opens the CollectionEditor to set its metadata and author the Review template before any Collection Entries can be added."
         },
         "TAP_IMPORT": {
           "target": "ImportFlow",
-          "label": "Import a list",
           "description": "User imports an external collection (KML, GeoJSON, RTP bundle, third-party share URL)."
         },
         "BACK": {
@@ -190,18 +176,15 @@
         },
         "TAP_ENTRY": {
           "target": "CollectionEntryDetail",
-          "label": "Open a Collection Entry",
           "description": "User opens a single Collection Entry to inspect its Location and Review."
         },
         "TAP_ADD_ENTRY": {
           "target": "MapOverview",
-          "label": "Add a Collection Entry",
           "description": "User starts the Collection-first add flow. This enters MapOverview in add-to-collection mode: the Collection is held as entry context (`collection-context`). The map, pins, and search are unchanged; a status bar names the target Collection. Any Location the user opens — by tapping a pin, dropping a pin, or picking a search result — carries the context through LocationDraftSheet into AddLocationToCollection, where the originating Collection is pre-selected, so PICK_COLLECTION confirms rather than chooses. CANCEL_ADD from the status bar abandons the flow back here.",
           "propagates": ["collection-context"]
         },
         "TAP_EDIT_TEMPLATE": {
           "target": "CollectionEditor",
-          "label": "Edit the Collection",
           "description": "User opens the CollectionEditor for this Collection — its metadata and its Review template (Review.editTemplate)."
         },
         "BACK": {
@@ -228,17 +211,14 @@
       "on": {
         "TAP_EDIT_REVIEW": {
           "target": "ReviewForm",
-          "label": "Edit the Review",
           "description": "User opens the form to edit the Review for this Collection Entry (Review.edit)."
         },
         "TAP_REMOVE_ENTRY": {
           "target": "CollectionDetail",
-          "label": "Remove the Collection Entry",
           "description": "User removes this Collection Entry from the Collection (Collection.removeEntry). Does not delete the Location — it may exist in other Collections."
         },
         "VIEW_COLLECTION": {
           "target": "CollectionDetail",
-          "label": "View the Collection",
           "description": "User opens the Collection that owns this Entry. Useful when the Entry was reached from a map pin rather than from CollectionDetail — it navigates to the owning Collection explicitly rather than following the back stack, which BACK does."
         },
         "BACK": {
@@ -260,7 +240,6 @@
       "on": {
         "SUBMIT": {
           "target": "CollectionEntryDetail",
-          "label": "Save the Review",
           "description": "User commits the Review (Review.submit). The Collection Entry is saved; navigate to its CollectionEntryDetail."
         },
         "CANCEL": {
@@ -282,7 +261,6 @@
       "on": {
         "DONE": {
           "target": "CollectionDetail",
-          "label": "Finish editing",
           "description": "Collection metadata and template authored or edited; continue into the Collection."
         },
         "CLOSE": {
@@ -308,30 +286,28 @@
       "on": {
         "ADD_TO_COLLECTION": {
           "target": "AddLocationToCollection",
-          "label": "Add to a Collection",
           "description": "User commits the candidate — keeping the coordinates as a manual Location, or having adopted a resolved one — and proceeds to pick which Collection to add it to.",
           "propagates": ["collection-context"]
         },
         "CLOSE": {
           "target": "MapOverview",
-          "label": "Go back",
           "description": "Discard the candidate and dismiss the sheet, returning to MapOverview. In add-to-collection mode this returns to MapOverview-in-add-mode; the flow continues. Distinct from CANCEL_ADD, which abandons the whole flow."
         },
         "CANCEL_ADD": {
           "target": "CollectionDetail",
           "guard": "inAddMode",
-          "label": "Cancel adding",
-          "description": "Live only in add-to-collection mode (guard: `collection-context` is set). User abandons the entire add flow from this sheet; drop the carried Collection and return to the originating CollectionDetail. Mirrors MapOverview's CANCEL_ADD so the user can cancel from any depth in the flow (Rule 3, doc02.04)."
+          "description": "Live only in add-to-collection mode (guard: `collection-context` is set). User abandons the entire add flow from this sheet; drop the carried Collection and return to the originating CollectionDetail. Mirrors MapOverview's CANCEL_ADD so the user can cancel from any depth in the flow."
         }
       }
     },
 
     "AddLocationToCollection": {
-      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to. When reached in MapOverview's add-to-collection mode, the originating Collection is pre-selected from the entry context and PICK_COLLECTION confirms it rather than choosing.",
-      "tags": ["picker"],
+      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to. Rendered as a sheet over MapOverview — the map and the candidate's geographic context stay visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). Reached from LocationDraftSheet's ADD_TO_COLLECTION, which dismisses the draft sheet and presents this one in its place. BACK steps one surface back to LocationDraftSheet, preserving the candidate; CLOSE — the sheet's swipe-down or scrim-tap dismiss-gesture — drops the candidate and any carried collection-context and returns to a clean MapOverview. When reached with collection-context set, the originating Collection is pre-selected in the picker so PICK_COLLECTION confirms rather than chooses.",
+      "tags": ["sheet", "picker"],
       "meta": {
         "surface": "AddLocationToCollection",
-        "modality": "fullScreen",
+        "modality": "sheet",
+        "host": "MapOverview",
         "context": {
           "collection-context": "Forwarded from LocationDraftSheet's ADD_TO_COLLECTION. Consumed: pre-selects the Collection in the picker so PICK_COLLECTION confirms rather than chooses."
         },
@@ -341,17 +317,19 @@
       "on": {
         "PICK_COLLECTION": {
           "target": "ReviewForm",
-          "label": "Pick a Collection",
           "description": "User picks a Collection (Location.addToCollection); advance to fill out the Review."
         },
         "TAP_NEW_COLLECTION": {
           "target": "CollectionEditor",
-          "label": "New Collection",
           "description": "None of the existing Collections fit; create a new one (Collection.create) in the CollectionEditor."
+        },
+        "BACK": {
+          "target": "LocationDraftSheet",
+          "description": "Step one surface back to LocationDraftSheet. The candidate Location and any carried collection-context are preserved in the host's UiState; the draft sheet re-presents with the same candidate intact."
         },
         "CLOSE": {
           "target": "MapOverview",
-          "description": "Cancel; return to the everything view."
+          "description": "The sheet's dismiss-gesture (swipe-down, scrim-tap). Drops the candidate Location and any carried collection-context, returning to a clean MapOverview — the whole add flow ends."
         }
       }
     },
@@ -388,9 +366,8 @@
       },
       "on": {
         "TAP_MANAGE_PROVIDERS": {
-          "target": "LocationProvider",
-          "label": "Manage providers",
-          "description": "User opens location-provider configuration to add a provider or change the default (LocationProvider.addProvider, LocationProvider.switchProvider)."
+          "target": "ManageProviders",
+          "description": "User opens the provider catalogue to inspect what is configured, switch the default, or step into a single provider's setup (LocationProvider.addProvider, LocationProvider.switchProvider)."
         },
         "BACK": {
           "target": "MapOverview",
@@ -399,19 +376,48 @@
       }
     },
 
-    "LocationProvider": {
-      "description": "Configure which mapping services RTP uses to resolve Locations. List configured providers, add one (pasting a BYOK key when a provider requires it), and choose the default. Adding and switching are in-view concept actions (meta.actions); only BACK moves the user. See doc01.03 §5.",
+    "ManageProviders": {
+      "description": "Configure which mapping services RTP uses to resolve Locations. A header names the current default provider; below, one row per provider type the app implements — `osm` (always configured, keyless) and each BYOK provider (e.g. `google`). A row reports the provider's setup state (configured / not configured) and presses through to `ProviderConfig` for that provider — that is where keys are pasted, the default is switched, and any provider-specific options live. This surface itself only lists and routes; the concept actions in `meta.actions` are nominal here because the work of `addProvider` and `switchProvider` happens on `ProviderConfig`. See doc01.03 §5.",
       "tags": ["modal"],
       "meta": {
-        "surface": "LocationProvider",
+        "surface": "ManageProviders",
         "modality": "fullScreen",
         "reads": ["configured-providers", "default-provider"],
+        "actions": []
+      },
+      "on": {
+        "TAP_PROVIDER": {
+          "target": "ProviderConfig",
+          "description": "User taps a provider row to inspect or change its configuration. The tapped provider type is carried as `provider-context` and parameterizes `ProviderConfig`.",
+          "propagates": ["provider-context"]
+        },
+        "BACK": {
+          "target": "Settings",
+          "description": "Return to Settings."
+        }
+      }
+    },
+
+    "ProviderConfig": {
+      "description": "Configure one Location Provider. Parameterized by `provider-context` — the provider type the user tapped in ManageProviders. The surface adapts to that provider: for `osm` it is read-only metadata plus *Set as default*; for a BYOK provider (e.g. `google`) it carries a key-entry field, a *Save key* action that registers the provider (LocationProvider.addProvider), a status line reflecting whether the key is configured, and *Set as default* (LocationProvider.switchProvider). Saving the key and switching the default are in-view concept actions; only BACK moves the user. See doc01.03 §5 and doc03.04.",
+      "tags": ["modal"],
+      "meta": {
+        "surface": "ProviderConfig",
+        "modality": "fullScreen",
+        "context": {
+          "provider-context": "Which provider type is being configured. Source: ManageProviders' TAP_PROVIDER. Consumed by every region — it determines the surface's mode (`osm` vs `google` vs …) and so which fields and actions render."
+        },
+        "modes": {
+          "osm": "Provider-context is osm. The keyless OpenStreetMap provider. Setup region shows endpoint host and attribution as read-only metadata; no key entry.",
+          "google": "Provider-context is google. Google Places, BYOK. Setup region carries a Paste API key field and a Save key action (LocationProvider.addProvider)."
+        },
+        "reads": ["provider-context", "provider-state", "default-provider"],
         "actions": ["LocationProvider.addProvider", "LocationProvider.switchProvider"]
       },
       "on": {
         "BACK": {
-          "target": "Settings",
-          "description": "Return to Settings."
+          "target": "ManageProviders",
+          "description": "Return to the provider catalogue."
         }
       }
     }

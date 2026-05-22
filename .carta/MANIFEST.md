@@ -35,7 +35,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.00 | `00-index.md` | Product specs — what we're building and why | product, index | — | — | — |
 | doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
 | doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | doc01.03 | — |
-| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04.01, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc03.01, doc03.02, doc03.04 | — |
+| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04.01, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc03.01, doc03.02, doc03.04 | — |
 | doc01.05 | `05-cmp-composition-research.md` | Research session: how to design shared CMP surfaces that bend to context (mode parameter, sheet-not-route), with a Tier-1..4 audit of reference apps to compare against | product, research, cmp, patterns, references | doc02.01, doc02.02.01 | doc02.04 | — |
 
 ### Development Philosophy
@@ -56,7 +56,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc02.00 | `00-index.md` |  |  | — | — | — |
 | doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc01.05, doc02.03, doc03.01 | — |
 | doc02.03 | `03-theme-tokens.md` | Three-tier design token system (primitive, semantic, provider) for the CMP theme: RtpColors, RtpSpacing, RtpTypography and the RtpTheme accessor | design, theme, tokens, styling, cmp | doc02.01 | — | — |
-| doc02.04 | `04-surface-composition-rules.md` | Three design rules for how surfaces compose — same-surface-different-mode, overlay-surfaces-are-not-routes, flows-are-modal | design, interaction, composition, rules | doc02.02.01, doc01.05 | — | — |
+| doc02.04 | `04-surface-composition-rules.md` | Two design rules for how surfaces compose — same-surface-different-mode, overlay-surfaces-are-not-routes | design, interaction, composition, rules | doc02.02.01, doc01.05 | — | — |
 
 ### Interaction
 
@@ -64,7 +64,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.02.00 | `02-interaction/00-index.md` | Platform-agnostic UI design — surfaces, navigation graph, action coverage | design, interaction, index | doc01.03 | — | — |
-| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.04.02, doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.04, doc03.03 | statechart.json |
+| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.04.02, doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.04, doc03.03 | statechart.json |
 | doc02.02.02.00 | `02-interaction/02-screens/00-index.md` | Per-surface affordance inventories — regions, affordances, lists | design, interaction, screens, index | doc02.02.01 | doc01.04.02 | — |
 | doc02.02.02.01 | `02-interaction/02-screens/01-collection-list.md` | Affordance inventory for the CollectionList surface — regions, affordances, lists | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.02 | `02-interaction/02-screens/02-collection-detail.md` | Affordance inventory for the CollectionDetail surface — Details section, sortable entry list | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
@@ -76,6 +76,9 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc02.02.02.08 | `02-interaction/02-screens/08-collection-editor.md` | Affordance inventory for the CollectionEditor surface — Collection metadata and the Review template field set | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.09 | `02-interaction/02-screens/09-entry-drawer.md` | Affordance inventory for the EntrySheet surface — a bottom-sheet peek of one Collection Entry over MapOverview, with three pressable regions that hand off to the owning Collection, the full detail, and the Review form | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.10 | `02-interaction/02-screens/10-location-detail.md` | Affordance inventory for the LocationSheet surface — the skinny bottom-sheet peek of a Location and the Collection Entries that reference it; rendered only when multi-entry | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
+| doc02.02.02.11 | `02-interaction/02-screens/11-add-location-to-collection.md` | Affordance inventory for the AddLocationToCollection sheet — pick a Collection (pre-selected in add mode) or create a new one, hosted over MapOverview | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
+| doc02.02.02.12 | `02-interaction/02-screens/12-manage-providers.md` | Affordance inventory for the ManageProviders surface — current default header, list of provider rows that route to per-provider config | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
+| doc02.02.02.13 | `02-interaction/02-screens/13-provider-config.md` | Affordance inventory for the ProviderConfig surface — per-provider setup parameterized by provider-context, key entry for BYOK providers | design, interaction, screens | doc02.02.01, doc01.03, doc03.04 | — | inventory.json |
 
 ## 03-system — System
 
@@ -86,7 +89,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc03.01 | `01-store-model.md` | Two-store persistence: local SQLCipher DB + sync replica; table schema, local-first write path, memoized overview projection, op-log | system, storage, sqlcipher, sync, schema | doc01.03, doc02.01 | doc03.02 | schema.sql |
 | doc03.02 | `02-data-interfaces.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | doc01.04.03, doc03.03, doc03.04 | — |
 | doc03.03 | `03-navigation-wiring.md` | How the platform-agnostic navigation statechart becomes a Compose Multiplatform NavHost — type-safe routes, back stack, per-route ViewModel scoping | system, navigation, cmp, wiring | doc02.02.01, doc03.02 | — | — |
-| doc03.04 | `04-location-providers.md` | The LocationProvider seam: osm default backed by Photon + Nominatim endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | — | — |
+| doc03.04 | `04-location-providers.md` | The LocationProvider seam: osm default backed by Photon + Nominatim endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | doc02.02.02.13 | — |
 
 ## Tag Index
 
@@ -105,10 +108,10 @@ Quick lookup for file-path→doc mapping:
 | `conventions` | doc00.03 |
 | `coverage` | doc01.04.02 |
 | `data` | doc03.02 |
-| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.03, doc02.04 |
+| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.03, doc02.04 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
 | `index` | doc00.00, doc01.00, doc02.02.00, doc02.02.02.00, doc03.00 |
-| `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.04 |
+| `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.04 |
 | `interfaces` | doc03.02 |
 | `licensing` | doc03.04 |
 | `location` | doc03.04 |
@@ -132,7 +135,7 @@ Quick lookup for file-path→doc mapping:
 | `retrieval` | doc00.04 |
 | `rules` | doc02.04 |
 | `schema` | doc03.01 |
-| `screens` | doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10 |
+| `screens` | doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13 |
 | `sqlcipher` | doc03.01 |
 | `stack` | doc02.01 |
 | `statechart` | doc02.02.01 |

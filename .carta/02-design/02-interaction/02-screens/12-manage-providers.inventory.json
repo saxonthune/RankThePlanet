@@ -1,0 +1,48 @@
+{
+  "surface": "ManageProviders",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Identifies the surface and holds the affordance back to Settings."
+    },
+    {
+      "id": "currentProvider",
+      "purpose": "Read-only header naming which provider is currently the default — answers 'who is resolving Locations right now?' at a glance."
+    },
+    {
+      "id": "providers",
+      "purpose": "The full provider catalogue the app supports, browsable as a vertical list. Each row presses through to that provider's ProviderConfig."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "topBar",
+      "event": "BACK",
+      "target": "Settings"
+    }
+  ],
+  "lists": [
+    {
+      "id": "providers",
+      "region": "providers",
+      "iterates": "LocationProvider",
+      "reads": "configured-providers",
+      "item": {
+        "shows": [
+          "provider name (e.g. 'OpenStreetMap', 'Google Places')",
+          "status pill — configured / not configured / default",
+          "affordance icon hinting the row presses through to setup"
+        ],
+        "affordance": {
+          "id": "open-provider",
+          "label": "Open provider",
+          "event": "TAP_PROVIDER",
+          "target": "ProviderConfig"
+        }
+      },
+      "emptyState": "Not applicable — the list always contains every provider type the app implements, including unconfigured BYOK rows. An empty list would mean RTP supports zero providers, which is a build defect, not a user-facing state."
+    }
+  ]
+}

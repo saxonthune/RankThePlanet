@@ -23,7 +23,7 @@
       "label": "Manage providers",
       "region": "content",
       "event": "TAP_MANAGE_PROVIDERS",
-      "target": "LocationProvider"
+      "target": "ManageProviders"
     }
   ],
   "lists": []

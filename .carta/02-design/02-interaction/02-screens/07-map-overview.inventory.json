@@ -113,11 +113,22 @@
         ],
         "affordance": {
           "id": "tap-pin",
-          "label": "Inspect a pin",
+          "label": "Tap multi-entry pin",
           "event": "TAP_PIN",
           "target": "LocationSheet",
-          "action": "MapOverview.selectPin"
-        }
+          "action": "MapOverview.selectPin",
+          "appliesWhen": "the pin's Location is referenced by more than one Collection Entry"
+        },
+        "altAffordances": [
+          {
+            "id": "tap-single-entry-pin",
+            "label": "Tap 1-entry pin",
+            "event": "TAP_PIN_SINGLE",
+            "target": "EntrySheet",
+            "action": "MapOverview.selectPin",
+            "appliesWhen": "the pin's Location is referenced by exactly one Collection Entry"
+          }
+        ]
       },
       "emptyState": "Before any Collection has Entries the map shows no pins; the bottomBar still points the user toward creating a Collection."
     },

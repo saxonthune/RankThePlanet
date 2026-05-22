@@ -144,7 +144,11 @@ async function loadInventoryLabels(ref) {
       byEvent.set(aff.event, aff.label);
     };
     for (const aff of inv.affordances ?? []) consider(aff);
-    for (const list of inv.lists ?? []) consider(list.item?.affordance);
+    for (const aff of inv.altAffordances ?? []) consider(aff);
+    for (const list of inv.lists ?? []) {
+      consider(list.item?.affordance);
+      for (const alt of list.item?.altAffordances ?? []) consider(alt);
+    }
   }
   return labels;
 }
@@ -257,8 +261,12 @@ function extract(chart, labels, ctx) {
   return model;
 }
 
-// contract check at the NavModel boundary — every id is unique. Transition
-// targets are already known-valid (assertStatechart), so they need no recheck.
+// contract check at the NavModel boundary — every id is unique, and every
+// navigation transition carries a human label (either from an inventory
+// affordance or the statechart's fallback). A screen transition without a
+// label is a spec gap: the picture can't say what triggers the change. The
+// gate is strict — there is no silent placeholder, no auto-derived event-name
+// fallback. Add a label and re-run.
 function assertNavModel(model, ctx) {
   const ids = [
     ...model.screens, ...model.concepts, ...model.actions, ...model.transitions,
@@ -267,6 +275,16 @@ function assertNavModel(model, ctx) {
   for (const id of ids) {
     if (seen.has(id)) warn(`${ctx}: duplicate model id '${id}'.`);
     seen.add(id);
+  }
+  const screenName = (id) => id.replace(/^screen\./, '');
+  const unlabeled = model.transitions.filter((t) => !t.label || !String(t.label).trim());
+  if (unlabeled.length) {
+    const lines = unlabeled
+      .map((t) => `  ${screenName(t.fromId)} --${t.event}--> ${screenName(t.toId)}`)
+      .join('\n');
+    throw new Error(
+      `${ctx}: ${unlabeled.length} navigation transition(s) have no label — every screen transition must describe the gesture that triggers it. Add a label on an affordance in the surface's inventory, or fall back to \`label\` on the statechart transition.\n${lines}`
+    );
   }
 }
 

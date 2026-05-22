@@ -32,7 +32,12 @@
       "on": {
         "TAP_PIN": {
           "target": "LocationSheet",
-          "description": "User taps a pin to inspect that Location. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows. A pin is a Location, which may appear in several Collections — LocationSheet fans out to those Collection Entries rather than assuming one.",
+          "description": "User taps a pin whose Location is referenced by more than one Collection Entry. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows. LocationSheet fans out to those Collection Entries rather than assuming one.",
+          "propagates": ["collection-context"]
+        },
+        "TAP_PIN_SINGLE": {
+          "target": "EntrySheet",
+          "description": "User taps a pin whose Location is referenced by exactly one Collection Entry. The focus gesture is MapOverview.selectPin (see meta.actions); navigation jumps straight to that Entry's EntrySheet, skipping the LocationSheet fan-out since there is nothing to fan out to.",
           "propagates": ["collection-context"]
         },
         "TAP_COLLECTIONS_BUTTON": {
@@ -350,6 +355,7 @@
         },
         "CLOSE": {
           "target": "CollectionList",
+          "label": "Cancel the import",
           "description": "Cancel the import."
         }
       }

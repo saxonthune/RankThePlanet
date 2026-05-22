@@ -166,6 +166,7 @@ function extract(chart, ctx) {
       description: def.description ?? '',
       tags: def.tags ?? [],
       reads: meta.reads ?? [],
+      host: meta.host ?? null,
     });
 
     for (const fullName of meta.actions ?? []) {
@@ -232,11 +233,16 @@ function projectGraph(model, packName) {
     return pal ?? FALLBACK_CONCEPT;
   };
 
+  const ROOT_SCREENS = new Set(['MapOverview', 'Settings']);
   for (const s of model.screens) {
+    const tier = ROOT_SCREENS.has(s.name) ? 0 : 1;
+    const isSheet = Boolean(s.host);
+    const props = { name: s.name, surface: s.surface, description: s.description, reads: s.reads, tier };
+    if (isSheet) props.host = s.host;
     nodes.push({
       id: s.id,
-      kind: 'rtp.screen',
-      props: { name: s.name, surface: s.surface, description: s.description, reads: s.reads },
+      kind: isSheet ? 'rtp.sheet' : 'rtp.screen',
+      props,
       tags: s.tags,
     });
   }
@@ -309,6 +315,7 @@ function projectPack(packName) {
             surface: { type: 'string' },
             description: { type: 'string' },
             reads: { type: 'array', items: { type: 'string' } },
+            tier: { type: 'integer', minimum: 0 },
           },
           required: ['name'],
           additionalProperties: false,
@@ -323,6 +330,39 @@ function projectPack(packName) {
                 children: [
                   { type: 'text', value: '{content.name}', style: 'heading' },
                   { type: 'badge', value: 'screen', tone: 'muted' },
+                ],
+              },
+              { type: 'text', value: '{content.description}', style: 'caption', tone: 'muted' },
+            ],
+          },
+        },
+      },
+      {
+        id: 'rtp.sheet',
+        label: 'Sheet',
+        props: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            surface: { type: 'string' },
+            description: { type: 'string' },
+            reads: { type: 'array', items: { type: 'string' } },
+            host: { type: 'string' },
+            tier: { type: 'integer', minimum: 0 },
+          },
+          required: ['name'],
+          additionalProperties: false,
+        },
+        render: {
+          peek: { type: 'text', value: '{content.name}', style: 'heading' },
+          card: {
+            type: 'card', shape: 'rectangle', padding: 12,
+            children: [
+              {
+                type: 'hstack', gap: 6, justify: 'space-between',
+                children: [
+                  { type: 'text', value: '{content.name}', style: 'heading' },
+                  { type: 'badge', value: 'sheet', tone: 'accent' },
                 ],
               },
               { type: 'text', value: '{content.description}', style: 'caption', tone: 'muted' },
@@ -402,8 +442,8 @@ function projectPack(packName) {
           properties: { event: { type: 'string' }, label: { type: 'string' }, description: { type: 'string' } },
           additionalProperties: false,
         },
-        acceptsSource: ['rtp.screen'],
-        acceptsTarget: ['rtp.screen'],
+        acceptsSource: ['rtp.screen', 'rtp.sheet'],
+        acceptsTarget: ['rtp.screen', 'rtp.sheet'],
       },
       {
         id: 'rtp.contains',
@@ -411,7 +451,7 @@ function projectPack(packName) {
         directed: true,
         props: { type: 'object', additionalProperties: false },
         acceptsSource: ['rtp.action'],
-        acceptsTarget: ['rtp.screen'],
+        acceptsTarget: ['rtp.screen', 'rtp.sheet'],
       },
       {
         id: 'rtp.performs',
@@ -428,7 +468,7 @@ function projectPack(packName) {
         name: 'Navigation Flow',
         description: 'Screens with their concept actions nested inside, and the transition arrows between screens.',
         zoomToLevel: ZOOM_TO_LEVEL,
-        nodeRoles: { 'rtp.screen': 'spatial', 'rtp.action': 'spatial', 'rtp.concept': 'hidden' },
+        nodeRoles: { 'rtp.screen': 'spatial', 'rtp.sheet': 'spatial', 'rtp.action': 'spatial', 'rtp.concept': 'hidden' },
         edgeRoles: { 'rtp.transition': 'arrow', 'rtp.contains': 'contain', 'rtp.performs': 'hidden' },
         layers: {},
         layout: { algorithm: 'elk' },
@@ -438,7 +478,7 @@ function projectPack(packName) {
         name: 'Concept Coverage',
         description: 'Each nested action drawn to the concept it belongs to; concepts carry distinct colors.',
         zoomToLevel: ZOOM_TO_LEVEL,
-        nodeRoles: { 'rtp.screen': 'spatial', 'rtp.action': 'spatial', 'rtp.concept': 'spatial' },
+        nodeRoles: { 'rtp.screen': 'spatial', 'rtp.sheet': 'spatial', 'rtp.action': 'spatial', 'rtp.concept': 'spatial' },
         edgeRoles: { 'rtp.transition': 'hidden', 'rtp.contains': 'contain', 'rtp.performs': 'arrow' },
         layers: {},
         layout: { algorithm: 'elk' },
@@ -447,6 +487,7 @@ function projectPack(packName) {
     layers: [],
     disclosure: [
       { kind: 'rtp.screen', peek: ['name'], card: ['name', 'description'], open: ['name', 'surface', 'description', 'reads'], deep: ['name', 'surface', 'description', 'reads'] },
+      { kind: 'rtp.sheet', peek: ['name'], card: ['name', 'description'], open: ['name', 'surface', 'host', 'description', 'reads'], deep: ['name', 'surface', 'host', 'description', 'reads'] },
       { kind: 'rtp.action', peek: ['action'], card: ['action', 'concept'], open: ['name', 'action', 'concept', 'screen'], deep: ['name', 'action', 'concept', 'color', 'screen'] },
       { kind: 'rtp.concept', peek: ['name'], card: ['name', 'color'], open: ['name', 'color'], deep: ['name', 'color'] },
     ],

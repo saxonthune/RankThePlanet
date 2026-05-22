@@ -5,13 +5,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
+import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.location.LocationProvider
 import com.saxonthune.ranktheplanet.data.location.ProviderResult
 import com.saxonthune.ranktheplanet.domain.Collection
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.Entry
 import com.saxonthune.ranktheplanet.domain.EntryId
+import com.saxonthune.ranktheplanet.domain.ReviewTemplate
 import com.saxonthune.ranktheplanet.ui.theme.parseAppearanceColor
+import com.saxonthune.ranktheplanet.util.formatShortDate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -30,6 +33,8 @@ data class EntrySummaryUi(
     val collectionColor: Color,
     val locationName: String,
     val visited: Boolean,
+    val visitedDate: String?,
+    val summaryPreview: String?,
 )
 
 sealed interface PinSheet {
@@ -90,6 +95,7 @@ class MapOverviewViewModel(
     private val collectionsRepo: CollectionRepository,
     private val entriesRepo: EntryRepository,
     private val locationProvider: LocationProvider,
+    private val templatesRepo: TemplateRepository,
 ) : ViewModel() {
 
     private val hiddenCollections = MutableStateFlow<Set<CollectionId>>(emptySet())
@@ -101,6 +107,7 @@ class MapOverviewViewModel(
 
     private val _latestCollections = MutableStateFlow<List<Collection>>(emptyList())
     private val _latestEntries = MutableStateFlow<List<Entry>>(emptyList())
+    private val _latestTemplates = MutableStateFlow<List<ReviewTemplate>>(emptyList())
 
     init {
         loadData()
@@ -114,7 +121,21 @@ class MapOverviewViewModel(
     private fun loadData() {
         viewModelScope.launch {
             try {
-                collectionsRepo.observeAll().collect { _latestCollections.value = it }
+                collectionsRepo.observeAll().collect { collections ->
+                    _latestCollections.value = collections
+                    collections.forEach { col ->
+                        viewModelScope.launch {
+                            templatesRepo.observe(col.id).collect { template ->
+                                if (template != null) {
+                                    _latestTemplates.update { current ->
+                                        val without = current.filter { it.collectionId != template.collectionId }
+                                        without + template
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             } catch (t: Throwable) {
                 _error.value = t.message ?: "Unknown error"
             }
@@ -217,6 +238,7 @@ class MapOverviewViewModel(
         val entries = _latestEntries.value
         val collections = _latestCollections.value
         val collectionMap = collections.associateBy { it.id }
+        val templateMap = _latestTemplates.value.associateBy { it.collectionId }
         val entry = entries.find { it.id == entryId } ?: run {
             _pinSheet.value = PinSheet.None
             return
@@ -225,6 +247,15 @@ class MapOverviewViewModel(
         val locationEntries = entries.filter { it.location.id == locationId }
         val summaries = locationEntries.mapNotNull { e ->
             val col = collectionMap[e.collectionId] ?: return@mapNotNull null
+            val template = templateMap[e.collectionId]
+            val visitedDate = if (e.review != null) formatShortDate(e.review.created) else null
+            val summaryPreview = run {
+                val field = template?.summaryField ?: return@run null
+                val review = e.review ?: return@run null
+                val raw = review.data[field]?.trim()?.takeIf { it.isNotBlank() } ?: return@run null
+                val firstLine = raw.split('\n')[0]
+                if (firstLine.length > 80) firstLine.take(80) + "…" else firstLine
+            }
             EntrySummaryUi(
                 entryId = e.id,
                 collectionId = e.collectionId,
@@ -232,6 +263,8 @@ class MapOverviewViewModel(
                 collectionColor = parseAppearanceColor(col.appearance.color),
                 locationName = e.location.displayName,
                 visited = e.review != null,
+                visitedDate = visitedDate,
+                summaryPreview = summaryPreview,
             )
         }.toImmutableList()
         _pinSheet.value = if (summaries.size == 1) {

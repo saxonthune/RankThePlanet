@@ -62,6 +62,7 @@ fun App() {
                     mode = mode,
                     collections = repos.collections,
                     entries = repos.entries,
+                    templates = repos.templates,
                     locationProvider = locationProvider,
                     onCancelAdd = { navController.popBackStack() },
                     onOpenCollections = { navController.navigate(CollectionList) },

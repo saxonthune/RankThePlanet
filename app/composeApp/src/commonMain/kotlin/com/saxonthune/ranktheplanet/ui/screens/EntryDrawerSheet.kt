@@ -7,21 +7,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
@@ -32,62 +29,63 @@ internal fun EntryDrawerSheet(
     onOpenFullDetail: (EntryId) -> Unit,
     onViewCollection: (CollectionId) -> Unit,
     onEditReview: () -> Unit,
-    onDismiss: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-    ) {
-        Text(entry.locationName, style = MaterialTheme.typography.titleMedium)
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 4.dp),
-        ) {
-            Box(
-                Modifier
-                    .size(12.dp)
-                    .background(entry.collectionColor, CircleShape)
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(entry.collectionName)
-        }
-        if (entry.visited) {
-            Text(
-                "Visited",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        } else {
-            AssistChip(
-                onClick = {},
-                label = { Text("Not yet visited") },
-                leadingIcon = {
-                    Icon(Icons.Default.Info, contentDescription = null)
-                },
-            )
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        TextButton(
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Surface(
             onClick = { onViewCollection(entry.collectionId) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
         ) {
-            Text("View the Collection")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                Box(
+                    Modifier
+                        .size(16.dp)
+                        .background(entry.collectionColor, androidx.compose.foundation.shape.CircleShape)
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(entry.collectionName, style = MaterialTheme.typography.titleSmall)
+            }
         }
-        TextButton(
-            onClick = { onEditReview() },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("Edit the Review")
-        }
-        Button(
+
+        HorizontalDivider()
+
+        Surface(
             onClick = { onOpenFullDetail(entry.entryId) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
         ) {
-            Text("Open full detail")
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Text(entry.locationName, style = MaterialTheme.typography.titleMedium)
+            }
         }
+
+        HorizontalDivider()
+
+        Surface(
+            onClick = { onEditReview() },
+            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                val visitedLine = when {
+                    entry.visited && entry.visitedDate != null -> "Visited ${entry.visitedDate}"
+                    entry.visited -> "Visited"
+                    else -> "Unvisited"
+                }
+                Text(visitedLine, style = MaterialTheme.typography.bodyLarge)
+                if (entry.summaryPreview != null) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        entry.summaryPreview,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(8.dp))
     }
 }

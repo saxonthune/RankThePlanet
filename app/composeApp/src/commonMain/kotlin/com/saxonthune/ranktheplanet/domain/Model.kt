@@ -37,7 +37,8 @@ data class TemplateField(
 data class ReviewTemplate(
     val collectionId: CollectionId,
     val version: Int,
-    val fields: ImmutableList<TemplateField>
+    val fields: ImmutableList<TemplateField>,
+    val summaryField: String? = null,
 )
 
 data class ReviewInstance(

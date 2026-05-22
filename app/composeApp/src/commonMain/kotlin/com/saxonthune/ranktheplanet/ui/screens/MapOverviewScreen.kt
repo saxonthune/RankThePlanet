@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
+import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.location.LocationProvider
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
@@ -132,6 +133,7 @@ fun MapOverviewScreen(
     mode: MapMode,
     collections: CollectionRepository,
     entries: EntryRepository,
+    templates: TemplateRepository,
     locationProvider: LocationProvider,
     onCancelAdd: () -> Unit,
     onOpenCollections: () -> Unit,
@@ -141,7 +143,7 @@ fun MapOverviewScreen(
     onEditReview: () -> Unit,
     onAddToCollection: () -> Unit,
 ) {
-    val vm = viewModel { MapOverviewViewModel(collections, entries, locationProvider) }
+    val vm = viewModel { MapOverviewViewModel(collections, entries, locationProvider, templates) }
     val state by vm.uiState.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -360,7 +362,6 @@ fun MapOverviewScreen(
                         vm.dismissSheet()
                         onEditReview()
                     },
-                    onDismiss = { vm.dismissSheet() },
                 )
                 is PinSheet.None -> {}
             }

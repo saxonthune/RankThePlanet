@@ -1,5 +1,6 @@
 package com.saxonthune.ranktheplanet.data.location
 
+import com.saxonthune.ranktheplanet.data.fake.FakeLocationProvider
 import com.saxonthune.ranktheplanet.domain.SourceType
 
 interface LocationProviderRegistry {
@@ -17,6 +18,11 @@ class DefaultLocationProviderRegistry : LocationProviderRegistry {
 
     init {
         providers[SourceType.Osm] = OsmLocationProvider(createOsmHttpClient())
+        providers[SourceType.Google] = GoogleLocationProvider(
+            client = createGoogleHttpClient(),
+            apiKey = { null },
+        )
+        providers[SourceType.Fake] = FakeLocationProvider()
     }
 
     override fun providerFor(type: SourceType): LocationProvider? = providers[type]
@@ -30,9 +36,6 @@ class DefaultLocationProviderRegistry : LocationProviderRegistry {
     }
 
     override fun addProvider(provider: LocationProvider) {
-        // BYOK providers (Google, Apple, Mapbox) are not yet supported
-        if (provider.type == SourceType.Osm) {
-            providers[provider.type] = provider
-        }
+        providers[provider.type] = provider
     }
 }

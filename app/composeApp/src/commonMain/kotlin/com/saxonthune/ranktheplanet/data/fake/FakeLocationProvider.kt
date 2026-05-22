@@ -8,7 +8,7 @@ import com.saxonthune.ranktheplanet.domain.SourceType
 
 class FakeLocationProvider : LocationProvider {
 
-    override val type = SourceType.Osm
+    override val type = SourceType.Fake
 
     private val candidates = Fixtures.locations.map { location ->
         LocationCandidate(

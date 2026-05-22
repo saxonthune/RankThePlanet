@@ -11,7 +11,7 @@ import kotlinx.collections.immutable.ImmutableSet
 
 data class Coordinates(val lat: Double, val lng: Double)
 
-enum class SourceType { Google, Osm, Apple, Manual }
+enum class SourceType { Google, Osm, Apple, Manual, Fake }
 
 data class Location(
     val id: LocationId,

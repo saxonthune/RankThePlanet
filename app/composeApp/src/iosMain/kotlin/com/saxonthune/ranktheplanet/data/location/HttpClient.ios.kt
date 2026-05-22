@@ -15,3 +15,9 @@ actual fun createOsmHttpClient(): HttpClient = HttpClient(Darwin) {
         headers.append("User-Agent", OSM_USER_AGENT)
     }
 }
+
+actual fun createGoogleHttpClient(): HttpClient = HttpClient(Darwin) {
+    install(ContentNegotiation) {
+        json(Json { ignoreUnknownKeys = true; isLenient = true })
+    }
+}

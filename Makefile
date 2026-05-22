@@ -27,7 +27,7 @@ export JAVA_HOME
 .PHONY: help build clean rebuild install run sync tasks stop adb-devices wrapper \
         verify \
         ios-build ios-run ios-debug ios-logs ios-crash ios-pod-install ios-clean \
-        ios-device-build ios-device-run ios-devices \
+        ios-device-build ios-device-run ios-device-debug ios-devices \
         code-map
 
 help:
@@ -155,3 +155,10 @@ ios-device-run: ios-device-build
 	@test -n "$(DEVICE)" || { echo "DEVICE is unset — create credentials.mk"; exit 1; }
 	xcrun devicectl device install app --device $(DEVICE) "$(DEVICE_APP_BUNDLE)"
 	xcrun devicectl device process launch --device $(DEVICE) $(PACKAGE)
+
+# Build, install, launch attached to console — streams stdout/stderr and surfaces
+# crashes in the terminal. Ctrl-C terminates the app.
+ios-device-debug: ios-device-build
+	@test -n "$(DEVICE)" || { echo "DEVICE is unset — create credentials.mk"; exit 1; }
+	xcrun devicectl device install app --device $(DEVICE) "$(DEVICE_APP_BUNDLE)"
+	xcrun devicectl device process launch --device $(DEVICE) --console --terminate-existing $(PACKAGE)

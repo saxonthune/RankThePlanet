@@ -95,7 +95,7 @@ The pipeline walks `.carta/` for `*.statechart.json` sidecars and emits a derive
 
 ## Verifying Kotlin changes locally
 
-Off macOS the iOS Kotlin/Native targets are disabled (MapLibre cinterop needs macOS), so `:composeApp:compileKotlinJvm` is not a sufficient check — it only validates the jvm source set and misses commonMain rules that iOS enforces. Use `make verify` instead: it runs `:composeApp:compileDebugKotlinAndroid` + `:composeApp:compileCommonMainKotlinMetadata`, which together cover commonMain strictly and catch nearly all issues that would otherwise surface at iOS compile time. The remaining iOS-only risk (iosMain, cinterop, cocoapods) can only be checked on macOS.
+Use `make verify` to check Kotlin changes. On macOS the iOS Kotlin/Native targets are enabled, so verification covers iosMain (cinterop, cocoapods) in addition to commonMain and Android.
 
 ## Code map
 

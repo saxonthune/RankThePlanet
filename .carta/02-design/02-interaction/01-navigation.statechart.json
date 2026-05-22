@@ -98,7 +98,7 @@
     },
 
     "EntryDrawer": {
-      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationDetail's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (LocationDetail renders this directly when the tapped Location has exactly one Entry). A lightweight handoff hub, not the canonical detail screen: shows enough of the Entry to recognize it (Location name, Collection name and color, a compact Review reflection) and offers the three navigating shortcuts the user is most likely to want.",
+      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationDetail's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (LocationDetail renders this directly when the tapped Location has exactly one Entry). A lightweight handoff hub, not the canonical detail screen: three stacked pressable regions — a collection row that presses through to the owning Collection, a location block that presses through to the full detail, and a review block reflecting visited status and the template's summaryField (doc01.03 §3) that presses through to the Review form.",
       "tags": ["peek", "map"],
       "meta": {
         "surface": "EntryDrawer",

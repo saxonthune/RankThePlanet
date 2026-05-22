@@ -2,33 +2,37 @@
   "surface": "EntryDrawer",
   "regions": [
     {
-      "id": "summary",
-      "purpose": "A compact identification of the Entry without leaving the map — the Location's display name, the owning Collection's name and appearance color, and a short reflection of the Review (visited/unvisited indicator and a highlight field)."
+      "id": "collectionRow",
+      "purpose": "Top of the sheet — a tall, full-width tap target identifying the owning Collection. Shows the Collection's appearance color (swatch or leading accent) and its name. Pressing the row opens the Collection. Sized to a comfortable touch target (a Material 3 list-item row, ~56dp tall) with the whole row pressable, not just the text."
     },
     {
-      "id": "actions",
-      "purpose": "The three navigating handoffs out of the drawer — full detail, owning Collection, edit Review — and the dismiss."
+      "id": "locationBlock",
+      "purpose": "Middle of the sheet — a tall, full-width tap target identifying the Location. Shows the Location's display name on its own line at a heading-sized type. Pressing the block opens the canonical CollectionEntryDetail screen for the complete view. Sized for an easy tap (at least 48dp tall) with generous vertical padding."
+    },
+    {
+      "id": "reviewBlock",
+      "purpose": "Bottom of the sheet — a tall, full-width tap target reflecting the Review. First line shows the visited status: 'Unvisited' when the Entry has no Review instance, or 'Visited {date}' using the Review instance's created date when it does. Second line shows the Review's summary field (Review.template.summaryField, doc01.03 §3) rendered to a single line — a score renders in its configured style (stars, number, icon), text shows a truncated first line, an enum shows the picked option, a power-ranking shows its position; omitted when the template declares no summary field or the Entry is unreviewed. Pressing the block opens the Review form for editing. Sized for an easy tap (at least 56dp tall) with generous vertical padding between the two lines."
     }
   ],
   "affordances": [
     {
-      "id": "open-full-detail",
-      "label": "Open full detail",
-      "region": "actions",
-      "event": "TAP_OPEN_DETAIL",
-      "target": "CollectionEntryDetail"
-    },
-    {
       "id": "view-collection",
       "label": "View the Collection",
-      "region": "actions",
+      "region": "collectionRow",
       "event": "VIEW_COLLECTION",
       "target": "CollectionDetail"
     },
     {
+      "id": "open-full-detail",
+      "label": "Open full detail",
+      "region": "locationBlock",
+      "event": "TAP_OPEN_DETAIL",
+      "target": "CollectionEntryDetail"
+    },
+    {
       "id": "edit-review",
       "label": "Edit the Review",
-      "region": "actions",
+      "region": "reviewBlock",
       "event": "TAP_EDIT_REVIEW",
       "target": "ReviewForm",
       "action": "Review.edit"
@@ -36,9 +40,10 @@
     {
       "id": "dismiss",
       "label": "Dismiss",
-      "region": "actions",
+      "region": "sheet",
       "event": "DISMISS",
-      "target": "MapOverview"
+      "target": "MapOverview",
+      "note": "Bottom-sheet swipe-down or scrim-tap gesture on the sheet shell itself, not a tap on any of the three content regions."
     }
   ],
   "lists": [],

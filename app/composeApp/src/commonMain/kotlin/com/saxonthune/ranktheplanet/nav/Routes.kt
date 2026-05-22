@@ -12,6 +12,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class AddLocationToCollection(val addToCollectionId: String? = null)
 @Serializable object ImportFlow
 @Serializable object Settings
+@Serializable object ManageProviders
+@Serializable data class ProviderConfig(val provider: String)
 
 sealed interface MapMode {
     data object Browse : MapMode

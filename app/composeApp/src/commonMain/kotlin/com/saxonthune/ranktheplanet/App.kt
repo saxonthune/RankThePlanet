@@ -10,15 +10,22 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.saxonthune.ranktheplanet.data.fake.FakeLocationProvider
 import com.saxonthune.ranktheplanet.data.fake.FakeRepositories
+import com.saxonthune.ranktheplanet.data.location.DefaultLocationProviderRegistry
+import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
+import com.saxonthune.ranktheplanet.data.secure.SecureStore
+import com.saxonthune.ranktheplanet.data.secure.createSecureStore
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
+import com.saxonthune.ranktheplanet.domain.SourceType
 import com.saxonthune.ranktheplanet.nav.AddLocationToCollection
 import com.saxonthune.ranktheplanet.nav.CollectionDetail
 import com.saxonthune.ranktheplanet.nav.CollectionEntryDetail
 import com.saxonthune.ranktheplanet.nav.CollectionList
 import com.saxonthune.ranktheplanet.nav.ImportFlow
+import com.saxonthune.ranktheplanet.nav.ManageProviders
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.nav.MapOverview
+import com.saxonthune.ranktheplanet.nav.ProviderConfig
 import com.saxonthune.ranktheplanet.nav.ReviewForm
 import com.saxonthune.ranktheplanet.nav.CollectionEditor
 import com.saxonthune.ranktheplanet.nav.Settings
@@ -27,7 +34,11 @@ import com.saxonthune.ranktheplanet.ui.screens.CollectionDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEntryDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionListScreen
 import com.saxonthune.ranktheplanet.ui.screens.ImportFlowScreen
+import com.saxonthune.ranktheplanet.ui.screens.ManageProvidersScreen
+import com.saxonthune.ranktheplanet.ui.screens.ManageProvidersViewModel
 import com.saxonthune.ranktheplanet.ui.screens.MapOverviewScreen
+import com.saxonthune.ranktheplanet.ui.screens.ProviderConfigScreen
+import com.saxonthune.ranktheplanet.ui.screens.ProviderConfigViewModel
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEditorScreen
 import com.saxonthune.ranktheplanet.ui.screens.SettingsScreen
@@ -39,6 +50,10 @@ fun App() {
         val navController = rememberNavController()
         val repos = remember { FakeRepositories() }
         val locationProvider = remember { FakeLocationProvider() }
+        val secureStore = remember { createSecureStore() }
+        val registry by produceState<LocationProviderRegistry?>(initialValue = null, secureStore) {
+            value = DefaultLocationProviderRegistry.create(secureStore)
+        }
         NavHost(navController = navController, startDestination = MapOverview()) {
             composable<MapOverview> { backStackEntry ->
                 val route = backStackEntry.toRoute<MapOverview>()
@@ -136,7 +151,29 @@ fun App() {
                 )
             }
             composable<Settings> {
-                SettingsScreen(onBack = { navController.popBackStack() })
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onManageProviders = { navController.navigate(ManageProviders) },
+                )
+            }
+            composable<ManageProviders> {
+                val r = registry ?: return@composable
+                ManageProvidersScreen(
+                    viewModel = remember(r, secureStore) { ManageProvidersViewModel(r, secureStore) },
+                    onBack = { navController.popBackStack() },
+                    onOpenProvider = { type -> navController.navigate(ProviderConfig(type.name)) },
+                )
+            }
+            composable<ProviderConfig> { backStackEntry ->
+                val route = backStackEntry.toRoute<ProviderConfig>()
+                val type = SourceType.valueOf(route.provider)
+                val r = registry ?: return@composable
+                ProviderConfigScreen(
+                    viewModel = remember(type, r, secureStore) {
+                        ProviderConfigViewModel(type, r, secureStore)
+                    },
+                    onBack = { navController.popBackStack() },
+                )
             }
         }
     }

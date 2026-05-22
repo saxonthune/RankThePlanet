@@ -103,17 +103,25 @@ function verifyScreenInventory(inventoryPath, statechartPath, key) {
     ...((state.meta && state.meta.actions) || []),
   ]);
 
-  // Covered set: affordance events/actions (top-level + list items)
+  // Covered set: affordance events/actions (top-level + list items + altAffordances)
   const covered = new Set();
   for (const aff of inventory.affordances || []) {
     if (aff.event) covered.add(aff.event);
     if (aff.action) covered.add(aff.action);
+    for (const alt of aff.altAffordances || []) {
+      if (alt.event) covered.add(alt.event);
+      if (alt.action) covered.add(alt.action);
+    }
   }
   for (const list of inventory.lists || []) {
     const ia = list.item && list.item.affordance;
     if (ia) {
       if (ia.event) covered.add(ia.event);
       if (ia.action) covered.add(ia.action);
+    }
+    for (const alt of (list.item && list.item.altAffordances) || []) {
+      if (alt.event) covered.add(alt.event);
+      if (alt.action) covered.add(alt.action);
     }
   }
 
@@ -129,7 +137,9 @@ function verifyScreenInventory(inventoryPath, statechartPath, key) {
   const mismatches = [];
   const allAffordances = [
     ...(inventory.affordances || []),
+    ...(inventory.affordances || []).flatMap(a => a.altAffordances || []),
     ...(inventory.lists || []).flatMap(l => (l.item && l.item.affordance) ? [l.item.affordance] : []),
+    ...(inventory.lists || []).flatMap(l => (l.item && l.item.altAffordances) || []),
   ];
   for (const aff of allAffordances) {
     if (!aff.event || aff.target === undefined) continue;

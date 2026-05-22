@@ -13,7 +13,7 @@ The `LocationProvider` seam is one of the swappable external seams named in doc0
 
 ## The seam
 
-All of the following is pure Kotlin in `commonMain` — no Compose, no platform, no SQL. The seam imports the domain `Location` shape (doc03.02) but produces *candidates*, not `Location`s: a candidate is an unadopted search result; turning one into a `Location` is the user's choice on the LocationDraft surface (doc02.02.02.05).
+All of the following is pure Kotlin in `commonMain` — no Compose, no platform, no SQL. The seam imports the domain `Location` shape (doc03.02) but produces *candidates*, not `Location`s: a candidate is an unadopted search result; turning one into a `Location` is the user's choice on the LocationDraftSheet surface (doc02.02.02.05).
 
 ### Related types
 

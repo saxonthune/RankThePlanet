@@ -42,13 +42,13 @@ Why a route is wrong:
 
 CMP projection: the host screen owns a sealed `…Sheet` type on its UiState (or several, one per modality slot). Rendering uses `ModalBottomSheet` / `ModalNavigationDrawer` / similar; dismissal mutates the UiState back to `None`. The pattern is canonical for `PinSheet` on `MapOverviewUiState`; new sheets follow the same shape.
 
-**Worked example.** `LocationDraft` is `modality: sheet`, `host: MapOverview`. The CMP projection adds a `draft: LocationDraftSheet` entry to `MapOverviewUiState` (alongside `pinSheet`); the sheet reads `collection-context` from the same UiState and propagates it when the user picks "Add to a Collection." There is no `composable<LocationDraft>` in the NavHost.
+**Worked example.** `LocationDraftSheet` is `modality: sheet`, `host: MapOverview`. The CMP projection adds a `draft: LocationDraftSheet` entry to `MapOverviewUiState` (alongside `pinSheet`); the sheet reads `collection-context` from the same UiState and propagates it when the user picks "Add to a Collection." There is no `composable<LocationDraftSheet>` in the NavHost.
 
 ## Rule 3 — Flows are modal: no nesting
 
 > While the user is in a multi-step flow, the host suppresses every transition that would start a second flow. The flow surface offers exactly two ways out: **complete** or **cancel**.
 
-A *flow* is a sequence of surfaces driven by carried context to a single committing terminal — the user is "in the middle of something" until they reach the terminal or back out. Examples: the add-to-collection flow (`CollectionDetail` → `MapOverview` (add-mode) → `LocationDraft` → `AddLocationToCollection` → `ReviewForm` → committed). The collection-editor and review-form flows are similar.
+A *flow* is a sequence of surfaces driven by carried context to a single committing terminal — the user is "in the middle of something" until they reach the terminal or back out. Examples: the add-to-collection flow (`CollectionDetail` → `MapOverview` (add-mode) → `LocationDraftSheet` → `AddLocationToCollection` → `ReviewForm` → committed). The collection-editor and review-form flows are similar.
 
 While a flow is active, every surface it traverses:
 
@@ -70,7 +70,7 @@ Why this rule:
 - A new `closeButton` region (X icon, top-left navigationIcon slot) declares `appearsInModes: ["addToCollection"]` and hosts the `CANCEL_ADD` affordance.
 - The `statusBar` region declares `appearsInModes: ["addToCollection"]` and occupies the bottomBar slot, naming the target Collection.
 - The `search` and `map` regions remain in both modes — search and pan-zoom are part of *completing* the flow (finding the place to add), not starting a second flow.
-- Sheets reached during the flow (`LocationDraft`, `LocationDetail`, `EntryDrawer`) carry the same `CANCEL_ADD` transition guarded `inAddMode`, so the user can cancel from any sheet.
+- Sheets reached during the flow (`LocationDraftSheet`, `LocationSheet`, `EntrySheet`) carry the same `CANCEL_ADD` transition guarded `inAddMode`, so the user can cancel from any sheet.
 
 ## Consequences for the rest of the stack
 

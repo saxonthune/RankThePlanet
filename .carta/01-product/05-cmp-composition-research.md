@@ -7,7 +7,7 @@ deps: [doc02.01, doc02.02.01]
 
 # CMP composition patterns & reference apps
 
-A research session prompted by two implementation drifts from the navigation spec ([[01-navigation]], doc02.02.01) — MapOverview's add-to-collection mode rendering with weak hierarchy, and LocationDraft being routed as a full screen rather than presented as a sheet. Both bugs point at the same underlying question: how does one design shared UI that bends to context. This doc captures the answer once so future surfaces inherit it; the prescriptive distillation lives in [[04-surface-composition-rules]] (doc02.04).
+A research session prompted by two implementation drifts from the navigation spec ([[01-navigation]], doc02.02.01) — MapOverview's add-to-collection mode rendering with weak hierarchy, and LocationDraftSheet being routed as a full screen rather than presented as a sheet. Both bugs point at the same underlying question: how does one design shared UI that bends to context. This doc captures the answer once so future surfaces inherit it; the prescriptive distillation lives in [[04-surface-composition-rules]] (doc02.04).
 
 ## 1. The decision spine: four rungs
 
@@ -33,7 +33,7 @@ Asked another way: what does it mean to "inject context into a component that de
 
 - **Carried context = a sealed mode type.** `MapMode.Browse` vs `MapMode.AddingToCollection(collectionId, collectionName)`. The compiler enforces exhaustiveness; adding a third mode is a refactor the compiler walks you through.
 - **State down, events up (UDF).** The composable doesn't *ask* what mode it's in — it receives the mode as part of `UiState` (or as a screen-level argument) and renders. State holders never expose `MutableState` to the UI; they expose `StateFlow`.
-- **Propagation is just nullable route args.** Every route in the carrying chain takes the same nullable; at the screen boundary it resolves to the sealed type. `MapOverview(addToCollectionId)` → `LocationDraft(addToCollectionId)` → `AddLocationToCollection(addToCollectionId)`.
+- **Propagation is just nullable route args.** Every route in the carrying chain takes the same nullable; at the screen boundary it resolves to the sealed type. `MapOverview(addToCollectionId)` → `LocationDraftSheet(addToCollectionId)` → `AddLocationToCollection(addToCollectionId)`.
 - **Not a `CompositionLocal`.** Reserve those for ambient values genuinely needed at many unrelated depths (theme, density, haptics). Mode has a single propagation path; making it ambient hides the data flow.
 
 ## 3. The two rules that catch most cases
@@ -55,7 +55,7 @@ These two rules answer most of RTP's compositional questions for the rest of the
 ## 5. Application back to RTP
 
 - **Bug #1 — "chrome still there in add-mode."** Per [[07-map-overview]] (doc02.02.02.07) the regions are deliberately identical in both modes; only the `statusBar` appears in add-mode. The remaining question is whether the *spec is right* (search/filter/menu remain useful in add-mode — a strong argument) or whether more chrome should be suppressed. Decided in the inventory's `appearsInModes` rather than in code. Default position: keep the spec; treat the bug as a look-and-feel issue (banner needs stronger hierarchy).
-- **Bug #2 — LocationDraft as a route loses context and unmounts the map.** Per [[05-location-draft]] (doc02.02.02.05) the surface is a sheet over the map. The statechart declares modality `sheet` with host `MapOverview`; the CMP projection is a `LocationDraftSheet` entry on `MapOverviewUiState`, mirroring the `PinSheet` shape. Context flows naturally: the host holds the mode, and the sheet reads it from the same UiState.
+- **Bug #2 — LocationDraftSheet as a route loses context and unmounts the map.** Per [[05-location-draft]] (doc02.02.02.05) the surface is a sheet over the map. The statechart declares modality `sheet` with host `MapOverview`; the CMP projection is a `LocationDraftSheet` entry on `MapOverviewUiState`, mirroring the `PinSheet` shape. Context flows naturally: the host holds the mode, and the sheet reads it from the same UiState.
 
 ## 6. Reference apps audit
 

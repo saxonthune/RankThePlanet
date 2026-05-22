@@ -112,7 +112,7 @@ Per Collection (template):
 
 - `template` — an ordered list of fields. Each field has a `name`, a `type`, per-type configuration, and a `required` flag.
 - `template_version` — bumped when the template changes; used to reconcile instances.
-- `summaryField` — optional name of one field in `template`. The field whose value stands in for the Review in compact surfaces (notably `EntryDrawer`, doc02.02.02.09). Any field type is eligible: a `score` renders in its configured style (stars, number, icon), a `text` field shows a truncated first line, an `enum` shows the picked option, a `power-ranking` shows its position. When absent, compact surfaces show only the visited/unvisited state and the instance's `created` date.
+- `summaryField` — optional name of one field in `template`. The field whose value stands in for the Review in compact surfaces (notably `EntrySheet`, doc02.02.02.09). Any field type is eligible: a `score` renders in its configured style (stars, number, icon), a `text` field shows a truncated first line, an `enum` shows the picked option, a `power-ranking` shows its position. When absent, compact surfaces show only the visited/unvisited state and the instance's `created` date.
 
 The field types and their configuration:
 

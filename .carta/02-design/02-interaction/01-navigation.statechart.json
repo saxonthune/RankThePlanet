@@ -10,7 +10,7 @@
       "meta": {
         "surface": "MapOverview",
         "modality": "fullScreen",
-        "hostsSheets": ["LocationDraft", "LocationDetail", "EntryDrawer"],
+        "hostsSheets": ["LocationDraftSheet", "LocationSheet", "EntrySheet"],
         "modes": {
           "browse": "Default; entered as the landing surface or via BACK from any descendant. No carried context.",
           "addToCollection": "Entered from CollectionDetail's TAP_ADD_ENTRY. `collection-context` is set and propagates to every Location-opening transition."
@@ -31,9 +31,9 @@
       },
       "on": {
         "TAP_PIN": {
-          "target": "LocationDetail",
+          "target": "LocationSheet",
           "label": "Inspect a pin",
-          "description": "User taps a pin to inspect that Location. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows. A pin is a Location, which may appear in several Collections — LocationDetail fans out to those Collection Entries rather than assuming one.",
+          "description": "User taps a pin to inspect that Location. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows. A pin is a Location, which may appear in several Collections — LocationSheet fans out to those Collection Entries rather than assuming one.",
           "propagates": ["collection-context"]
         },
         "TAP_COLLECTIONS_BUTTON": {
@@ -42,15 +42,15 @@
           "description": "User opens the list of Collections to manage them."
         },
         "DROP_PIN": {
-          "target": "LocationDraft",
+          "target": "LocationDraftSheet",
           "label": "Drop a pin",
-          "description": "User long-presses a spot on the map to place a point. This produces an uncommitted candidate — not yet a Location — and opens LocationDraft over the map. Starts the Location-first flow from doc01.02 §3. The long-press gesture on the map is the only trigger; there is no dedicated drop-pin button.",
+          "description": "User long-presses a spot on the map to place a point. This produces an uncommitted candidate — not yet a Location — and opens LocationDraftSheet over the map. Starts the Location-first flow from doc01.02 §3. The long-press gesture on the map is the only trigger; there is no dedicated drop-pin button.",
           "propagates": ["collection-context"]
         },
         "PICK_SEARCH_RESULT": {
-          "target": "LocationDraft",
+          "target": "LocationDraftSheet",
           "label": "Pick a search result",
-          "description": "User types into the map's search field (Location.resolve, see meta.actions), then picks one candidate from the result list. The picked candidate opens in LocationDraft for inspection before it is committed.",
+          "description": "User types into the map's search field (Location.resolve, see meta.actions), then picks one candidate from the result list. The picked candidate opens in LocationDraftSheet for inspection before it is committed.",
           "propagates": ["collection-context"]
         },
         "TAP_SETTINGS": {
@@ -67,11 +67,11 @@
       }
     },
 
-    "LocationDetail": {
-      "description": "A skinny bottom-sheet peek over MapOverview, reached by tapping a pin. The left half identifies the Location; the right half is a scrolling list of every Collection Entry that references it. Tapping an entry picks it and opens EntryDrawer. Meaningful only when the Location has multiple Entries — when there is exactly one, the surface renders EntryDrawer directly instead (a downstream rendering choice). See doc01.03 §2.",
+    "LocationSheet": {
+      "description": "A skinny bottom-sheet peek over MapOverview, reached by tapping a pin. The left half identifies the Location; the right half is a scrolling list of every Collection Entry that references it. Tapping an entry picks it and opens EntrySheet. Meaningful only when the Location has multiple Entries — when there is exactly one, the surface renders EntrySheet directly instead (a downstream rendering choice). See doc01.03 §2.",
       "tags": ["sheet", "map"],
       "meta": {
-        "surface": "LocationDetail",
+        "surface": "LocationSheet",
         "modality": "sheet",
         "host": "MapOverview",
         "reads": ["location", "entries-for-location", "collections-with-location"],
@@ -79,9 +79,9 @@
       },
       "on": {
         "TAP_ENTRY": {
-          "target": "EntryDrawer",
+          "target": "EntrySheet",
           "label": "Pick an entry",
-          "description": "User taps one of the Entries in the right-hand list, picking which Collection's context to peek at. Opens EntryDrawer for that Entry.",
+          "description": "User taps one of the Entries in the right-hand list, picking which Collection's context to peek at. Opens EntrySheet for that Entry.",
           "propagates": ["collection-context"]
         },
         "BACK": {
@@ -97,11 +97,11 @@
       }
     },
 
-    "EntryDrawer": {
-      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationDetail's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (LocationDetail renders this directly when the tapped Location has exactly one Entry). A lightweight handoff hub, not the canonical detail screen: three stacked pressable regions — a collection row that presses through to the owning Collection, a location block that presses through to the full detail, and a review block reflecting visited status and the template's summaryField (doc01.03 §3) that presses through to the Review form.",
+    "EntrySheet": {
+      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationSheet's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (LocationSheet renders this directly when the tapped Location has exactly one Entry). A lightweight handoff hub, not the canonical detail screen: three stacked pressable regions — a collection row that presses through to the owning Collection, a location block that presses through to the full detail, and a review block reflecting visited status and the template's summaryField (doc01.03 §3) that presses through to the Review form.",
       "tags": ["sheet", "map"],
       "meta": {
-        "surface": "EntryDrawer",
+        "surface": "EntrySheet",
         "modality": "sheet",
         "host": "MapOverview",
         "reads": ["entry", "location", "review", "collection"],
@@ -196,7 +196,7 @@
         "TAP_ADD_ENTRY": {
           "target": "MapOverview",
           "label": "Add a Collection Entry",
-          "description": "User starts the Collection-first add flow. This enters MapOverview in add-to-collection mode: the Collection is held as entry context (`collection-context`). The map, pins, and search are unchanged; a status bar names the target Collection. Any Location the user opens — by tapping a pin, dropping a pin, or picking a search result — carries the context through LocationDraft into AddLocationToCollection, where the originating Collection is pre-selected, so PICK_COLLECTION confirms rather than chooses. CANCEL_ADD from the status bar abandons the flow back here.",
+          "description": "User starts the Collection-first add flow. This enters MapOverview in add-to-collection mode: the Collection is held as entry context (`collection-context`). The map, pins, and search are unchanged; a status bar names the target Collection. Any Location the user opens — by tapping a pin, dropping a pin, or picking a search result — carries the context through LocationDraftSheet into AddLocationToCollection, where the originating Collection is pre-selected, so PICK_COLLECTION confirms rather than chooses. CANCEL_ADD from the status bar abandons the flow back here.",
           "propagates": ["collection-context"]
         },
         "TAP_EDIT_TEMPLATE": {
@@ -292,11 +292,11 @@
       }
     },
 
-    "LocationDraft": {
+    "LocationDraftSheet": {
       "description": "A candidate Location not yet committed — a point dropped on the map or a search result picked from MapOverview. Shows the coordinates and offers nearby resolution candidates (Location.resolveNearby). The user keeps the coordinates as-is (Location.dropPin commits a manual Location) or adopts a resolved candidate. Rendered as a sheet over MapOverview — the map stays visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). See doc01.03 §2.",
       "tags": ["sheet", "map"],
       "meta": {
-        "surface": "LocationDraft",
+        "surface": "LocationDraftSheet",
         "modality": "sheet",
         "host": "MapOverview",
         "context": {
@@ -333,7 +333,7 @@
         "surface": "AddLocationToCollection",
         "modality": "fullScreen",
         "context": {
-          "collection-context": "Forwarded from LocationDraft's ADD_TO_COLLECTION. Consumed: pre-selects the Collection in the picker so PICK_COLLECTION confirms rather than chooses."
+          "collection-context": "Forwarded from LocationDraftSheet's ADD_TO_COLLECTION. Consumed: pre-selects the Collection in the picker so PICK_COLLECTION confirms rather than chooses."
         },
         "reads": ["collections", "candidate-location", "collection-context"],
         "actions": ["Location.addToCollection", "Collection.addEntry", "Collection.create"]

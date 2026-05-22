@@ -54,7 +54,7 @@
       "label": "Drop a pin",
       "region": "map",
       "event": "DROP_PIN",
-      "target": "LocationDraft"
+      "target": "LocationDraftSheet"
     },
     {
       "id": "open-menu",
@@ -115,7 +115,7 @@
           "id": "tap-pin",
           "label": "Inspect a pin",
           "event": "TAP_PIN",
-          "target": "LocationDetail",
+          "target": "LocationSheet",
           "action": "MapOverview.selectPin"
         }
       },
@@ -135,7 +135,7 @@
           "id": "pick-search-result",
           "label": "Pick a search result",
           "event": "PICK_SEARCH_RESULT",
-          "target": "LocationDraft"
+          "target": "LocationDraftSheet"
         }
       },
       "emptyState": "An empty or unsubmitted search field shows no results; results appear only after the user submits a query — there is no search-ahead. The map stays the focus."

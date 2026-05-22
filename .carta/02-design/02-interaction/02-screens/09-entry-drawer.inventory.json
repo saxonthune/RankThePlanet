@@ -1,5 +1,5 @@
 {
-  "surface": "EntryDrawer",
+  "surface": "EntrySheet",
   "regions": [
     {
       "id": "collectionRow",

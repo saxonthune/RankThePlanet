@@ -49,7 +49,6 @@ internal fun PinLayers(
     val kindExpr = feature["kind"].asString()
     val colorExpr = feature["color"].convertToColor(const(grey))
 
-    // Layer 1: teardrop body — all pins. Color depends on kind.
     SymbolLayer(
         id = "pins-body",
         source = source,
@@ -77,7 +76,6 @@ internal fun PinLayers(
             }
         },
     )
-    // Layer 2: centered mark (dot/plus) for reviewed and multi kinds. Unvisited is intentionally empty.
     SymbolLayer(
         id = "pins-mark",
         source = source,

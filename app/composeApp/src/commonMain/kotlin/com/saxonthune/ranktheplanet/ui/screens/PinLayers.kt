@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.sp
 import com.saxonthune.ranktheplanet.domain.EntryId
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -33,10 +34,6 @@ import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.util.ClickResult
 import org.maplibre.compose.util.MaplibreComposable
-import org.maplibre.spatialk.geojson.Feature
-import org.maplibre.spatialk.geojson.FeatureCollection
-import org.maplibre.spatialk.geojson.Point
-import org.maplibre.spatialk.geojson.Position
 import ranktheplanet.composeapp.generated.resources.Res
 import ranktheplanet.composeapp.generated.resources.pin_body
 import ranktheplanet.composeapp.generated.resources.pin_mark_dot
@@ -55,7 +52,11 @@ internal fun PinLayers(
     // detected render glitch) bumps the frame revision so a content-identical pin set
     // still triggers a fresh native push — the recovery hook for iOS render races.
     val frame by controller.frames.collectAsState(initial = PinFrame(persistentListOf(), 0L))
-    val data = remember(frame) { GeoJsonData.Features(frame.toFeatureCollection()) }
+    // Use JsonString rather than GeoJsonData.Features because spatialk-geojson's polymorphic
+    // serializer crashes on empty FeatureCollections (firstNotNullOf on an empty list throws
+    // NoSuchElementException). JsonString hands the raw GeoJSON to MapLibre's native parser
+    // and skips the Kotlin-side polymorphic dispatch entirely.
+    val data = remember(frame) { GeoJsonData.JsonString(frame.toGeoJsonString()) }
     val source = rememberGeoJsonSource(data = data)
 
     val bodyImage = image(painterResource(Res.drawable.pin_body), drawAsSdf = true)
@@ -133,20 +134,30 @@ internal fun PinLayers(
     )
 }
 
-private fun PinFrame.toFeatureCollection(): FeatureCollection<Point, *> =
-    FeatureCollection(
-        pins.map { pin ->
-            Feature(
-                geometry = Point(Position(longitude = pin.lng, latitude = pin.lat)),
-                properties = buildJsonObject {
-                    put("entryId", JsonPrimitive(pin.entryId.value))
-                    put("name", JsonPrimitive(pin.locationName))
-                    put("color", JsonPrimitive(pin.colorHex))
-                    put("kind", JsonPrimitive(pin.kind.token()))
-                },
-            )
-        }
-    )
+private fun PinFrame.toGeoJsonString(): String =
+    buildJsonObject {
+        put("type", JsonPrimitive("FeatureCollection"))
+        put("features", buildJsonArray {
+            pins.forEach { pin ->
+                add(buildJsonObject {
+                    put("type", JsonPrimitive("Feature"))
+                    put("geometry", buildJsonObject {
+                        put("type", JsonPrimitive("Point"))
+                        put("coordinates", buildJsonArray {
+                            add(JsonPrimitive(pin.lng))
+                            add(JsonPrimitive(pin.lat))
+                        })
+                    })
+                    put("properties", buildJsonObject {
+                        put("entryId", JsonPrimitive(pin.entryId.value))
+                        put("name", JsonPrimitive(pin.locationName))
+                        put("color", JsonPrimitive(pin.colorHex))
+                        put("kind", JsonPrimitive(pin.kind.token()))
+                    })
+                })
+            }
+        })
+    }.toString()
 
 private fun PinKind.token(): String = when (this) {
     PinKind.Unvisited -> "unvisited"

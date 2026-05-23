@@ -166,9 +166,6 @@ class MapOverviewViewModel(
                 if (_draft.value is LocationDraftSheet.Open) findNearby()
             }
         }
-        viewModelScope.launch {
-            derivedBase.collect { pinController.setPins(it.pins) }
-        }
     }
 
     fun retry() {
@@ -269,6 +266,14 @@ class MapOverviewViewModel(
         SharingStarted.WhileSubscribed(5_000),
         DerivedBase(persistentListOf(), persistentListOf(), persistentListOf()),
     )
+
+    // Must declare after `derivedBase` — Kotlin runs init blocks and property
+    // initializers in source order, so dereferencing it earlier yields null.
+    init {
+        viewModelScope.launch {
+            derivedBase.collect { pinController.setPins(it.pins) }
+        }
+    }
 
     val uiState: StateFlow<MapOverviewUiState> = combine(
         combine(

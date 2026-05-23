@@ -7,7 +7,7 @@
     },
     {
       "id": "locationBlock",
-      "purpose": "Middle of the sheet — a tall, full-width tap target identifying the Location. Shows the Location's display name on its own line at a heading-sized type. Pressing the block opens the canonical CollectionEntryDetail screen for the complete view. Sized for an easy tap (at least 48dp tall) with generous vertical padding."
+      "purpose": "Middle of the sheet — a tall, full-width tap target identifying the Location. Shows the Location's display name on its own line at a heading-sized type. Pressing the block opens the LocationSheet peek of the Location and every Collection Entry that references it; when the Location has exactly one Entry, LocationSheet renders this same EntrySheet directly per its single-entry rendering rule. Sized for an easy tap (at least 48dp tall) with generous vertical padding."
     },
     {
       "id": "reviewBlock",
@@ -23,11 +23,11 @@
       "target": "CollectionDetail"
     },
     {
-      "id": "open-full-detail",
-      "label": "Open full detail",
+      "id": "tap-location",
+      "label": "Peek the Location",
       "region": "locationBlock",
-      "event": "TAP_OPEN_DETAIL",
-      "target": "CollectionEntryDetail"
+      "event": "TAP_LOCATION",
+      "target": "LocationSheet"
     },
     {
       "id": "edit-review",

@@ -16,6 +16,8 @@ The surface is a skinny bottom sheet split into two halves. The **locationSummar
 
 The peek is meaningful only when a Location has multiple Entries. When the tapped Location has exactly one Entry, the surface renders the `EntrySheet` directly instead of the split peek — this is a downstream rendering choice ([[01-navigation]], doc02.02.01) and stays out of the statechart. *Dismiss* is the bottom-sheet's swipe-down or scrim-tap gesture and is modeled as `BACK` → `MapOverview`.
 
+`LocationSheet` is also reachable from [[09-entry-drawer]] via `TAP_LOCATION` on the EntrySheet's `locationBlock` — the user pivots from one Entry's peek to the Location's fan-out of sibling Entries. The single-entry rendering rule applies there too: tapping `TAP_LOCATION` from a single-entry EntrySheet re-renders the same EntrySheet rather than a degenerate one-row peek.
+
 `LocationSheet` is traversed by the add-to-collection flow: `MapOverview`'s `TAP_PIN` declares `propagates: ["collection-context"]`, so the surface receives the carried Collection when entered from add-mode. The statechart declares a `CANCEL_ADD` transition (target `CollectionDetail`, guard `inAddMode`) so the user can abandon the flow from this peek; the inventory lists `CANCEL_ADD` in `deferred` because the visual treatment of an in-add-mode peek is yet to unfold.
 
 The surface's two in-view concept actions, `Location.openExternally` and `Location.refresh`, were inherited from the earlier full-screen framing and have no peek affordance; they are listed in the sidecar's `deferred` array.

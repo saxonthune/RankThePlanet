@@ -106,7 +106,7 @@
     },
 
     "EntrySheet": {
-      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationSheet's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (LocationSheet renders this directly when the tapped Location has exactly one Entry). A lightweight handoff hub, not the canonical detail screen: three stacked pressable regions — a collection row that presses through to the owning Collection, a location block that presses through to the full detail, and a review block reflecting visited status and the template's summaryField (doc01.03 §3) that presses through to the Review form.",
+      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationSheet's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (LocationSheet renders this directly when the tapped Location has exactly one Entry). A lightweight handoff hub, not the canonical detail screen: three stacked pressable regions — a collection row that presses through to the owning Collection, a location block that presses through to the LocationSheet peek of that Location, and a review block reflecting visited status and the template's summaryField (doc01.03 §3) that presses through to the Review form.",
       "tags": ["sheet", "map"],
       "meta": {
         "surface": "EntrySheet",
@@ -116,9 +116,9 @@
         "actions": ["Review.edit"]
       },
       "on": {
-        "TAP_OPEN_DETAIL": {
-          "target": "CollectionEntryDetail",
-          "description": "User opens the canonical CollectionEntryDetail screen for the complete view — the (Location, Review) pair with every template field and the Entry-level affordances."
+        "TAP_LOCATION": {
+          "target": "LocationSheet",
+          "description": "User taps the locationBlock to peek the Location itself — the LocationSheet fan-out of every Collection Entry that references it. Always meaningful: when the Location has exactly one Entry (the same one EntrySheet is already showing), LocationSheet renders that EntrySheet directly per its single-entry rendering rule."
         },
         "VIEW_COLLECTION": {
           "target": "CollectionDetail",

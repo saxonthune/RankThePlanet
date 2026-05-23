@@ -13,12 +13,18 @@ import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.Coordinates
 import com.saxonthune.ranktheplanet.domain.Entry
 import com.saxonthune.ranktheplanet.domain.EntryId
+import com.saxonthune.ranktheplanet.domain.Location
+import com.saxonthune.ranktheplanet.domain.LocationId
+import com.saxonthune.ranktheplanet.domain.ReviewDraft
 import com.saxonthune.ranktheplanet.domain.ReviewTemplate
+import com.saxonthune.ranktheplanet.domain.SourceType
 import com.saxonthune.ranktheplanet.ui.theme.parseAppearanceColor
 import com.saxonthune.ranktheplanet.util.formatShortDate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlin.random.Random
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -62,6 +68,14 @@ sealed interface LocationDraftSheet {
 }
 
 enum class DraftPhase { Draft, AddToCollection }
+
+sealed interface PendingReviewPrompt {
+    data object None : PendingReviewPrompt
+    data class Pending(
+        val entryId: EntryId,
+        val locationName: String,
+    ) : PendingReviewPrompt
+}
 
 data class CollectionPickRowUi(
     val id: CollectionId,
@@ -112,6 +126,7 @@ data class MapOverviewUiState(
     val nearbyCandidates: ImmutableList<NearbyCandidateUi> = persistentListOf(),
     val isResolvingNearby: Boolean = false,
     val error: String? = null,
+    val pendingReview: PendingReviewPrompt = PendingReviewPrompt.None,
 )
 
 class MapOverviewViewModel(
@@ -127,6 +142,7 @@ class MapOverviewViewModel(
     private val lastQuery = MutableStateFlow<String?>(null)
     private val _pinSheet = MutableStateFlow<PinSheet>(PinSheet.None)
     private val _draft = MutableStateFlow<LocationDraftSheet>(LocationDraftSheet.None)
+    private val _pendingReview = MutableStateFlow<PendingReviewPrompt>(PendingReviewPrompt.None)
     private val _nearbyCandidates = MutableStateFlow<List<NearbyCandidateUi>>(emptyList())
     private val _isResolvingNearby = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
@@ -253,11 +269,13 @@ class MapOverviewViewModel(
         combine(_draft, _nearbyCandidates, _isResolvingNearby) { draft, nearby, resolving ->
             Triple(draft, nearby.toImmutableList(), resolving)
         },
-    ) { state, draftBundle ->
+        _pendingReview,
+    ) { state, draftBundle, pendingReview ->
         state.copy(
             draft = draftBundle.first,
             nearbyCandidates = draftBundle.second,
             isResolvingNearby = draftBundle.third,
+            pendingReview = pendingReview,
         )
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapOverviewUiState())
@@ -391,5 +409,37 @@ class MapOverviewViewModel(
     fun backToDraft() {
         val current = _draft.value as? LocationDraftSheet.Open ?: return
         _draft.value = current.copy(phase = DraftPhase.Draft)
+    }
+
+    fun pickCollectionForDraft(collectionId: CollectionId) {
+        val draft = _draft.value as? LocationDraftSheet.Open ?: return
+        val locationName = draft.adoptedCandidate ?: draft.displayName ?: "Unknown location"
+        viewModelScope.launch {
+            val location = Location(
+                id = LocationId(Random.nextInt(0x1000000, 0x7fffffff).toString(16)),
+                coordinates = Coordinates(draft.lat, draft.lng),
+                displayName = locationName,
+                sourceType = SourceType.Manual,
+                sourceId = "",
+                cachedMetadata = null,
+                refreshable = false,
+            )
+            val result = collectionsRepo.addEntry(
+                collectionId = collectionId,
+                location = location,
+                review = ReviewDraft(persistentMapOf()),
+            )
+            result.onSuccess { entry ->
+                _pendingReview.value = PendingReviewPrompt.Pending(
+                    entryId = entry.id,
+                    locationName = locationName,
+                )
+                dismissDraft()
+            }
+        }
+    }
+
+    fun clearPendingReview() {
+        _pendingReview.value = PendingReviewPrompt.None
     }
 }

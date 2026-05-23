@@ -26,6 +26,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,6 +38,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -143,6 +148,8 @@ fun MapOverviewScreen(
     onEditReview: () -> Unit,
     onPickCollectionForDraft: (CollectionId) -> Unit,
     onNewCollectionForDraft: () -> Unit,
+    onGoToReview: (EntryId) -> Unit,
+    onPendingReviewDismissed: () -> Unit,
 ) {
     val vm = viewModel { MapOverviewViewModel(collections, entries, providerRegistry, templates) }
     val state by vm.uiState.collectAsState()
@@ -163,6 +170,26 @@ fun MapOverviewScreen(
         )
     )
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val pending = state.pendingReview
+    if (pending is PendingReviewPrompt.Pending) {
+        LaunchedEffect(pending.entryId) {
+            val result = snackbarHostState.showSnackbar(
+                message = "Review ${pending.locationName}?",
+                actionLabel = "Review",
+                withDismissAction = true,
+                duration = SnackbarDuration.Long,
+            )
+            when (result) {
+                SnackbarResult.ActionPerformed -> onGoToReview(pending.entryId)
+                SnackbarResult.Dismissed -> Unit
+            }
+            vm.clearPendingReview()
+            onPendingReviewDismissed()
+        }
+    }
+
     BackHandler(enabled = state.draft is LocationDraftSheet.Open || state.pinSheet !is PinSheet.None) {
         val draft = state.draft
         if (draft is LocationDraftSheet.Open) {
@@ -174,6 +201,7 @@ fun MapOverviewScreen(
     val scaffoldContent: @Composable () -> Unit = {
         Scaffold(
             containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 Column {
                     TopAppBar(
@@ -401,8 +429,7 @@ fun MapOverviewScreen(
                         onNewCollectionForDraft()
                     },
                     onPickCollection = { collectionId ->
-                        vm.dismissDraft()
-                        onPickCollectionForDraft(collectionId)
+                        vm.pickCollectionForDraft(collectionId)
                     },
                 )
             }

@@ -82,8 +82,10 @@ fun App() {
                     onOpenFullDetail = { entryId -> navController.navigate(CollectionEntryDetail(entryId.value)) },
                     onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
                     onEditReview = { navController.navigate(ReviewForm) },
-                    onPickCollectionForDraft = { _ -> navController.navigate(ReviewForm) },
+                    onPickCollectionForDraft = { },
                     onNewCollectionForDraft = { navController.navigate(CollectionEditor) },
+                    onGoToReview = { _ -> navController.navigate(ReviewForm) },
+                    onPendingReviewDismissed = { },
                 )
             }
             composable<CollectionList> {

@@ -35,7 +35,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.00 | `00-index.md` | Product specs — what we're building and why | product, index | — | — | — |
 | doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
 | doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | doc01.03 | — |
-| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04.01, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc03.01, doc03.02, doc03.04, doc03.05 | — |
+| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04.01, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02 | — |
 | doc01.05 | `05-cmp-composition-research.md` | Research session: how to design shared CMP surfaces that bend to context (mode parameter, sheet-not-route), with a Tier-1..4 audit of reference apps to compare against | product, research, cmp, patterns, references | doc02.01, doc02.02.01 | doc02.04 | — |
 
 ### Development Philosophy
@@ -78,7 +78,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc02.02.02.10 | `02-interaction/02-screens/10-location-detail.md` | Affordance inventory for the LocationSheet surface — the skinny bottom-sheet peek of a Location and the Collection Entries that reference it; rendered only when multi-entry | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.11 | `02-interaction/02-screens/11-add-location-to-collection.md` | Affordance inventory for the AddLocationToCollection sheet — pick a Collection (pre-selected in add mode) or create a new one, hosted over MapOverview | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.12 | `02-interaction/02-screens/12-manage-providers.md` | Affordance inventory for the ManageProviders surface — current default header, list of provider rows that route to per-provider config | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
-| doc02.02.02.13 | `02-interaction/02-screens/13-provider-config.md` | Affordance inventory for the ProviderConfig surface — per-provider setup parameterized by provider-context, key entry for BYOK providers | design, interaction, screens | doc02.02.01, doc01.03, doc03.04 | — | inventory.json |
+| doc02.02.02.13 | `02-interaction/02-screens/13-provider-config.md` | Affordance inventory for the ProviderConfig surface — per-provider setup parameterized by provider-context, key entry for BYOK providers | design, interaction, screens | doc02.02.01, doc01.03, doc03.02.02 | — | inventory.json |
 
 ## 03-system — System
 
@@ -86,11 +86,17 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc03.00 | `00-index.md` | How RTP stores, reads, syncs, and wires itself together below and around the UI — the bridge from concepts to code | system, index | — | — | — |
-| doc03.01 | `01-store-model.md` | Two-store persistence: local SQLCipher DB + sync replica; table schema, local-first write path, memoized overview projection, op-log | system, storage, sqlcipher, sync, schema | doc01.03, doc02.01 | doc03.02, doc03.05 | schema.sql |
-| doc03.02 | `02-data-interfaces.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | doc01.04.03, doc03.03, doc03.04, doc03.05 | — |
+| doc03.01 | `01-store-model.md` | Two-store persistence: local SQLCipher DB + sync replica; table schema, local-first write path, memoized overview projection, op-log | system, storage, sqlcipher, sync, schema | doc01.03, doc02.01 | doc03.02.00, doc03.02.01 | schema.sql |
 | doc03.03 | `03-navigation-wiring.md` | How the platform-agnostic navigation statechart becomes a Compose Multiplatform NavHost — type-safe routes, back stack, per-route ViewModel scoping | system, navigation, cmp, wiring | doc02.02.01, doc03.02 | — | — |
-| doc03.04 | `04-location-providers.md` | The LocationProvider seam: osm default backed by Photon + Nominatim endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | doc02.02.02.13 | — |
-| doc03.05 | `05-location-repository.md` | The LocationRepository interface: identity lookup, upsert, merge — the persistence-shaped contract screens consume for Locations | system, interfaces, repository, data, contract, location | doc01.03, doc03.01, doc03.02 | — | — |
+
+### Data Interfaces
+
+| Ref | File | Summary | Tags | Deps | Refs | Attachments |
+|-----|------|---------|------|------|------|-------------|
+
+| doc03.02.00 | `02-data-interfaces/00-index.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | — | — |
+| doc03.02.01 | `02-data-interfaces/01-location-repository.md` | The LocationRepository interface: identity lookup, upsert, merge — the persistence-shaped contract screens consume for Locations | system, interfaces, repository, data, contract, location | doc01.03, doc03.01, doc03.02 | — | — |
+| doc03.02.02 | `02-data-interfaces/02-location-providers.md` | The LocationProvider seam: osm default backed by Photon + Nominatim endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | doc02.02.02.13 | — |
 
 ## Tag Index
 
@@ -105,33 +111,33 @@ Quick lookup for file-path→doc mapping:
 | `code-map` | doc01.04.03 |
 | `composition` | doc02.04 |
 | `concepts` | doc01.03 |
-| `contract` | doc03.02, doc03.05 |
+| `contract` | doc03.02.00, doc03.02.01 |
 | `conventions` | doc00.03 |
 | `coverage` | doc01.04.02 |
-| `data` | doc03.02, doc03.05 |
+| `data` | doc03.02.00, doc03.02.01 |
 | `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.03, doc02.04 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
 | `index` | doc00.00, doc01.00, doc02.02.00, doc02.02.02.00, doc03.00 |
 | `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.04 |
-| `interfaces` | doc03.02, doc03.05 |
-| `licensing` | doc03.04 |
-| `location` | doc03.04, doc03.05 |
+| `interfaces` | doc03.02.00, doc03.02.01 |
+| `licensing` | doc03.02.02 |
+| `location` | doc03.02.01, doc03.02.02 |
 | `luminous` | doc01.04.03 |
 | `maintenance` | doc00.02 |
 | `maplibre` | doc02.01 |
 | `meta` | doc00.00, doc00.01 |
 | `method` | doc01.04.00, doc01.04.01, doc01.04.03 |
 | `navigation` | doc02.02.01, doc03.03 |
-| `odbl` | doc03.04 |
-| `osm` | doc03.04 |
+| `odbl` | doc03.02.02 |
+| `osm` | doc03.02.02 |
 | `patterns` | doc01.05 |
 | `philosophy` | doc00.02, doc01.04.00, doc01.04.01 |
 | `pipeline` | doc01.04.03 |
 | `process` | doc01.04.00, doc01.04.01, doc01.04.02 |
 | `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04.00, doc01.04.01, doc01.04.02, doc01.05 |
-| `providers` | doc03.04 |
+| `providers` | doc03.02.02 |
 | `references` | doc01.05 |
-| `repository` | doc03.02, doc03.05 |
+| `repository` | doc03.02.00, doc03.02.01 |
 | `research` | doc01.01, doc01.05 |
 | `retrieval` | doc00.04 |
 | `rules` | doc02.04 |
@@ -143,7 +149,7 @@ Quick lookup for file-path→doc mapping:
 | `storage` | doc03.01 |
 | `styling` | doc02.03 |
 | `sync` | doc03.01 |
-| `system` | doc03.00, doc03.01, doc03.02, doc03.03, doc03.04, doc03.05 |
+| `system` | doc03.00, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02, doc03.03 |
 | `theme` | doc02.03 |
 | `theory` | doc00.01 |
 | `tokens` | doc02.03 |

@@ -9,7 +9,7 @@ deps: [doc01.03, doc03.02]
 
 The data-layer realisation of the Location Provider concept (doc01.03 §5). The Location Provider concept covers what the *user* does — configure providers, switch the default. This doc covers the `LocationProvider` seam: the implementation contract, the default `osm` provider, the caching rules each provider type imposes, and the licensing obligations that follow Locations into exported bundles.
 
-The `LocationProvider` seam is one of the swappable external seams named in doc03.02 — it plays no part in a review submission and sits outside the repository contract. A repository persists a `Location`; a `LocationProvider` is what produced that `Location` in the first place.
+`LocationProvider` is the pluggable search backend that `LocationRepository` ([[01-location-repository]]) composes. Screens consume the repository, not the provider — `LocationProvider` produces `LocationCandidate`s; the repository persists adopted ones as `Location`s. The provider is the swappable axis (`osm` default, `google` BYOK); the repository is the stable contract above it.
 
 ## The seam
 

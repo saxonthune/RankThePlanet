@@ -9,7 +9,7 @@ deps: [doc01.03, doc03.01, doc03.02]
 
 The persistence-shaped contract for the Location concept (doc01.03 §2). One of the repositories enumerated in doc03.02's data-layer interface inventory; this doc unfolds its surface in full.
 
-Screens that touch Locations consume `LocationRepository`, not the store (doc03.01) and not `LocationProvider` (doc03.04). The repository is the seam UI mockups and ViewModels build against.
+Screens that touch Locations consume `LocationRepository`, not the store (doc03.01) and not `LocationProvider` (doc03.02.02). The repository is the seam UI mockups and ViewModels build against.
 
 ## The interface
 
@@ -34,7 +34,7 @@ interface LocationRepository {
 }
 ```
 
-The three methods cover the Location concept's persistence actions exactly — search and resolution stay on `LocationProvider` (doc03.04), which produces `LocationCandidate`s the user adopts into Locations via `upsert`.
+The three methods cover the Location concept's persistence actions exactly — search and resolution stay on `LocationProvider` (doc03.02.02), which produces `LocationCandidate`s the user adopts into Locations via `upsert`.
 
 ## How it composes with the provider
 

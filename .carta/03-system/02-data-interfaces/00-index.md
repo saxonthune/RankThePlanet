@@ -40,10 +40,7 @@ EntryRepository
     observe(entryId): Flow<Entry>
     editReview(entryId, data): Result<Entry>
 
-LocationRepository
-    findByIdentity(sourceType, sourceId): Location?
-    upsert(location): Result<Location>
-    merge(keep, drop): Result<Location>
+LocationRepository — see [[01-location-repository]]
 
 TemplateRepository
     observe(collectionId): Flow<ReviewTemplate>
@@ -57,7 +54,9 @@ Method names track concept actions so the future `coverage.mjs` (doc02.02.01) ke
 
 | Interface | Responsibility | First implementation |
 |---|---|---|
-| `CollectionRepository` / `EntryRepository` / `LocationRepository` ([[05-location-repository]]) / `TemplateRepository` | typed, concept-shaped read + write API | SQLCipher-backed |
+| `CollectionRepository` / `EntryRepository` / `TemplateRepository` | typed, concept-shaped read + write API | SQLCipher-backed |
+| [[01-location-repository]] | identity-shaped Location persistence: `findByIdentity`, `upsert`, `merge` | SQLCipher-backed |
+| [[02-location-providers]] | pluggable Location search: `osm` default, BYOK `google`; composed by `LocationRepository` | `OsmLocationProvider` |
 | `OverviewProjection` | read the memoized overview cache: `loadOverview()`, `observeOverview()` | `PassthroughOverviewProjection` — queries the local store on demand |
 | `ProjectionMaintainer` | keep the overview cache fresh from the mutation stream | no-op (passthrough needs none) |
 | `OpLog` | append-only op store; query `since(hash)`, `all()` | table in the local store |
@@ -69,7 +68,7 @@ Method names track concept actions so the future `coverage.mjs` (doc02.02.01) ke
 
 The `Op` sealed type is internal to the data layer — repositories construct ops; nothing above the repository sees them. Repository implementations expose a `SharedFlow` of applied mutations that `ProjectionMaintainer` and `SyncEngine` subscribe to; that flow is the only coupling between writing and its downstream consumers.
 
-The swappable *external* seams play no part in a review submission. `LocationProvider` is specified in doc03.04; the rest — `ImportSource`, `ExportFormat`, `TileSource`, `FieldType` — are catalogued as work items demand.
+External pluggable backends — `ImportSource`, `ExportFormat`, `TileSource`, `FieldType` — sit below the repository line and are composed in by the repository that needs them, the way `LocationRepository` composes `LocationProvider` ([[02-location-providers]]). Each unfolds into its own sibling when a work item demands it.
 
 ## What UI-mockup sessions consume
 

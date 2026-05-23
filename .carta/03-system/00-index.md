@@ -20,6 +20,6 @@ deps: []
 - **doc03.01 Store Model** — the two stores (local SQLCipher DB + sync replica), the table schema, the local-first write path, the memoized overview projection, and the op-log.
 - **doc03.02 Data Interfaces** — domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine.
 - **doc03.03 Navigation Wiring** — how the platform-agnostic navigation statechart (doc02.02.01) becomes a Compose Multiplatform `NavHost`: type-safe routes, back stack, per-route ViewModel scoping.
-- **doc03.04 Location Providers** — the `LocationProvider` seam: the `osm` default backed by Photon + Nominatim, BYOK providers, per-provider caching rules, ODbL export obligations.
+- **doc03.02.02 Location Providers** — the `LocationProvider` seam: the `osm` default backed by Photon + Nominatim, BYOK providers, per-provider caching rules, ODbL export obligations.
 
 The remaining swappable external seams — `SyncTarget`, `TileSource`, `ImportSource`, … — get their own docs as provider-focused work items demand.

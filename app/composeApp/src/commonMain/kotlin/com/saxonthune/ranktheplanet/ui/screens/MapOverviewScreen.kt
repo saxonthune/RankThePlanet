@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -23,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -46,11 +44,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
@@ -61,94 +59,14 @@ import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.ui.RtpErrorState
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
-import org.maplibre.compose.expressions.dsl.any
-import org.maplibre.compose.expressions.dsl.asString
-import org.maplibre.compose.expressions.dsl.case
-import org.maplibre.compose.expressions.dsl.const
-import org.maplibre.compose.expressions.dsl.convertToColor
-import org.maplibre.compose.expressions.dsl.eq
-import org.maplibre.compose.expressions.dsl.feature
-import org.maplibre.compose.expressions.dsl.format
-import org.maplibre.compose.expressions.dsl.image
-import org.maplibre.compose.expressions.dsl.offset
-import org.maplibre.compose.expressions.dsl.span
-import org.maplibre.compose.expressions.dsl.switch
-import org.maplibre.compose.expressions.value.SymbolAnchor
-import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.OrnamentOptions
-import org.jetbrains.compose.resources.painterResource
-import ranktheplanet.composeapp.generated.resources.Res
-import ranktheplanet.composeapp.generated.resources.pin_body
-import ranktheplanet.composeapp.generated.resources.pin_mark_dot
-import ranktheplanet.composeapp.generated.resources.pin_mark_plus
-import org.maplibre.compose.sources.GeoJsonData
-import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.compose.util.ClickResult
 import org.maplibre.spatialk.geojson.Position
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.backhandler.BackHandler
-import kotlin.math.abs
-import kotlin.math.roundToLong
-
-private fun format3dp(value: Double): String {
-    val scaled = (value * 1000.0).roundToLong()
-    val whole = scaled / 1000
-    val frac = (scaled % 1000).let { if (it < 0) -it else it }
-    val fracStr = frac.toString().padStart(3, '0')
-    return "$whole.$fracStr"
-}
-
-internal fun formatLatLng(lat: Double, lng: Double): String {
-    val ns = if (lat >= 0) "N" else "S"
-    val ew = if (lng >= 0) "E" else "W"
-    // three decimals is ~100m precision; readable for a peek card
-    return "${format3dp(abs(lat))}°$ns, ${format3dp(abs(lng))}°$ew"
-}
-
-private fun escapeJsonString(value: String): String {
-    val sb = StringBuilder(value.length + 2)
-    for (c in value) {
-        when (c) {
-            '\\' -> sb.append("\\\\")
-            '"' -> sb.append("\\\"")
-            '\n' -> sb.append("\\n")
-            '\r' -> sb.append("\\r")
-            '\t' -> sb.append("\\t")
-            else -> if (c.code < 0x20) {
-                sb.append("\\u")
-                sb.append(c.code.toString(16).padStart(4, '0'))
-            } else {
-                sb.append(c)
-            }
-        }
-    }
-    return sb.toString()
-}
-
-
-private fun PinKind.token(): String = when (this) {
-    PinKind.Unvisited -> "unvisited"
-    PinKind.Reviewed -> "reviewed"
-    PinKind.Multi -> "multi"
-    PinKind.MultiUnvisited -> "multi-unvisited"
-}
-
-private fun buildPinsGeoJson(pins: List<PinUi>): String {
-    val features = pins.joinToString(",") { pin ->
-        val name = escapeJsonString(pin.locationName)
-        val color = escapeJsonString(pin.colorHex)
-        val kind = pin.kind.token()
-        """{"type":"Feature","geometry":{"type":"Point","coordinates":[${pin.lng},${pin.lat}]},"properties":{"entryId":"${pin.entryId.value}","name":"$name","color":"$color","kind":"$kind"}}"""
-    }
-    return """{"type":"FeatureCollection","features":[$features]}"""
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -178,7 +96,7 @@ fun MapOverviewScreen(
     var searchExpanded by remember { mutableStateOf(false) }
 
     // Capture surface color here — must not be read inside the MaplibreMap content lambda.
-    val pinStroke = MaterialTheme.colorScheme.surface
+    val pinLabelHalo = MaterialTheme.colorScheme.surface
 
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
@@ -308,80 +226,10 @@ fun MapOverviewScreen(
                         ClickResult.Consume
                     },
                 ) {
-                    val geojson = buildPinsGeoJson(state.pins)
-                    val source = rememberGeoJsonSource(
-                        data = GeoJsonData.JsonString(geojson),
-                    )
-                    val bodyImage = image(painterResource(Res.drawable.pin_body), drawAsSdf = true)
-                    val dotImage = image(painterResource(Res.drawable.pin_mark_dot), drawAsSdf = true)
-                    val plusImage = image(painterResource(Res.drawable.pin_mark_plus), drawAsSdf = true)
-                    val grey = Color(0xFF9AA0A6)
-                    val offWhite = Color(0xFFF5F0E8)
-                    val kindExpr = feature["kind"].asString()
-                    val colorExpr = feature["color"].convertToColor(const(grey))
-
-                    // Layer 1: teardrop body — all pins. Color depends on kind.
-                    SymbolLayer(
-                        id = "pins-body",
-                        source = source,
-                        iconImage = bodyImage,
-                        iconColor = switch(
-                            kindExpr,
-                            case("multi", const(offWhite)),
-                            case("multi-unvisited", const(grey)),
-                            fallback = colorExpr,
-                        ),
-                        iconSize = const(1.0f),
-                        iconAllowOverlap = const(true),
-                        iconAnchor = const(SymbolAnchor.Bottom),
-                        onClick = { features ->
-                            val entryId = features.firstOrNull()
-                                ?.properties
-                                ?.get("entryId")
-                                ?.jsonPrimitive
-                                ?.contentOrNull
-                            if (entryId != null) {
-                                vm.selectPin(EntryId(entryId))
-                                ClickResult.Consume
-                            } else {
-                                ClickResult.Pass
-                            }
-                        },
-                    )
-                    // Layer 2: centered mark (dot/plus) for reviewed and multi kinds. Unvisited is intentionally empty.
-                    SymbolLayer(
-                        id = "pins-mark",
-                        source = source,
-                        filter = any(
-                            kindExpr eq const("reviewed"),
-                            kindExpr eq const("multi"),
-                            kindExpr eq const("multi-unvisited"),
-                        ),
-                        iconImage = switch(
-                            kindExpr,
-                            case("reviewed", dotImage),
-                            case("multi", plusImage),
-                            case("multi-unvisited", plusImage),
-                            fallback = dotImage,
-                        ),
-                        iconColor = const(Color.Black),
-                        iconSize = const(1.0f),
-                        iconAllowOverlap = const(true),
-                        iconAnchor = const(SymbolAnchor.Bottom),
-                    )
-                    // Labels for all pins.
-                    SymbolLayer(
-                        id = "pin-labels",
-                        source = source,
-                        minZoom = 12f,
-                        textField = format(span(feature["name"].asString())),
-                        textSize = const(12.sp),
-                        textOffset = offset(0f.em, 1.2f.em),
-                        textAnchor = const(SymbolAnchor.Top),
-                        textOptional = const(true),
-                        iconAllowOverlap = const(true),
-                        textHaloColor = const(pinStroke),
-                        textHaloWidth = const(1.dp),
+                    PinLayers(
+                        pins = state.pins,
+                        labelHaloColor = pinLabelHalo,
+                        onPinClick = { vm.selectPin(it) },
                     )
                 }
                 if (state.error != null) {
@@ -413,73 +261,46 @@ fun MapOverviewScreen(
         scaffoldContent()
     }
 
-    if (state.pinSheet !is PinSheet.None) {
-        ModalBottomSheet(
-            onDismissRequest = { vm.dismissSheet() },
-            sheetState = sheetState,
-            dragHandle = { BottomSheetDefaults.DragHandle() },
-        ) {
-            when (val sheet = state.pinSheet) {
-                is PinSheet.Peek -> LocationDetailPeek(
-                    peek = sheet,
-                    onPickEntry = { vm.openEntryFromPeek(it) },
-                    onAddEntry = { vm.addEntryAtPeekLocation() },
-                )
-                is PinSheet.Entry -> EntryDrawerSheet(
-                    entry = sheet.entry,
-                    onTapLocation = { vm.peekLocationFromEntry() },
-                    onViewCollection = { collectionId ->
-                        vm.dismissSheet()
-                        onViewCollection(collectionId)
-                    },
-                    onEditReview = { entryId ->
-                        vm.dismissSheet()
-                        onEditReview(entryId)
-                    },
-                )
-                is PinSheet.None -> {}
-            }
-        }
-    }
+    PinSheetHost(
+        sheet = state.pinSheet,
+        sheetState = sheetState,
+        onDismiss = { vm.dismissSheet() },
+        onPickEntryFromPeek = { vm.openEntryFromPeek(it) },
+        onAddEntryAtPeek = { vm.addEntryAtPeekLocation() },
+        onTapEntryLocation = { vm.peekLocationFromEntry() },
+        onViewCollection = { collectionId ->
+            vm.dismissSheet()
+            onViewCollection(collectionId)
+        },
+        onEditReview = { entryId ->
+            vm.dismissSheet()
+            onEditReview(entryId)
+        },
+    )
 
     val currentDraft = state.draft
     if (currentDraft is LocationDraftSheet.Open) {
-        val draftSheetState = rememberModalBottomSheetState()
-        ModalBottomSheet(
-            onDismissRequest = { vm.dismissDraft() },
-            sheetState = draftSheetState,
-            dragHandle = { BottomSheetDefaults.DragHandle() },
-        ) {
-            when (currentDraft.phase) {
-                DraftPhase.Draft -> LocationDraftSheet(
-                    draft = currentDraft,
-                    mode = mode,
-                    nearbyCandidates = state.nearbyCandidates,
-                    isResolvingNearby = state.isResolvingNearby,
-                    onDismiss = { vm.dismissDraft() },
-                    onCancelAdd = {
-                        vm.dismissDraft()
-                        onCancelAdd()
-                    },
-                    onAddToCollection = { vm.openAddToCollection() },
-                    onFindNearby = { vm.findNearby() },
-                    onAdoptCandidate = { vm.adoptCandidate(it) },
-                    onKeepCoordinates = { vm.keepCoordinates() },
-                )
-                DraftPhase.AddToCollection -> AddLocationToCollectionSheet(
-                    draft = currentDraft,
-                    collections = state.collectionPicks,
-                    preSelectedCollectionId = (mode as? MapMode.AddingToCollection)?.collectionId,
-                    onBack = { vm.backToDraft() },
-                    onNewCollection = {
-                        vm.dismissDraft()
-                        onNewCollectionForDraft()
-                    },
-                    onPickCollection = { collectionId ->
-                        vm.pickCollectionForDraft(collectionId)
-                    },
-                )
-            }
-        }
+        LocationDraftSheetHost(
+            draft = currentDraft,
+            mode = mode,
+            nearbyCandidates = state.nearbyCandidates,
+            isResolvingNearby = state.isResolvingNearby,
+            collectionPicks = state.collectionPicks,
+            onDismiss = { vm.dismissDraft() },
+            onCancelAdd = {
+                vm.dismissDraft()
+                onCancelAdd()
+            },
+            onOpenAddToCollection = { vm.openAddToCollection() },
+            onFindNearby = { vm.findNearby() },
+            onAdoptCandidate = { vm.adoptCandidate(it) },
+            onKeepCoordinates = { vm.keepCoordinates() },
+            onBackToDraft = { vm.backToDraft() },
+            onNewCollection = {
+                vm.dismissDraft()
+                onNewCollectionForDraft()
+            },
+            onPickCollection = { vm.pickCollectionForDraft(it) },
+        )
     }
 }

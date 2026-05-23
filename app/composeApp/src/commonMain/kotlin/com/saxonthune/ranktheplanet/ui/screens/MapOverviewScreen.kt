@@ -65,14 +65,15 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
+import org.maplibre.compose.expressions.dsl.any
 import org.maplibre.compose.expressions.dsl.asString
 import org.maplibre.compose.expressions.dsl.case
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.convertToColor
+import org.maplibre.compose.expressions.dsl.eq
 import org.maplibre.compose.expressions.dsl.feature
 import org.maplibre.compose.expressions.dsl.format
 import org.maplibre.compose.expressions.dsl.image
-import org.maplibre.compose.expressions.dsl.nil
 import org.maplibre.compose.expressions.dsl.offset
 import org.maplibre.compose.expressions.dsl.span
 import org.maplibre.compose.expressions.dsl.switch
@@ -323,11 +324,8 @@ fun MapOverviewScreen(
                     SymbolLayer(
                         id = "pins-halo",
                         source = source,
-                        iconImage = switch(
-                            kindExpr,
-                            case("unvisited", bodyImage),
-                            fallback = nil(),
-                        ),
+                        filter = kindExpr eq const("unvisited"),
+                        iconImage = bodyImage,
                         iconColor = colorExpr,
                         iconSize = const(1.15f),
                         iconAllowOverlap = const(true),
@@ -365,12 +363,17 @@ fun MapOverviewScreen(
                     SymbolLayer(
                         id = "pins-mark",
                         source = source,
+                        filter = any(
+                            kindExpr eq const("reviewed"),
+                            kindExpr eq const("multi"),
+                            kindExpr eq const("multi-unvisited"),
+                        ),
                         iconImage = switch(
                             kindExpr,
                             case("reviewed", dotImage),
                             case("multi", plusImage),
                             case("multi-unvisited", plusImage),
-                            fallback = nil(),
+                            fallback = dotImage,
                         ),
                         iconColor = const(Color.Black),
                         iconSize = const(1.0f),

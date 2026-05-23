@@ -156,6 +156,8 @@ class MapOverviewViewModel(
     private val _latestEntries = MutableStateFlow<List<Entry>>(emptyList())
     private val _latestTemplates = MutableStateFlow<List<ReviewTemplate>>(emptyList())
 
+    val pinController = PinRenderController()
+
     init {
         loadData()
         viewModelScope.launch {
@@ -163,6 +165,9 @@ class MapOverviewViewModel(
                 lastQuery.value?.takeIf { it.isNotBlank() }?.let { search(it) }
                 if (_draft.value is LocationDraftSheet.Open) findNearby()
             }
+        }
+        viewModelScope.launch {
+            derivedBase.collect { pinController.setPins(it.pins) }
         }
     }
 

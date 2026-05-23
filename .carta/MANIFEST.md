@@ -48,13 +48,21 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.04.02 | `04-development-philosophy/02-verification-system.md` | How carta docs declare machine-checkable verifications; the verify.mjs harness and the screen-inventory check against the statechart | product, verification, coverage, process, tooling | doc02.02.01, doc02.02.02.00, doc00.03 | — | — |
 | doc01.04.03 | `04-development-philosophy/03-code-map-pipeline.md` | Pipelines that derive agent-consumable artifacts from Kotlin source: a compressed code map and a Luminous graph of the interface seams | method, tooling, pipeline, code-map, luminous | doc01.04.01, doc03.02 | — | — |
 
+### Research Sessions
+
+| Ref | File | Summary | Tags | Deps | Refs | Attachments |
+|-----|------|---------|------|------|------|-------------|
+
+| doc01.06.00 | `06-research-sessions/00-index.md` | Investigation logs that turn into reusable context — symptoms, diagnostic techniques, root causes, and the resulting fixes | research, debugging, index | — | — | — |
+| doc01.06.01 | `06-research-sessions/01-ios-map-tap-latency.md` | Why a pin tap on iOS lags ~300ms before the sheet animates, how the gesture-recognizer cascade is diagnosed, and the runtime patch on MLNMapView that removes the delay | research, ios, maplibre, gesture, latency, debugging | doc02.01, doc03.04 | — | — |
+
 ## 02-design — Design
 
 | Ref | File | Summary | Tags | Deps | Refs | Attachments |
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.00 | `00-index.md` |  |  | — | — | — |
-| doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc01.05, doc02.03, doc03.01, doc03.04 | — |
+| doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc01.05, doc01.06.01, doc02.03, doc03.01, doc03.04 | — |
 | doc02.03 | `03-theme-tokens.md` | Three-tier design token system (primitive, semantic, provider) for the CMP theme: RtpColors, RtpSpacing, RtpTypography and the RtpTheme accessor | design, theme, tokens, styling, cmp | doc02.01 | — | — |
 | doc02.04 | `04-surface-composition-rules.md` | Two design rules for how surfaces compose — same-surface-different-mode, overlay-surfaces-are-not-routes | design, interaction, composition, rules | doc02.02.01, doc01.05 | — | — |
 
@@ -89,7 +97,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc03.00 | `00-index.md` | How RTP stores, reads, syncs, and wires itself together below and around the UI — the bridge from concepts to code | system, index | — | — | — |
 | doc03.01 | `01-store-model.md` | Two-store persistence: local SQLCipher DB + sync replica; table schema, local-first write path, memoized overview projection, op-log | system, storage, sqlcipher, sync, schema | doc01.03, doc02.01 | doc03.02.00, doc03.02.01 | schema.sql |
 | doc03.03 | `03-navigation-wiring.md` | How the platform-agnostic navigation statechart becomes a Compose Multiplatform NavHost — type-safe routes, back stack, per-route ViewModel scoping | system, navigation, cmp, wiring | doc02.02.01, doc03.02 | — | — |
-| doc03.04 | `04-map-rendering.md` | How pins reach the map: maplibre-compose source/layer split, why pins use a pull-based ComputedSource, and the invalidation contract | system, maplibre, rendering, source | doc02.01 | — | — |
+| doc03.04 | `04-map-rendering.md` | How pins reach the map: maplibre-compose source/layer split, why pins use a pull-based ComputedSource, and the invalidation contract | system, maplibre, rendering, source | doc02.01 | doc01.06.01 | — |
 
 ### Data Interfaces
 
@@ -117,17 +125,21 @@ Quick lookup for file-path→doc mapping:
 | `conventions` | doc00.03 |
 | `coverage` | doc01.04.02 |
 | `data` | doc03.02.00, doc03.02.01 |
+| `debugging` | doc01.06.00, doc01.06.01 |
 | `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.03, doc02.03, doc02.04 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
-| `index` | doc00.00, doc01.00, doc02.02.00, doc02.02.02.00, doc03.00 |
+| `gesture` | doc01.06.01 |
+| `index` | doc00.00, doc01.00, doc01.06.00, doc02.02.00, doc02.02.02.00, doc03.00 |
 | `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.03, doc02.04 |
 | `interfaces` | doc03.02.00, doc03.02.01 |
+| `ios` | doc01.06.01 |
 | `journeys` | doc02.02.03 |
+| `latency` | doc01.06.01 |
 | `licensing` | doc03.02.02 |
 | `location` | doc03.02.01, doc03.02.02 |
 | `luminous` | doc01.04.03 |
 | `maintenance` | doc00.02 |
-| `maplibre` | doc02.01, doc03.04 |
+| `maplibre` | doc01.06.01, doc02.01, doc03.04 |
 | `meta` | doc00.00, doc00.01 |
 | `method` | doc01.04.00, doc01.04.01, doc01.04.03 |
 | `navigation` | doc02.02.01, doc02.02.03, doc03.03 |
@@ -142,7 +154,7 @@ Quick lookup for file-path→doc mapping:
 | `references` | doc01.05 |
 | `rendering` | doc03.04 |
 | `repository` | doc03.02.00, doc03.02.01 |
-| `research` | doc01.01, doc01.05 |
+| `research` | doc01.01, doc01.05, doc01.06.00, doc01.06.01 |
 | `retrieval` | doc00.04 |
 | `rules` | doc02.04 |
 | `schema` | doc03.01 |

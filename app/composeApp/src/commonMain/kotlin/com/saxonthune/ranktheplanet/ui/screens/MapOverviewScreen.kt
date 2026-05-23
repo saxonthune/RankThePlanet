@@ -58,6 +58,8 @@ import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.ui.RtpErrorState
+import com.saxonthune.ranktheplanet.util.tuneMapForFastTaps
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
@@ -106,6 +108,15 @@ fun MapOverviewScreen(
     )
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Strip iOS map gesture recognizers that delay single-tap recognition by ~300ms.
+    // The MLNMapView is created lazily, so retry briefly until it shows up in the view tree.
+    LaunchedEffect(Unit) {
+        repeat(40) {
+            if (tuneMapForFastTaps()) return@LaunchedEffect
+            delay(50)
+        }
+    }
 
     val pending = state.pendingReview
     if (pending is PendingReviewPrompt.Pending) {
@@ -219,15 +230,16 @@ fun MapOverviewScreen(
                 MaplibreMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraState = cameraState,
-                    baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/liberty"),
+                    baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/bright"),
                     options = MapOptions(ornamentOptions = OrnamentOptions.OnlyLogo),
+                    onMapLoadFinished = { vm.pinController.forceRedraw() },
                     onMapLongClick = { position, _ ->
                         vm.startDraft(lat = position.latitude, lng = position.longitude)
                         ClickResult.Consume
                     },
                 ) {
                     PinLayers(
-                        pins = state.pins,
+                        controller = vm.pinController,
                         labelHaloColor = pinLabelHalo,
                         onPinClick = { vm.selectPin(it) },
                     )

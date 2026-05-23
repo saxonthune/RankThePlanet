@@ -66,18 +66,26 @@ import kotlinx.serialization.json.jsonPrimitive
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.asString
+import org.maplibre.compose.expressions.dsl.case
 import org.maplibre.compose.expressions.dsl.const
+import org.maplibre.compose.expressions.dsl.convertToColor
 import org.maplibre.compose.expressions.dsl.feature
 import org.maplibre.compose.expressions.dsl.format
+import org.maplibre.compose.expressions.dsl.image
+import org.maplibre.compose.expressions.dsl.nil
 import org.maplibre.compose.expressions.dsl.offset
 import org.maplibre.compose.expressions.dsl.span
+import org.maplibre.compose.expressions.dsl.switch
 import org.maplibre.compose.expressions.value.SymbolAnchor
-import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.OrnamentOptions
-import androidx.compose.runtime.key
+import org.jetbrains.compose.resources.painterResource
+import ranktheplanet.composeapp.generated.resources.Res
+import ranktheplanet.composeapp.generated.resources.pin_body
+import ranktheplanet.composeapp.generated.resources.pin_mark_dot
+import ranktheplanet.composeapp.generated.resources.pin_mark_plus
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
@@ -124,10 +132,19 @@ private fun escapeJsonString(value: String): String {
 }
 
 
+private fun PinKind.token(): String = when (this) {
+    PinKind.Unvisited -> "unvisited"
+    PinKind.Reviewed -> "reviewed"
+    PinKind.Multi -> "multi"
+    PinKind.MultiUnvisited -> "multi-unvisited"
+}
+
 private fun buildPinsGeoJson(pins: List<PinUi>): String {
     val features = pins.joinToString(",") { pin ->
         val name = escapeJsonString(pin.locationName)
-        """{"type":"Feature","geometry":{"type":"Point","coordinates":[${pin.lng},${pin.lat}]},"properties":{"entryId":"${pin.entryId.value}","name":"$name"}}"""
+        val color = escapeJsonString(pin.colorHex)
+        val kind = pin.kind.token()
+        """{"type":"Feature","geometry":{"type":"Point","coordinates":[${pin.lng},${pin.lat}]},"properties":{"entryId":"${pin.entryId.value}","name":"$name","color":"$color","kind":"$kind"}}"""
     }
     return """{"type":"FeatureCollection","features":[$features]}"""
 }
@@ -291,49 +308,90 @@ fun MapOverviewScreen(
                         ClickResult.Consume
                     },
                 ) {
-                    state.collectionRows.forEach { col ->
-                        key(col.id.value) {
-                            val colPins = state.pins.filter { it.collectionId == col.id }
-                            val geojson = buildPinsGeoJson(colPins)
-                            val source = rememberGeoJsonSource(
-                                data = GeoJsonData.JsonString(geojson),
-                            )
-                            CircleLayer(
-                                id = "pins-${col.id.value}",
-                                source = source,
-                                radius = const(8.dp),
-                                color = const(col.color),
-                                strokeWidth = const(2.dp),
-                                strokeColor = const(pinStroke),
-                                onClick = { features ->
-                                    val entryId = features.firstOrNull()
-                                        ?.properties
-                                        ?.get("entryId")
-                                        ?.jsonPrimitive
-                                        ?.contentOrNull
-                                    if (entryId != null) {
-                                        vm.selectPin(EntryId(entryId))
-                                        ClickResult.Consume
-                                    } else {
-                                        ClickResult.Pass
-                                    }
-                                },
-                            )
-                            SymbolLayer(
-                                id = "pin-labels-${col.id.value}",
-                                source = source,
-                                minZoom = 12f,
-                                textField = format(span(feature["name"].asString())),
-                                textSize = const(12.sp),
-                                textOffset = offset(0f.em, 1.2f.em),
-                                textAnchor = const(SymbolAnchor.Top),
-                                textOptional = const(true),
-                                iconAllowOverlap = const(true),
-                                textHaloColor = const(pinStroke),
-                                textHaloWidth = const(1.dp),
-                            )
-                        }
-                    }
+                    val geojson = buildPinsGeoJson(state.pins)
+                    val source = rememberGeoJsonSource(
+                        data = GeoJsonData.JsonString(geojson),
+                    )
+                    val bodyImage = image(painterResource(Res.drawable.pin_body), drawAsSdf = true)
+                    val dotImage = image(painterResource(Res.drawable.pin_mark_dot), drawAsSdf = true)
+                    val plusImage = image(painterResource(Res.drawable.pin_mark_plus), drawAsSdf = true)
+                    val grey = Color(0xFF9AA0A6)
+                    val offWhite = Color(0xFFF5F0E8)
+                    val kindExpr = feature["kind"].asString()
+                    val colorExpr = feature["color"].convertToColor(const(grey))
+
+                    // Layer 1: colored outline halo for unvisited (slightly larger body, behind grey body).
+                    SymbolLayer(
+                        id = "pins-halo",
+                        source = source,
+                        iconImage = switch(
+                            kindExpr,
+                            case("unvisited", bodyImage),
+                            fallback = nil(),
+                        ),
+                        iconColor = colorExpr,
+                        iconSize = const(1.15f),
+                        iconAllowOverlap = const(true),
+                        iconAnchor = const(SymbolAnchor.Bottom),
+                    )
+                    // Layer 2: teardrop body — all pins. Color depends on kind.
+                    SymbolLayer(
+                        id = "pins-body",
+                        source = source,
+                        iconImage = bodyImage,
+                        iconColor = switch(
+                            kindExpr,
+                            case("reviewed", colorExpr),
+                            case("multi", const(offWhite)),
+                            fallback = const(grey),
+                        ),
+                        iconSize = const(1.0f),
+                        iconAllowOverlap = const(true),
+                        iconAnchor = const(SymbolAnchor.Bottom),
+                        onClick = { features ->
+                            val entryId = features.firstOrNull()
+                                ?.properties
+                                ?.get("entryId")
+                                ?.jsonPrimitive
+                                ?.contentOrNull
+                            if (entryId != null) {
+                                vm.selectPin(EntryId(entryId))
+                                ClickResult.Consume
+                            } else {
+                                ClickResult.Pass
+                            }
+                        },
+                    )
+                    // Layer 3: centered mark (dot/plus) for reviewed and multi kinds.
+                    SymbolLayer(
+                        id = "pins-mark",
+                        source = source,
+                        iconImage = switch(
+                            kindExpr,
+                            case("reviewed", dotImage),
+                            case("multi", plusImage),
+                            case("multi-unvisited", plusImage),
+                            fallback = nil(),
+                        ),
+                        iconColor = const(Color.Black),
+                        iconSize = const(1.0f),
+                        iconAllowOverlap = const(true),
+                        iconAnchor = const(SymbolAnchor.Bottom),
+                    )
+                    // Labels for all pins.
+                    SymbolLayer(
+                        id = "pin-labels",
+                        source = source,
+                        minZoom = 12f,
+                        textField = format(span(feature["name"].asString())),
+                        textSize = const(12.sp),
+                        textOffset = offset(0f.em, 1.2f.em),
+                        textAnchor = const(SymbolAnchor.Top),
+                        textOptional = const(true),
+                        iconAllowOverlap = const(true),
+                        textHaloColor = const(pinStroke),
+                        textHaloWidth = const(1.dp),
+                    )
                 }
                 if (state.error != null) {
                     Surface(modifier = Modifier.fillMaxSize()) {

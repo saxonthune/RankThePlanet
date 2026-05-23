@@ -84,6 +84,8 @@ data class CollectionPickRowUi(
     val entryCount: Int,
 )
 
+enum class PinKind { Unvisited, Reviewed, Multi, MultiUnvisited }
+
 data class PinUi(
     val entryId: EntryId,
     val collectionId: CollectionId,
@@ -91,7 +93,9 @@ data class PinUi(
     val lat: Double,
     val lng: Double,
     val color: Color,
+    val colorHex: String,
     val visited: Boolean,
+    val kind: PinKind,
 )
 
 data class CollectionFilterRowUi(
@@ -226,10 +230,21 @@ class MapOverviewViewModel(
                 entryCount = entryCounts[col.id] ?: 0,
             )
         }.toImmutableList()
-        val pins = entryList
-            .filter { it.collectionId !in hidden }
+        val visibleEntries = entryList.filter { it.collectionId !in hidden }
+        val byLocation = visibleEntries.groupBy { it.location.id }
+        val pins = visibleEntries
             .mapNotNull { entry ->
                 val col = collectionMap[entry.collectionId] ?: return@mapNotNull null
+                val siblings = byLocation[entry.location.id].orEmpty()
+                val isMulti = siblings.size > 1
+                val anyReviewed = siblings.any { it.review != null }
+                val visited = entry.review != null
+                val kind = when {
+                    isMulti && anyReviewed -> PinKind.Multi
+                    isMulti -> PinKind.MultiUnvisited
+                    visited -> PinKind.Reviewed
+                    else -> PinKind.Unvisited
+                }
                 PinUi(
                     entryId = entry.id,
                     collectionId = entry.collectionId,
@@ -237,7 +252,9 @@ class MapOverviewViewModel(
                     lat = entry.location.coordinates.lat,
                     lng = entry.location.coordinates.lng,
                     color = parseAppearanceColor(col.appearance.color),
-                    visited = entry.review != null,
+                    colorHex = col.appearance.color,
+                    visited = visited,
+                    kind = kind,
                 )
             }.toImmutableList()
         DerivedBase(pins, collectionRows, collectionPicks)

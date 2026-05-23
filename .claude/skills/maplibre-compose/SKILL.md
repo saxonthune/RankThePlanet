@@ -107,6 +107,67 @@ Already covered in `kotlin-cmp` §11 but worth restating because it's the single
 
 When you add a property you want a layer to read, remember to JSON-escape it on the way in. There's no schema enforcement — a stray quote in a location name will break the whole source.
 
+### Custom pin icons (SDF + data-driven tint)
+
+Image registration in maplibre-compose is **implicit** — there is no `StyleImage`, `rememberStyleImage`, or `images = {}` slot on `MaplibreMap`. The `image(...)` DSL helper in `org.maplibre.compose.expressions.dsl` returns an `Expression<ImageValue>` that registers the bitmap with the style when a layer references it, and unregisters when the last reference drops. SDF tinting is opt-in per call.
+
+Imports:
+
+```kotlin
+import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.expressions.dsl.image
+import org.maplibre.compose.expressions.dsl.const
+import org.maplibre.compose.expressions.dsl.feature
+import org.maplibre.compose.expressions.dsl.switch
+import org.maplibre.compose.expressions.dsl.case
+import org.maplibre.compose.expressions.dsl.convertToColor
+import org.maplibre.compose.expressions.value.SymbolAnchor
+import org.jetbrains.compose.resources.painterResource
+```
+
+`image()` overloads (the SDF-relevant ones):
+- `image(bitmap: ImageBitmap, isSdf: Boolean = false, resizeOptions: …? = null)`
+- `image(painter: Painter, size: DpSize? = null, drawAsSdf: Boolean = false, resizeOptions: …? = null)`
+
+`SymbolLayer` icon parameters (exact types):
+- `iconImage: Expression<ImageValue> = nil()`
+- `iconColor: Expression<ColorValue> = const(Color.Black)` — **only tints when the image was registered SDF**; non-SDF images render their own pixels untouched
+- `iconSize: Expression<FloatValue> = const(1f)`
+- `iconAllowOverlap: Expression<BooleanValue> = const(false)`
+- `iconAnchor: Expression<SymbolAnchor> = const(SymbolAnchor.Center)`
+- `iconOffset: Expression<DpOffsetValue> = const(DpOffset.Zero)`
+
+Data-driven dispatch uses `switch(input, vararg case, fallback)`. `feature["k"]` is `Expression<*>` — call `.asString()` to use as a switch input, or `.convertToColor()` to parse a hex string property into `Expression<ColorValue>`. There is no `hexColor`/`parseColor`; `convertToColor` is an extension `fun Expression<*>.convertToColor(vararg fallbacks: Expression<*>): Expression<ColorValue>`.
+
+Compose Multiplatform `DrawableResource` is not accepted directly — bridge via `painterResource(Res.drawable.x)` from `org.jetbrains.compose.resources`, which returns a `Painter`.
+
+End-to-end:
+
+```kotlin
+SymbolLayer(
+    id = "place-pins",
+    source = placesSource,
+    iconImage = switch(
+        feature["kind"].asString(),
+        case("unvisited", image(painterResource(Res.drawable.pin_outline), drawAsSdf = true)),
+        case("reviewed",  image(painterResource(Res.drawable.pin_filled),  drawAsSdf = true)),
+        fallback = image(painterResource(Res.drawable.pin_outline), drawAsSdf = true),
+    ),
+    iconColor = feature["color"].convertToColor(const(Color.Gray)),
+    iconSize = const(1.2f),
+    iconAllowOverlap = const(true),
+    iconAnchor = const(SymbolAnchor.Bottom),
+)
+```
+
+Things people get wrong:
+- Forgetting `drawAsSdf = true` — `iconColor` then silently does nothing.
+- Passing `feature["kind"]` to `switch` without `.asString()` — the type system rejects `Expression<*>` as a `MatchableValue` input.
+- Reaching for a `StyleImage` composable or a `MaplibreMap(images = {...})` slot — neither exists; register by referencing `image(...)` from a layer expression.
+- Handing `DrawableResource` to `image()` directly — wrap in `painterResource(...)` first.
+- Wrapping a `case` label in `const("…")` — `case(label: String, output)` takes the raw String. Same for numbers/enums.
+- Wrapping an `image(...)` call in `const(...)` for a static `iconImage` — `image()` already returns `Expression<ImageValue>`; pass it directly.
+
 ## Verifying before you commit
 
 The library moves. Before changing API usage, sanity-check against:

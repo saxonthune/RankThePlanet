@@ -52,10 +52,10 @@
     },
     {
       "id": "pin-single-open-externally",
-      "description": "Tap a single-entry pin, then hand off the Location to the system maps app. OPEN_EXTERNALLY is a self-transition on EntrySheet (the user stays on EntrySheet while the OS routes them out). The chart does not declare OPEN_EXTERNALLY on EntrySheet — the verifier will report it as chart-missing. EntrySheet's meta.actions also lacks Location.openExternally; that affordance gap belongs to doc02.02.02.09.",
+      "description": "Tap a single-entry pin, then hand off the Location to the system maps app. OPEN_EXTERNALLY lands on ExternalApp — a non-app surface representing the OS-level handoff. The chart does not declare OPEN_EXTERNALLY on EntrySheet, nor does it model ExternalApp as a surface — the verifier will report both as chart-missing / unknown-surface. EntrySheet's meta.actions also lacks Location.openExternally; that affordance gap belongs to doc02.02.02.09.",
       "start": "MapOverview",
       "events":  ["TAP_PIN_SINGLE", "OPEN_EXTERNALLY"],
-      "targets": ["EntrySheet",     "EntrySheet"]
+      "targets": ["EntrySheet",     "ExternalApp"]
     },
     {
       "id": "pin-single-edit-review",
@@ -84,6 +84,20 @@
       "start": "MapOverview",
       "events":  ["TAP_COLLECTIONS_BUTTON", "TAP_NEW_COLLECTION", "DONE",           "VIEW_NEW_COLLECTION"],
       "targets": ["CollectionList",         "CollectionEditor",   "CollectionList", "CollectionDetail"]
+    },
+    {
+      "id": "pin-single-tap-location",
+      "description": "Tap a single-entry pin to open EntrySheet, then tap the locationBlock to see the Location surface (LocationSheet) — the skinny multi-entry peek of that Location. Asserts TAP_LOCATION as a new intent event distinct from the existing TAP_OPEN_DETAIL (which targets CollectionEntryDetail); the verifier will report TAP_LOCATION as chart-missing.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE", "TAP_LOCATION"],
+      "targets": ["EntrySheet",     "LocationSheet"]
+    },
+    {
+      "id": "pin-single-tap-collection",
+      "description": "Tap a single-entry pin to open EntrySheet, then tap the collectionRow to open the owning Collection's CollectionDetail.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE", "VIEW_COLLECTION"],
+      "targets": ["EntrySheet",     "CollectionDetail"]
     },
     {
       "id": "browse-to-submit-review",

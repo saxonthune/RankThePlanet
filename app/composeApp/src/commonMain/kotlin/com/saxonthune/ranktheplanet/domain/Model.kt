@@ -5,6 +5,20 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
 
+sealed interface TemplateFieldConfig {
+    data class Score(
+        val min: Double = 0.0,
+        val max: Double = 5.0,
+        val step: Double = 0.5,
+        val render: String = "stars",
+    ) : TemplateFieldConfig
+    data class Text(val multiline: Boolean = false) : TemplateFieldConfig
+    data class Enum(val options: ImmutableList<String>) : TemplateFieldConfig
+    data object Boolean : TemplateFieldConfig
+    data object Date : TemplateFieldConfig
+    data object PowerRanking : TemplateFieldConfig
+}
+
 @JvmInline value class CollectionId(val value: String)
 @JvmInline value class LocationId(val value: String)
 @JvmInline value class EntryId(val value: String)
@@ -29,9 +43,11 @@ enum class FieldType { Score, Text, Enum, Boolean, Date, PowerRanking }
 
 data class TemplateField(
     val name: String,
+    val label: String = name,
     val type: FieldType,
-    val config: String? = null,
-    val required: Boolean = false
+    val config: TemplateFieldConfig? = null,
+    val required: Boolean = false,
+    val ordinal: Int = 0,
 )
 
 data class ReviewTemplate(
@@ -48,7 +64,10 @@ data class ReviewInstance(
     val lastModified: String,
 )
 
-data class ReviewDraft(val data: ImmutableMap<String, String>)
+data class ReviewDraft(
+    val data: ImmutableMap<String, String>,
+    val templateVersion: Int = 0,
+)
 
 data class Entry(
     val id: EntryId,

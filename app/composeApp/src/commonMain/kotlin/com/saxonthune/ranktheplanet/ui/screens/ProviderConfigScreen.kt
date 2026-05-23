@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -89,6 +90,32 @@ fun ProviderConfigScreen(
             }
 
             // actions region
+            OutlinedButton(
+                onClick = viewModel::onTestConnection,
+                enabled = uiState.isConfigured && uiState.testState !is ProviderTestState.Testing,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    when (uiState.testState) {
+                        ProviderTestState.Testing -> "Testing…"
+                        else -> "Test connection"
+                    }
+                )
+            }
+            when (val test = uiState.testState) {
+                ProviderTestState.Idle, ProviderTestState.Testing -> Unit
+                ProviderTestState.Ok -> Text(
+                    text = "Connection OK",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                is ProviderTestState.Error -> Text(
+                    text = test.message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
             Button(
                 onClick = viewModel::onSetAsDefault,
                 enabled = uiState.isConfigured && !uiState.isDefault,

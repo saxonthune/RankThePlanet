@@ -22,4 +22,5 @@ interface LocationProvider {
     val type: SourceType
     suspend fun resolve(query: String): ProviderResult<List<LocationCandidate>>
     suspend fun resolveNearby(coordinates: Coordinates): ProviderResult<List<LocationCandidate>>
+    suspend fun healthCheck(): ProviderResult<Unit>
 }

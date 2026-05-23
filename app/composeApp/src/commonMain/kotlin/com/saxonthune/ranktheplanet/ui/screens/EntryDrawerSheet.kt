@@ -31,6 +31,7 @@ internal fun EntryDrawerSheet(
     onEditReview: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
+        DebugSheetLabel("EntryDrawerSheet")
         Surface(
             onClick = { onViewCollection(entry.collectionId) },
             modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),

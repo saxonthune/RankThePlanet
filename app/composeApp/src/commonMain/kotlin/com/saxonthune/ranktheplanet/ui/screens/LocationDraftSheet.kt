@@ -42,6 +42,7 @@ fun LocationDraftSheet(
             .fillMaxWidth()
             .padding(bottom = 16.dp),
     ) {
+        DebugSheetLabel("LocationDraftSheet")
         Row(
             modifier = Modifier
                 .fillMaxWidth()

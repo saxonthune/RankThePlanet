@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.saxonthune.ranktheplanet.domain.EntryId
 
@@ -29,47 +30,63 @@ internal fun LocationDetailPeek(
     peek: PinSheet.Peek,
     onPickEntry: (EntryId) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 160.dp, max = 220.dp)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(peek.locationName, style = MaterialTheme.typography.titleMedium)
-            Text(
-                formatLatLng(peek.lat, peek.lng),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(peek.entries) { entry ->
-                ListItem(
-                    headlineContent = { Text(entry.collectionName) },
-                    leadingContent = {
-                        Box(
-                            Modifier
-                                .size(12.dp)
-                                .background(entry.collectionColor, CircleShape)
-                        )
-                    },
-                    supportingContent = {
-                        if (entry.visited) {
-                            Text("Visited", style = MaterialTheme.typography.bodySmall)
-                        } else {
-                            AssistChip(
-                                onClick = {},
-                                label = { Text("Not yet visited") },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Info, contentDescription = null)
-                                },
-                            )
-                        }
-                    },
-                    modifier = Modifier.clickable { onPickEntry(entry.entryId) },
+    Column(modifier = Modifier.fillMaxWidth()) {
+        DebugSheetLabel("LocationDetailPeek")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 160.dp, max = 220.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(peek.locationName, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    formatLatLng(peek.lat, peek.lng),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(peek.entries) { entry ->
+                    ListItem(
+                        headlineContent = { Text(entry.collectionName) },
+                        leadingContent = {
+                            Box(
+                                Modifier
+                                    .size(12.dp)
+                                    .background(entry.collectionColor, CircleShape)
+                            )
+                        },
+                        supportingContent = {
+                            if (entry.visited) {
+                                Text("Visited", style = MaterialTheme.typography.bodySmall)
+                            } else {
+                                AssistChip(
+                                    onClick = {},
+                                    label = { Text("Not yet visited") },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Info, contentDescription = null)
+                                    },
+                                )
+                            }
+                        },
+                        modifier = Modifier.clickable { onPickEntry(entry.entryId) },
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+internal fun DebugSheetLabel(name: String) {
+    Text(
+        text = "debug: $name",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.error,
+        fontFamily = FontFamily.Monospace,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+    )
 }

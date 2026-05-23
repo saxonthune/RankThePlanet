@@ -29,4 +29,6 @@ class FakeLocationProvider : LocationProvider {
 
     override suspend fun resolveNearby(coordinates: Coordinates): ProviderResult<List<LocationCandidate>> =
         ProviderResult.Ok(emptyList())
+
+    override suspend fun healthCheck(): ProviderResult<Unit> = ProviderResult.Ok(Unit)
 }

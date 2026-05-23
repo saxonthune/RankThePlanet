@@ -3,6 +3,8 @@ package com.saxonthune.ranktheplanet.ui.screens
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
+import com.saxonthune.ranktheplanet.data.location.ProviderError
+import com.saxonthune.ranktheplanet.data.location.ProviderResult
 import com.saxonthune.ranktheplanet.data.secure.SecureStore
 import com.saxonthune.ranktheplanet.data.secure.SecureStoreKeys
 import com.saxonthune.ranktheplanet.domain.SourceType
@@ -17,6 +19,13 @@ sealed interface ProviderMode {
     data object Fake : ProviderMode
 }
 
+sealed interface ProviderTestState {
+    data object Idle : ProviderTestState
+    data object Testing : ProviderTestState
+    data object Ok : ProviderTestState
+    data class Error(val message: String) : ProviderTestState
+}
+
 data class ProviderConfigUiState(
     val mode: ProviderMode,
     val providerName: String,
@@ -25,6 +34,7 @@ data class ProviderConfigUiState(
     val isDefault: Boolean,
     val keyDraft: String = "",
     val isSaving: Boolean = false,
+    val testState: ProviderTestState = ProviderTestState.Idle,
 )
 
 class ProviderConfigViewModel(
@@ -91,8 +101,22 @@ class ProviderConfigViewModel(
                     statusText = buildStatusText(mode, isConfigured, isCurrentDefault),
                     keyDraft = "",
                     isSaving = false,
+                    testState = ProviderTestState.Idle,
                 )
             }
+        }
+    }
+
+    fun onTestConnection() {
+        val provider = registry.providerFor(providerType) ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(testState = ProviderTestState.Testing) }
+            val result = provider.healthCheck()
+            val testState = when (result) {
+                is ProviderResult.Ok -> ProviderTestState.Ok
+                is ProviderResult.Failed -> ProviderTestState.Error(errorMessage(result.error))
+            }
+            _state.update { it.copy(testState = testState) }
         }
     }
 
@@ -105,6 +129,13 @@ private fun modeFor(type: SourceType): ProviderMode = when (type) {
     SourceType.Osm -> ProviderMode.Osm
     SourceType.Google -> ProviderMode.Google
     else -> ProviderMode.Fake
+}
+
+private fun errorMessage(error: ProviderError): String = when (error) {
+    ProviderError.NOT_CONFIGURED -> "Not configured. Save a key first."
+    ProviderError.NETWORK -> "Network error. Check your connection."
+    ProviderError.RATE_LIMITED -> "Rate limited. Try again shortly."
+    ProviderError.PROVIDER_ERROR -> "Provider rejected the request. Check the key, restrictions, and that Places API (New) is enabled."
 }
 
 private fun buildStatusText(mode: ProviderMode, isConfigured: Boolean, isDefault: Boolean): String =

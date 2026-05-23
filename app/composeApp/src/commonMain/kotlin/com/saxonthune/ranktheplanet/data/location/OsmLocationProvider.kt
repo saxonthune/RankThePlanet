@@ -77,6 +77,23 @@ class OsmLocationProvider(
         }
     }
 
+    override suspend fun healthCheck(): ProviderResult<Unit> {
+        throttle()
+        return try {
+            val response = client.get("$photonBase/api") {
+                parameter("q", "test")
+                parameter("limit", "1")
+            }
+            when {
+                response.status.isSuccess() -> ProviderResult.Ok(Unit)
+                response.status.value == 429 -> ProviderResult.Failed(ProviderError.RATE_LIMITED)
+                else -> ProviderResult.Failed(ProviderError.PROVIDER_ERROR)
+            }
+        } catch (e: Exception) {
+            ProviderResult.Failed(ProviderError.NETWORK)
+        }
+    }
+
     private fun PhotonFeature.toCandidate(): LocationCandidate {
         val lng = geometry.coordinates.getOrElse(0) { 0.0 }
         val lat = geometry.coordinates.getOrElse(1) { 0.0 }

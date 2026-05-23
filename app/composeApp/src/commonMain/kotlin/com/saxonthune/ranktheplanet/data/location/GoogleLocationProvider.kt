@@ -69,6 +69,26 @@ class GoogleLocationProvider(
         }
     }
 
+    override suspend fun healthCheck(): ProviderResult<Unit> {
+        val key = apiKey()
+        if (key.isNullOrBlank()) return ProviderResult.Failed(ProviderError.NOT_CONFIGURED)
+        return try {
+            val response = client.post("$endpointBase/places:searchText") {
+                contentType(ContentType.Application.Json)
+                header("X-Goog-Api-Key", key)
+                header("X-Goog-FieldMask", "places.id")
+                setBody("""{"textQuery":"a","pageSize":1}""")
+            }
+            when {
+                response.status.isSuccess() -> ProviderResult.Ok(Unit)
+                response.status.value == 429 -> ProviderResult.Failed(ProviderError.RATE_LIMITED)
+                else -> ProviderResult.Failed(ProviderError.PROVIDER_ERROR)
+            }
+        } catch (e: Exception) {
+            ProviderResult.Failed(ProviderError.NETWORK)
+        }
+    }
+
     private fun GooglePlace.toCandidate(): LocationCandidate? {
         val placeId = id ?: return null
         val loc = location ?: return null

@@ -57,8 +57,18 @@ sealed interface LocationDraftSheet {
         val lng: Double,
         val displayName: String? = null,
         val adoptedCandidate: String? = null,
+        val phase: DraftPhase = DraftPhase.Draft,
     ) : LocationDraftSheet
 }
+
+enum class DraftPhase { Draft, AddToCollection }
+
+data class CollectionPickRowUi(
+    val id: CollectionId,
+    val name: String,
+    val color: Color,
+    val entryCount: Int,
+)
 
 data class PinUi(
     val entryId: EntryId,
@@ -93,6 +103,7 @@ data class NearbyCandidateUi(
 data class MapOverviewUiState(
     val pins: ImmutableList<PinUi> = persistentListOf(),
     val collectionRows: ImmutableList<CollectionFilterRowUi> = persistentListOf(),
+    val collectionPicks: ImmutableList<CollectionPickRowUi> = persistentListOf(),
     val searchResults: ImmutableList<SearchResultUi> = persistentListOf(),
     val isSearching: Boolean = false,
     val isLoading: Boolean = true,
@@ -173,6 +184,7 @@ class MapOverviewViewModel(
     private data class DerivedBase(
         val pins: ImmutableList<PinUi>,
         val collectionRows: ImmutableList<CollectionFilterRowUi>,
+        val collectionPicks: ImmutableList<CollectionPickRowUi>,
     )
 
     private val derivedBase: StateFlow<DerivedBase> = combine(
@@ -181,12 +193,21 @@ class MapOverviewViewModel(
         hiddenCollections,
     ) { collectionList, entryList, hidden ->
         val collectionMap = collectionList.associateBy { it.id }
+        val entryCounts = entryList.groupingBy { it.collectionId }.eachCount()
         val collectionRows = collectionList.map { col ->
             CollectionFilterRowUi(
                 id = col.id,
                 name = col.name,
                 color = parseAppearanceColor(col.appearance.color),
                 shown = col.id !in hidden,
+            )
+        }.toImmutableList()
+        val collectionPicks = collectionList.map { col ->
+            CollectionPickRowUi(
+                id = col.id,
+                name = col.name,
+                color = parseAppearanceColor(col.appearance.color),
+                entryCount = entryCounts[col.id] ?: 0,
             )
         }.toImmutableList()
         val pins = entryList
@@ -203,11 +224,11 @@ class MapOverviewViewModel(
                     visited = entry.review != null,
                 )
             }.toImmutableList()
-        DerivedBase(pins, collectionRows)
+        DerivedBase(pins, collectionRows, collectionPicks)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
-        DerivedBase(persistentListOf(), persistentListOf()),
+        DerivedBase(persistentListOf(), persistentListOf(), persistentListOf()),
     )
 
     val uiState: StateFlow<MapOverviewUiState> = combine(
@@ -221,6 +242,7 @@ class MapOverviewViewModel(
             MapOverviewUiState(
                 pins = base.pins,
                 collectionRows = base.collectionRows,
+                collectionPicks = base.collectionPicks,
                 searchResults = results.toImmutableList(),
                 isSearching = searching,
                 isLoading = false,
@@ -359,5 +381,15 @@ class MapOverviewViewModel(
     fun keepCoordinates() {
         val current = _draft.value as? LocationDraftSheet.Open ?: return
         _draft.value = current.copy(adoptedCandidate = null)
+    }
+
+    fun openAddToCollection() {
+        val current = _draft.value as? LocationDraftSheet.Open ?: return
+        _draft.value = current.copy(phase = DraftPhase.AddToCollection)
+    }
+
+    fun backToDraft() {
+        val current = _draft.value as? LocationDraftSheet.Open ?: return
+        _draft.value = current.copy(phase = DraftPhase.Draft)
     }
 }

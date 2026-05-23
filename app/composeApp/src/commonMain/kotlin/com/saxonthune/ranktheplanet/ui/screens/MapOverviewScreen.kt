@@ -141,7 +141,8 @@ fun MapOverviewScreen(
     onOpenFullDetail: (EntryId) -> Unit,
     onViewCollection: (CollectionId) -> Unit,
     onEditReview: () -> Unit,
-    onAddToCollection: () -> Unit,
+    onPickCollectionForDraft: (CollectionId) -> Unit,
+    onNewCollectionForDraft: () -> Unit,
 ) {
     val vm = viewModel { MapOverviewViewModel(collections, entries, providerRegistry, templates) }
     val state by vm.uiState.collectAsState()
@@ -163,8 +164,11 @@ fun MapOverviewScreen(
     )
 
     BackHandler(enabled = state.draft is LocationDraftSheet.Open || state.pinSheet !is PinSheet.None) {
-        if (state.draft is LocationDraftSheet.Open) vm.dismissDraft()
-        else vm.dismissSheet()
+        val draft = state.draft
+        if (draft is LocationDraftSheet.Open) {
+            if (draft.phase == DraftPhase.AddToCollection) vm.backToDraft()
+            else vm.dismissDraft()
+        } else vm.dismissSheet()
     }
 
     val scaffoldContent: @Composable () -> Unit = {
@@ -371,24 +375,37 @@ fun MapOverviewScreen(
             sheetState = draftSheetState,
             dragHandle = { BottomSheetDefaults.DragHandle() },
         ) {
-            LocationDraftSheet(
-                draft = currentDraft,
-                mode = mode,
-                nearbyCandidates = state.nearbyCandidates,
-                isResolvingNearby = state.isResolvingNearby,
-                onDismiss = { vm.dismissDraft() },
-                onCancelAdd = {
-                    vm.dismissDraft()
-                    onCancelAdd()
-                },
-                onAddToCollection = {
-                    vm.dismissDraft()
-                    onAddToCollection()
-                },
-                onFindNearby = { vm.findNearby() },
-                onAdoptCandidate = { vm.adoptCandidate(it) },
-                onKeepCoordinates = { vm.keepCoordinates() },
-            )
+            when (currentDraft.phase) {
+                DraftPhase.Draft -> LocationDraftSheet(
+                    draft = currentDraft,
+                    mode = mode,
+                    nearbyCandidates = state.nearbyCandidates,
+                    isResolvingNearby = state.isResolvingNearby,
+                    onDismiss = { vm.dismissDraft() },
+                    onCancelAdd = {
+                        vm.dismissDraft()
+                        onCancelAdd()
+                    },
+                    onAddToCollection = { vm.openAddToCollection() },
+                    onFindNearby = { vm.findNearby() },
+                    onAdoptCandidate = { vm.adoptCandidate(it) },
+                    onKeepCoordinates = { vm.keepCoordinates() },
+                )
+                DraftPhase.AddToCollection -> AddLocationToCollectionSheet(
+                    draft = currentDraft,
+                    collections = state.collectionPicks,
+                    preSelectedCollectionId = (mode as? MapMode.AddingToCollection)?.collectionId,
+                    onBack = { vm.backToDraft() },
+                    onNewCollection = {
+                        vm.dismissDraft()
+                        onNewCollectionForDraft()
+                    },
+                    onPickCollection = { collectionId ->
+                        vm.dismissDraft()
+                        onPickCollectionForDraft(collectionId)
+                    },
+                )
+            }
         }
     }
 }

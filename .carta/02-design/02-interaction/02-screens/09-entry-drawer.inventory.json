@@ -7,7 +7,7 @@
     },
     {
       "id": "locationBlock",
-      "purpose": "Middle of the sheet — a tall, full-width tap target identifying the Location. Shows the Location's display name on its own line at a heading-sized type. Pressing the block opens the LocationSheet peek of the Location and every Collection Entry that references it; when the Location has exactly one Entry, LocationSheet renders this same EntrySheet directly per its single-entry rendering rule. Sized for an easy tap (at least 48dp tall) with generous vertical padding."
+      "purpose": "Middle of the sheet — a tall, full-width tap target identifying the Location. Shows the Location's display name on its own line at a heading-sized type. Pressing the block opens the LocationSheet peek of the Location and every Collection Entry that references it, plus the add-another-Entry-at-this-Location affordance; the peek renders for any Entry count, including the sole referencing Entry. Sized for an easy tap (at least 48dp tall) with generous vertical padding."
     },
     {
       "id": "reviewBlock",

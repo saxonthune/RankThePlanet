@@ -320,27 +320,16 @@ fun MapOverviewScreen(
                     val kindExpr = feature["kind"].asString()
                     val colorExpr = feature["color"].convertToColor(const(grey))
 
-                    // Layer 1: colored outline halo for unvisited (slightly larger body, behind grey body).
-                    SymbolLayer(
-                        id = "pins-halo",
-                        source = source,
-                        filter = kindExpr eq const("unvisited"),
-                        iconImage = bodyImage,
-                        iconColor = colorExpr,
-                        iconSize = const(1.15f),
-                        iconAllowOverlap = const(true),
-                        iconAnchor = const(SymbolAnchor.Bottom),
-                    )
-                    // Layer 2: teardrop body — all pins. Color depends on kind.
+                    // Layer 1: teardrop body — all pins. Color depends on kind.
                     SymbolLayer(
                         id = "pins-body",
                         source = source,
                         iconImage = bodyImage,
                         iconColor = switch(
                             kindExpr,
-                            case("reviewed", colorExpr),
                             case("multi", const(offWhite)),
-                            fallback = const(grey),
+                            case("multi-unvisited", const(grey)),
+                            fallback = colorExpr,
                         ),
                         iconSize = const(1.0f),
                         iconAllowOverlap = const(true),
@@ -359,7 +348,7 @@ fun MapOverviewScreen(
                             }
                         },
                     )
-                    // Layer 3: centered mark (dot/plus) for reviewed and multi kinds.
+                    // Layer 2: centered mark (dot/plus) for reviewed and multi kinds. Unvisited is intentionally empty.
                     SymbolLayer(
                         id = "pins-mark",
                         source = source,
@@ -434,6 +423,7 @@ fun MapOverviewScreen(
                 is PinSheet.Peek -> LocationDetailPeek(
                     peek = sheet,
                     onPickEntry = { vm.openEntryFromPeek(it) },
+                    onAddEntry = { vm.addEntryAtPeekLocation() },
                 )
                 is PinSheet.Entry -> EntryDrawerSheet(
                     entry = sheet.entry,

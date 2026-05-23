@@ -17,9 +17,10 @@
         },
         "context": {
           "collection-context": "Optional Collection carried into add-to-collection mode. Source: CollectionDetail's TAP_ADD_ENTRY. Consumed by: the statusBar region (display) and AddLocationToCollection's pre-selection.",
+          "location-context": "Optional already-committed Location carried when LocationSheet's TAP_ADD_ENTRY hands off to AddLocationToCollection. Lives in MapOverview's UiState because both sheets are hosted here; consumed by AddLocationToCollection in place of LocationDraftSheet's candidate.",
           "pending-review-context": "Optional Entry just created by AddLocationToCollection's PICK_COLLECTION. Transient — the surface renders a Snackbar (\"Review {place}?\" + action) over the bare map; the action fires GO_TO_REVIEW, the dismiss fires DISMISS_REVIEW_BAR, and either drops the context. Not a mode — the chrome is unchanged."
         },
-        "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context", "pending-review-context"],
+        "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context", "location-context", "pending-review-context"],
         "actions": [
           "MapOverview.open",
           "MapOverview.pan",
@@ -77,7 +78,7 @@
     },
 
     "LocationSheet": {
-      "description": "A skinny bottom-sheet peek over MapOverview, reached by tapping a pin. The left half identifies the Location; the right half is a scrolling list of every Collection Entry that references it. Tapping an entry picks it and opens EntrySheet. Meaningful only when the Location has multiple Entries — when there is exactly one, the surface renders EntrySheet directly instead (a downstream rendering choice). See doc01.03 §2.",
+      "description": "A skinny bottom-sheet peek over MapOverview, reached either by tapping a multi-entry pin or by tapping the locationBlock on EntrySheet. The left half identifies the Location; the right half is a scrolling list of every Collection Entry that references it, followed by an *Add another Entry at this Location* affordance that lets the user bind a new Entry to the same Location. The list renders for any Entry count ≥ 1, so a single-entry list is a one-row list above the add affordance — used as the entry point for adding sibling Entries from EntrySheet's TAP_LOCATION. Tapping an entry row picks it and opens EntrySheet. See doc01.03 §2.",
       "tags": ["sheet", "map"],
       "meta": {
         "surface": "LocationSheet",
@@ -91,6 +92,11 @@
           "target": "EntrySheet",
           "description": "User taps one of the Entries in the right-hand list, picking which Collection's context to peek at. Opens EntrySheet for that Entry.",
           "propagates": ["collection-context"]
+        },
+        "TAP_ADD_ENTRY": {
+          "target": "AddLocationToCollection",
+          "description": "User taps *Add another Entry at this Location* to bind a new Entry to the same Location. Skips LocationDraftSheet because the Location is already settled — its display name and coordinates carry forward as `location-context` into the picker, where PICK_COLLECTION commits the new Entry against the chosen Collection.",
+          "propagates": ["location-context"]
         },
         "BACK": {
           "target": "MapOverview",
@@ -106,7 +112,7 @@
     },
 
     "EntrySheet": {
-      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationSheet's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (LocationSheet renders this directly when the tapped Location has exactly one Entry). A lightweight handoff hub, not the canonical detail screen: three stacked pressable regions — a collection row that presses through to the owning Collection, a location block that presses through to the LocationSheet peek of that Location, and a review block reflecting visited status and the template's summaryField (doc01.03 §3) that presses through to the Review form.",
+      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationSheet's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (a downstream rendering choice on MapOverview's TAP_PIN_SINGLE that skips LocationSheet's split peek when there is nothing to fan out to). A lightweight handoff hub, not the canonical detail screen: three stacked pressable regions — a collection row that presses through to the owning Collection, a location block that presses through to the LocationSheet peek of that Location (the user's entry point for adding a sibling Entry at the same Location), and a review block reflecting visited status and the template's summaryField (doc01.03 §3) that presses through to the Review form.",
       "tags": ["sheet", "map"],
       "meta": {
         "surface": "EntrySheet",
@@ -118,7 +124,7 @@
       "on": {
         "TAP_LOCATION": {
           "target": "LocationSheet",
-          "description": "User taps the locationBlock to peek the Location itself — the LocationSheet fan-out of every Collection Entry that references it. Always meaningful: when the Location has exactly one Entry (the same one EntrySheet is already showing), LocationSheet renders that EntrySheet directly per its single-entry rendering rule."
+          "description": "User taps the locationBlock to peek the Location itself — the LocationSheet fan-out of every Collection Entry that references it, plus the *Add another Entry at this Location* affordance. The peek renders for any Entry count: with a single sibling (the same one EntrySheet is already showing) it is the launching pad for binding a new Entry to the same Location."
         },
         "VIEW_COLLECTION": {
           "target": "CollectionDetail",
@@ -234,7 +240,7 @@
         },
         "TAP_LOCATION": {
           "target": "LocationSheet",
-          "description": "User taps the location region to peek the Location itself — the LocationSheet fan-out of every Collection Entry that references it. When the Location has exactly one Entry (the same one), LocationSheet renders that EntrySheet directly per its single-entry rendering rule."
+          "description": "User taps the location region to peek the Location itself — the LocationSheet fan-out of every Collection Entry that references it, plus the *Add another Entry at this Location* affordance. The peek renders for any Entry count, so a single-sibling list is a one-row list above the add affordance."
         },
         "VIEW_COLLECTION": {
           "target": "CollectionDetail",
@@ -321,16 +327,17 @@
     },
 
     "AddLocationToCollection": {
-      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to. Rendered as a sheet over MapOverview — the map and the candidate's geographic context stay visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). Reached from LocationDraftSheet's ADD_TO_COLLECTION, which dismisses the draft sheet and presents this one in its place. PICK_COLLECTION commits the Entry and returns to MapOverview carrying the new Entry as `pending-review-context`, so the host can offer a Snackbar prompt to author the Review without forcing the user into the form. BACK steps one surface back to LocationDraftSheet, preserving the candidate; CLOSE — the sheet's swipe-down or scrim-tap dismiss-gesture — drops the candidate and any carried collection-context and returns to a clean MapOverview. When reached with collection-context set, the originating Collection is pre-selected in the picker so PICK_COLLECTION confirms rather than chooses.",
+      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, or an existing Location surfaced by LocationSheet's *Add another Entry at this Location*). User picks which Collection to add it to. Rendered as a sheet over MapOverview — the map and the candidate's geographic context stay visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). Reached from LocationDraftSheet's ADD_TO_COLLECTION (which dismisses the draft sheet and presents this one in its place) or from LocationSheet's TAP_ADD_ENTRY (which skips LocationDraftSheet because the Location is already settled — `location-context` carries the existing Location forward). PICK_COLLECTION commits the Entry and returns to MapOverview carrying the new Entry as `pending-review-context`, so the host can offer a Snackbar prompt to author the Review without forcing the user into the form. BACK steps one surface back — to LocationDraftSheet on the draft path, or to LocationSheet on the existing-Location path — preserving the carried context. CLOSE — the sheet's swipe-down or scrim-tap dismiss-gesture — drops any carried context and returns to a clean MapOverview. When reached with collection-context set, the originating Collection is pre-selected in the picker so PICK_COLLECTION confirms rather than chooses.",
       "tags": ["sheet", "picker"],
       "meta": {
         "surface": "AddLocationToCollection",
         "modality": "sheet",
         "host": "MapOverview",
         "context": {
-          "collection-context": "Forwarded from LocationDraftSheet's ADD_TO_COLLECTION. Consumed: pre-selects the Collection in the picker so PICK_COLLECTION confirms rather than chooses."
+          "collection-context": "Forwarded from LocationDraftSheet's ADD_TO_COLLECTION. Consumed: pre-selects the Collection in the picker so PICK_COLLECTION confirms rather than chooses.",
+          "location-context": "Forwarded from LocationSheet's TAP_ADD_ENTRY. An already-committed Location (display name + coordinates + source) reused as the new Entry's Location, in place of LocationDraftSheet's candidate. Consumed by Location.addToCollection."
         },
-        "reads": ["collections", "candidate-location", "collection-context"],
+        "reads": ["collections", "candidate-location", "collection-context", "location-context"],
         "actions": ["Location.addToCollection", "Collection.addEntry", "Collection.create"]
       },
       "on": {
@@ -345,7 +352,7 @@
         },
         "BACK": {
           "target": "LocationDraftSheet",
-          "description": "Step one surface back to LocationDraftSheet. The candidate Location and any carried collection-context are preserved in the host's UiState; the draft sheet re-presents with the same candidate intact."
+          "description": "Step one surface back. On the draft path (no `location-context`) returns to LocationDraftSheet with the candidate intact; on the existing-Location path (with `location-context`, entered from LocationSheet's TAP_ADD_ENTRY) returns to LocationSheet instead, preserving the carried Location. The host's UiState owns the carried context; the previous sheet re-presents unchanged."
         },
         "CLOSE": {
           "target": "MapOverview",

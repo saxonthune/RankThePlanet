@@ -87,10 +87,17 @@
     },
     {
       "id": "pin-single-tap-location",
-      "description": "Tap a single-entry pin to open EntrySheet, then tap the locationBlock to see the Location surface (LocationSheet) — the skinny multi-entry peek of that Location. Asserts TAP_LOCATION as a new intent event distinct from the existing TAP_OPEN_DETAIL (which targets CollectionEntryDetail); the verifier will report TAP_LOCATION as chart-missing.",
+      "description": "Tap a single-entry pin to open EntrySheet, then tap the locationBlock to see the Location surface (LocationSheet) — the skinny peek of that Location and any sibling Entries. The peek renders for any Entry count, so on a single-entry pin it is a one-row list above the *Add another Entry at this Location* affordance — the launching pad for binding a sibling Entry without leaving the map context.",
       "start": "MapOverview",
       "events":  ["TAP_PIN_SINGLE", "TAP_LOCATION"],
       "targets": ["EntrySheet",     "LocationSheet"]
+    },
+    {
+      "id": "pin-single-add-sibling-entry",
+      "description": "From a single-entry pin, peek the Location and bind a new Entry to the same Location. Opens EntrySheet, pivots to LocationSheet via TAP_LOCATION, then TAP_ADD_ENTRY hands off to AddLocationToCollection with the existing Location carried as `location-context`. PICK_COLLECTION commits the new Entry against the chosen Collection and returns to MapOverview with the just-created Entry as `pending-review-context`.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE", "TAP_LOCATION",  "TAP_ADD_ENTRY",           "PICK_COLLECTION"],
+      "targets": ["EntrySheet",     "LocationSheet", "AddLocationToCollection", "MapOverview"]
     },
     {
       "id": "pin-single-tap-collection",

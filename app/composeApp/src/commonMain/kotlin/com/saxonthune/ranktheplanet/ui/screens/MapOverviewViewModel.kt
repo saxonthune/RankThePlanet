@@ -64,6 +64,7 @@ sealed interface LocationDraftSheet {
         val displayName: String? = null,
         val adoptedCandidate: String? = null,
         val phase: DraftPhase = DraftPhase.Draft,
+        val existingLocation: Location? = null,
     ) : LocationDraftSheet
 }
 
@@ -383,13 +384,26 @@ class MapOverviewViewModel(
         val current = _pinSheet.value as? PinSheet.Entry ?: return
         val entry = _latestEntries.value.find { it.id == current.entry.entryId } ?: return
         val summaries = buildLocationEntries(entry.location.id) ?: return
-        if (summaries.size <= 1) return
         _pinSheet.value = PinSheet.Peek(
             locationName = entry.location.displayName,
             lat = entry.location.coordinates.lat,
             lng = entry.location.coordinates.lng,
             entries = summaries.toImmutableList(),
         )
+    }
+
+    fun addEntryAtPeekLocation() {
+        val peek = _pinSheet.value as? PinSheet.Peek ?: return
+        val firstEntryId = peek.entries.firstOrNull()?.entryId ?: return
+        val location = _latestEntries.value.find { it.id == firstEntryId }?.location ?: return
+        _draft.value = LocationDraftSheet.Open(
+            lat = location.coordinates.lat,
+            lng = location.coordinates.lng,
+            displayName = location.displayName,
+            phase = DraftPhase.AddToCollection,
+            existingLocation = location,
+        )
+        _pinSheet.value = PinSheet.None
     }
 
     fun dismissSheet() {
@@ -444,22 +458,34 @@ class MapOverviewViewModel(
 
     fun backToDraft() {
         val current = _draft.value as? LocationDraftSheet.Open ?: return
-        _draft.value = current.copy(phase = DraftPhase.Draft)
+        val existing = current.existingLocation
+        if (existing != null) {
+            val summaries = buildLocationEntries(existing.id).orEmpty()
+            _draft.value = LocationDraftSheet.None
+            _pinSheet.value = PinSheet.Peek(
+                locationName = existing.displayName,
+                lat = existing.coordinates.lat,
+                lng = existing.coordinates.lng,
+                entries = summaries.toImmutableList(),
+            )
+        } else {
+            _draft.value = current.copy(phase = DraftPhase.Draft)
+        }
     }
 
     fun pickCollectionForDraft(collectionId: CollectionId) {
         val draft = _draft.value as? LocationDraftSheet.Open ?: return
-        val locationName = draft.adoptedCandidate ?: draft.displayName ?: "Unknown location"
+        val location = draft.existingLocation ?: Location(
+            id = LocationId(Random.nextInt(0x1000000, 0x7fffffff).toString(16)),
+            coordinates = Coordinates(draft.lat, draft.lng),
+            displayName = draft.adoptedCandidate ?: draft.displayName ?: "Unknown location",
+            sourceType = SourceType.Manual,
+            sourceId = "",
+            cachedMetadata = null,
+            refreshable = false,
+        )
+        val locationName = location.displayName
         viewModelScope.launch {
-            val location = Location(
-                id = LocationId(Random.nextInt(0x1000000, 0x7fffffff).toString(16)),
-                coordinates = Coordinates(draft.lat, draft.lng),
-                displayName = locationName,
-                sourceType = SourceType.Manual,
-                sourceId = "",
-                cachedMetadata = null,
-                refreshable = false,
-            )
             val result = collectionsRepo.addEntry(
                 collectionId = collectionId,
                 location = location,

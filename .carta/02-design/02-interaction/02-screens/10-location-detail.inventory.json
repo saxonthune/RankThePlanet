@@ -17,6 +17,14 @@
       "region": "locationSummary",
       "event": "BACK",
       "target": "MapOverview"
+    },
+    {
+      "id": "add-entry-at-location",
+      "label": "Add another Entry at this Location",
+      "region": "entries",
+      "event": "TAP_ADD_ENTRY",
+      "target": "AddLocationToCollection",
+      "propagates": ["location-context"]
     }
   ],
   "lists": [
@@ -38,7 +46,7 @@
           "target": "EntrySheet"
         }
       },
-      "emptyState": "A Location with no Entries cannot be reached from MapOverview — pins exist only where there is at least one Entry. With exactly one Entry, the surface renders the EntrySheet directly and this list is never shown."
+      "emptyState": "A Location with no Entries cannot be reached from MapOverview — pins exist only where there is at least one Entry. A one-Entry list renders as a single row above the add-entry affordance."
     }
   ],
   "deferred": ["Location.openExternally", "Location.refresh", "CANCEL_ADD"]

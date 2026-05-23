@@ -1,9 +1,12 @@
 package com.saxonthune.ranktheplanet
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -36,7 +39,9 @@ import com.saxonthune.ranktheplanet.ui.screens.ManageProvidersViewModel
 import com.saxonthune.ranktheplanet.ui.screens.MapOverviewScreen
 import com.saxonthune.ranktheplanet.ui.screens.ProviderConfigScreen
 import com.saxonthune.ranktheplanet.ui.screens.ProviderConfigViewModel
+import com.saxonthune.ranktheplanet.ui.screens.ReviewFormEvent
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormScreen
+import com.saxonthune.ranktheplanet.ui.screens.ReviewFormViewModel
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEditorScreen
 import com.saxonthune.ranktheplanet.ui.screens.SettingsScreen
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
@@ -81,10 +86,10 @@ fun App() {
                     onOpenSettings = { navController.navigate(Settings) },
                     onOpenFullDetail = { entryId -> navController.navigate(CollectionEntryDetail(entryId.value)) },
                     onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
-                    onEditReview = { navController.navigate(ReviewForm) },
+                    onEditReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onPickCollectionForDraft = { },
                     onNewCollectionForDraft = { navController.navigate(CollectionEditor) },
-                    onGoToReview = { _ -> navController.navigate(ReviewForm) },
+                    onGoToReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onPendingReviewDismissed = { },
                 )
             }
@@ -117,15 +122,30 @@ fun App() {
                     entryId = EntryId(route.entryId),
                     entries = repos.entries,
                     templates = repos.templates,
-                    onEditReview = { navController.navigate(ReviewForm) },
+                    onEditReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onRemoveEntry = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                     onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
                 )
             }
-            composable<ReviewForm> {
+            composable<ReviewForm> { backStackEntry ->
+                val route = backStackEntry.toRoute<ReviewForm>()
+                val vm: ReviewFormViewModel = viewModel {
+                    ReviewFormViewModel(EntryId(route.entryId), repos.entries, repos.collections, repos.templates)
+                }
+                val state by vm.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(vm) {
+                    vm.events.collect { event ->
+                        when (event) {
+                            ReviewFormEvent.Saved -> navController.popBackStack()
+                        }
+                    }
+                }
                 ReviewFormScreen(
-                    onSave = { navController.navigate(CollectionEntryDetail("ent-bluebottle")) },
+                    state = state,
+                    onEdit = vm::onEdit,
+                    onClear = vm::onClear,
+                    onSave = { vm.save() },
                     onCancel = { navController.popBackStack() },
                 )
             }

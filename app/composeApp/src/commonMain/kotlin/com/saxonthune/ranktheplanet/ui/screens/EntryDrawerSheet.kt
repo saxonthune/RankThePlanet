@@ -28,7 +28,7 @@ internal fun EntryDrawerSheet(
     entry: EntrySummaryUi,
     onOpenFullDetail: (EntryId) -> Unit,
     onViewCollection: (CollectionId) -> Unit,
-    onEditReview: () -> Unit,
+    onEditReview: (EntryId) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         DebugSheetLabel("EntryDrawerSheet")
@@ -64,7 +64,7 @@ internal fun EntryDrawerSheet(
         HorizontalDivider()
 
         Surface(
-            onClick = { onEditReview() },
+            onClick = { onEditReview(entry.entryId) },
             modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
         ) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {

@@ -11,6 +11,7 @@ import com.saxonthune.ranktheplanet.domain.Coordinates
 import com.saxonthune.ranktheplanet.domain.Entry
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.domain.FieldType
+import com.saxonthune.ranktheplanet.domain.TemplateFieldConfig
 import com.saxonthune.ranktheplanet.domain.Location
 import com.saxonthune.ranktheplanet.domain.LocationId
 import com.saxonthune.ranktheplanet.domain.MapOverviewState
@@ -268,25 +269,46 @@ object Fixtures {
             collectionId = dripCoffeeId,
             version = 1,
             fields = persistentListOf(
-                TemplateField(name = "overall", type = FieldType.Score, required = true),
-                TemplateField(name = "notes", type = FieldType.Text)
+                TemplateField(
+                    name = "overall", label = "Overall", type = FieldType.Score, required = true,
+                    config = TemplateFieldConfig.Score(max = 5.0, render = "stars"), ordinal = 0,
+                ),
+                TemplateField(
+                    name = "notes", label = "Notes", type = FieldType.Text,
+                    config = TemplateFieldConfig.Text(multiline = true), ordinal = 1,
+                ),
             )
         ),
         ReviewTemplate(
             collectionId = nytTop100Id,
             version = 1,
             fields = persistentListOf(
-                TemplateField(name = "rating", type = FieldType.Score, required = true),
-                TemplateField(name = "notes", type = FieldType.Text),
-                TemplateField(name = "visited", type = FieldType.Boolean)
+                TemplateField(
+                    name = "rating", label = "Rating", type = FieldType.Score, required = true,
+                    config = TemplateFieldConfig.Score(max = 5.0, render = "stars"), ordinal = 0,
+                ),
+                TemplateField(
+                    name = "notes", label = "Notes", type = FieldType.Text,
+                    config = TemplateFieldConfig.Text(multiline = true), ordinal = 1,
+                ),
+                TemplateField(
+                    name = "visited", label = "Visited", type = FieldType.Boolean,
+                    config = TemplateFieldConfig.BooleanField, ordinal = 2,
+                ),
             )
         ),
         ReviewTemplate(
             collectionId = geoDiaryId,
             version = 1,
             fields = persistentListOf(
-                TemplateField(name = "description", type = FieldType.Text, required = true),
-                TemplateField(name = "visitedOn", type = FieldType.Date)
+                TemplateField(
+                    name = "description", label = "Description", type = FieldType.Text, required = true,
+                    config = TemplateFieldConfig.Text(multiline = true), ordinal = 0,
+                ),
+                TemplateField(
+                    name = "visitedOn", label = "Visited on", type = FieldType.Date,
+                    config = TemplateFieldConfig.Date, ordinal = 1,
+                ),
             )
         )
     )
@@ -329,6 +351,12 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
         val collection = store.collections.value.find { it.id == collectionId }
             ?: return Result.failure(IllegalArgumentException("Collection not found: ${collectionId.value}"))
 
+        if (review.data.isNotEmpty() && review.templateVersion != collection.templateVersion) {
+            return Result.failure(IllegalStateException(
+                "Template version mismatch: caller=${review.templateVersion} collection=${collection.templateVersion}"
+            ))
+        }
+
         if (store.locations.value.none { it.id == location.id }) {
             store.locations.update { it + location }
         }
@@ -339,7 +367,7 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
             location = location,
             review = if (review.data.isEmpty()) null else ReviewInstance(
                 data = review.data,
-                recordedTemplateVersion = collection.templateVersion,
+                recordedTemplateVersion = review.templateVersion,
                 created = FAKE_NOW,
                 lastModified = FAKE_NOW,
             ),
@@ -365,16 +393,24 @@ class FakeEntryRepository(private val store: InMemoryStore) : EntryRepository {
     override fun observe(entryId: EntryId): Flow<Entry?> =
         store.entries.map { list -> list.find { it.id == entryId } }
 
-    override suspend fun editReview(entryId: EntryId, data: Map<String, String>): Result<Entry> {
+    override suspend fun editReview(
+        entryId: EntryId,
+        data: Map<String, String>,
+        templateVersion: Int,
+    ): Result<Entry> {
         val current = store.entries.value.find { it.id == entryId }
             ?: return Result.failure(IllegalArgumentException("Entry not found: ${entryId.value}"))
-
+        val collection = store.collections.value.find { it.id == current.collectionId }
+            ?: return Result.failure(IllegalStateException("Collection not found: ${current.collectionId.value}"))
+        if (templateVersion != collection.templateVersion) {
+            return Result.failure(IllegalStateException(
+                "Template version mismatch: caller=$templateVersion collection=${collection.templateVersion}"
+            ))
+        }
         val existingReview = current.review
         val updatedReview = if (existingReview != null) {
             existingReview.copy(data = data.toImmutableMap(), lastModified = FAKE_NOW)
         } else {
-            val templateVersion = store.templates.value
-                .find { it.collectionId == current.collectionId }?.version ?: 0
             ReviewInstance(
                 data = data.toImmutableMap(),
                 recordedTemplateVersion = templateVersion,

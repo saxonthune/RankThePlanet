@@ -36,7 +36,7 @@ fun CollectionEntryDetailScreen(
     entryId: EntryId,
     entries: EntryRepository,
     templates: TemplateRepository,
-    onEditReview: () -> Unit,
+    onEditReview: (EntryId) -> Unit,
     onRemoveEntry: () -> Unit,
     onBack: () -> Unit,
     onViewCollection: (CollectionId) -> Unit,
@@ -71,7 +71,7 @@ fun CollectionEntryDetailScreen(
         title = state.entry?.location?.displayName ?: "Entry",
         onBack = onBack,
         actions = {
-            IconButton(onClick = onEditReview) {
+            IconButton(onClick = { onEditReview(entryId) }) {
                 Icon(Icons.Default.Edit, contentDescription = "Edit review")
             }
         },

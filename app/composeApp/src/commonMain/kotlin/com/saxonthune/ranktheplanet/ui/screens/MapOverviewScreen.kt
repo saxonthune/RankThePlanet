@@ -145,7 +145,7 @@ fun MapOverviewScreen(
     onOpenSettings: () -> Unit,
     onOpenFullDetail: (EntryId) -> Unit,
     onViewCollection: (CollectionId) -> Unit,
-    onEditReview: () -> Unit,
+    onEditReview: (EntryId) -> Unit,
     onPickCollectionForDraft: (CollectionId) -> Unit,
     onNewCollectionForDraft: () -> Unit,
     onGoToReview: (EntryId) -> Unit,
@@ -385,9 +385,9 @@ fun MapOverviewScreen(
                         vm.dismissSheet()
                         onViewCollection(collectionId)
                     },
-                    onEditReview = {
+                    onEditReview = { entryId ->
                         vm.dismissSheet()
-                        onEditReview()
+                        onEditReview(entryId)
                     },
                 )
                 is PinSheet.None -> {}

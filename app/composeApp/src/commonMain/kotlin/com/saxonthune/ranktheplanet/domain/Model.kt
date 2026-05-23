@@ -14,7 +14,7 @@ sealed interface TemplateFieldConfig {
     ) : TemplateFieldConfig
     data class Text(val multiline: Boolean = false) : TemplateFieldConfig
     data class Enum(val options: ImmutableList<String>) : TemplateFieldConfig
-    data object Boolean : TemplateFieldConfig
+    data object BooleanField : TemplateFieldConfig
     data object Date : TemplateFieldConfig
     data object PowerRanking : TemplateFieldConfig
 }

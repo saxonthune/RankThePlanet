@@ -293,7 +293,7 @@ object Fixtures {
                 ),
                 TemplateField(
                     name = "visited", label = "Visited", type = FieldType.Boolean,
-                    config = TemplateFieldConfig.Boolean, ordinal = 2,
+                    config = TemplateFieldConfig.BooleanField, ordinal = 2,
                 ),
             )
         ),

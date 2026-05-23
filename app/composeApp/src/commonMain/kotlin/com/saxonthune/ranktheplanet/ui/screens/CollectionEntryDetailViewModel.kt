@@ -68,7 +68,7 @@ class CollectionEntryDetailViewModel(
                         val fields = template?.fields?.map { field ->
                             val value = entry?.review?.data?.get(field.name) ?: ""
                             ReviewFieldUi(
-                                label = field.name,
+                                label = field.label,
                                 value = value,
                                 type = field.type,
                                 isSet = value.isNotBlank(),

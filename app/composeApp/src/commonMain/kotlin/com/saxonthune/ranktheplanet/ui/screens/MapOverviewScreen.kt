@@ -43,7 +43,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -99,28 +98,12 @@ fun MapOverviewScreen(
     // Capture surface color here — must not be read inside the MaplibreMap content lambda.
     val pinLabelHalo = MaterialTheme.colorScheme.surface
 
-    var mapLoaded by remember { mutableStateOf(false) }
-
-    // Workaround for maplibre-compose 0.12.1 iOS GeoJSON async setData
-    // (https://github.com/maplibre/maplibre-compose/issues/738): pins added at the same zoom
-    // they should render at don't appear until a real gesture triggers a render cycle. Start
-    // slightly below the target zoom so pins are visible at frame 1, then animate up — by the
-    // time the animation lands the source has been integrated into the render pipeline.
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
             target = Position(longitude = -73.9855, latitude = 40.7580),
-            zoom = 11.7,
+            zoom = 12.0,
         )
     )
-
-    LaunchedEffect(mapLoaded) {
-        if (mapLoaded) {
-            cameraState.animateTo(
-                cameraState.position.copy(zoom = 12.0),
-                duration = 150.milliseconds,
-            )
-        }
-    }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -238,7 +221,6 @@ fun MapOverviewScreen(
                     cameraState = cameraState,
                     baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/liberty"),
                     options = MapOptions(ornamentOptions = OrnamentOptions.OnlyLogo),
-                    onMapLoadFinished = { mapLoaded = true },
                     onMapLongClick = { position, _ ->
                         vm.startDraft(lat = position.latitude, lng = position.longitude)
                         ClickResult.Consume

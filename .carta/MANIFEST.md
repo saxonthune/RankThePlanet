@@ -54,7 +54,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.00 | `00-index.md` |  |  | — | — | — |
-| doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc01.05, doc02.03, doc03.01 | — |
+| doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc01.05, doc02.03, doc03.01, doc03.04 | — |
 | doc02.03 | `03-theme-tokens.md` | Three-tier design token system (primitive, semantic, provider) for the CMP theme: RtpColors, RtpSpacing, RtpTypography and the RtpTheme accessor | design, theme, tokens, styling, cmp | doc02.01 | — | — |
 | doc02.04 | `04-surface-composition-rules.md` | Two design rules for how surfaces compose — same-surface-different-mode, overlay-surfaces-are-not-routes | design, interaction, composition, rules | doc02.02.01, doc01.05 | — | — |
 
@@ -89,6 +89,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc03.00 | `00-index.md` | How RTP stores, reads, syncs, and wires itself together below and around the UI — the bridge from concepts to code | system, index | — | — | — |
 | doc03.01 | `01-store-model.md` | Two-store persistence: local SQLCipher DB + sync replica; table schema, local-first write path, memoized overview projection, op-log | system, storage, sqlcipher, sync, schema | doc01.03, doc02.01 | doc03.02.00, doc03.02.01 | schema.sql |
 | doc03.03 | `03-navigation-wiring.md` | How the platform-agnostic navigation statechart becomes a Compose Multiplatform NavHost — type-safe routes, back stack, per-route ViewModel scoping | system, navigation, cmp, wiring | doc02.02.01, doc03.02 | — | — |
+| doc03.04 | `04-map-rendering.md` | How pins reach the map: maplibre-compose source/layer split, why pins use a pull-based ComputedSource, and the invalidation contract | system, maplibre, rendering, source | doc02.01 | — | — |
 
 ### Data Interfaces
 
@@ -126,7 +127,7 @@ Quick lookup for file-path→doc mapping:
 | `location` | doc03.02.01, doc03.02.02 |
 | `luminous` | doc01.04.03 |
 | `maintenance` | doc00.02 |
-| `maplibre` | doc02.01 |
+| `maplibre` | doc02.01, doc03.04 |
 | `meta` | doc00.00, doc00.01 |
 | `method` | doc01.04.00, doc01.04.01, doc01.04.03 |
 | `navigation` | doc02.02.01, doc02.02.03, doc03.03 |
@@ -139,19 +140,21 @@ Quick lookup for file-path→doc mapping:
 | `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04.00, doc01.04.01, doc01.04.02, doc01.05 |
 | `providers` | doc03.02.02 |
 | `references` | doc01.05 |
+| `rendering` | doc03.04 |
 | `repository` | doc03.02.00, doc03.02.01 |
 | `research` | doc01.01, doc01.05 |
 | `retrieval` | doc00.04 |
 | `rules` | doc02.04 |
 | `schema` | doc03.01 |
 | `screens` | doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13 |
+| `source` | doc03.04 |
 | `sqlcipher` | doc03.01 |
 | `stack` | doc02.01 |
 | `statechart` | doc02.02.01 |
 | `storage` | doc03.01 |
 | `styling` | doc02.03 |
 | `sync` | doc03.01 |
-| `system` | doc03.00, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02, doc03.03 |
+| `system` | doc03.00, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02, doc03.03, doc03.04 |
 | `theme` | doc02.03 |
 | `theory` | doc00.01 |
 | `tokens` | doc02.03 |

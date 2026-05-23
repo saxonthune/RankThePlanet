@@ -160,7 +160,6 @@ fun MapOverviewScreen(
     onCancelAdd: () -> Unit,
     onOpenCollections: () -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenFullDetail: (EntryId) -> Unit,
     onViewCollection: (CollectionId) -> Unit,
     onEditReview: (EntryId) -> Unit,
     onPickCollectionForDraft: (CollectionId) -> Unit,
@@ -435,10 +434,7 @@ fun MapOverviewScreen(
                 )
                 is PinSheet.Entry -> EntryDrawerSheet(
                     entry = sheet.entry,
-                    onOpenFullDetail = { entryId ->
-                        vm.dismissSheet()
-                        onOpenFullDetail(entryId)
-                    },
+                    onTapLocation = { vm.peekLocationFromEntry() },
                     onViewCollection = { collectionId ->
                         vm.dismissSheet()
                         onViewCollection(collectionId)

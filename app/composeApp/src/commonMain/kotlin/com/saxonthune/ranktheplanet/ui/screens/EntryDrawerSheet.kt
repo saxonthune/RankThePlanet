@@ -26,7 +26,7 @@ import com.saxonthune.ranktheplanet.domain.EntryId
 @Composable
 internal fun EntryDrawerSheet(
     entry: EntrySummaryUi,
-    onOpenFullDetail: (EntryId) -> Unit,
+    onTapLocation: () -> Unit,
     onViewCollection: (CollectionId) -> Unit,
     onEditReview: (EntryId) -> Unit,
 ) {
@@ -53,7 +53,7 @@ internal fun EntryDrawerSheet(
         HorizontalDivider()
 
         Surface(
-            onClick = { onOpenFullDetail(entry.entryId) },
+            onClick = { onTapLocation() },
             modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
         ) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {

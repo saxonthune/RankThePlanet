@@ -322,18 +322,13 @@ class MapOverviewViewModel(
         }
     }
 
-    fun selectPin(entryId: EntryId) {
+    private fun buildLocationEntries(locationId: LocationId): List<EntrySummaryUi>? {
         val entries = _latestEntries.value
-        val collections = _latestCollections.value
-        val collectionMap = collections.associateBy { it.id }
-        val templateMap = _latestTemplates.value.associateBy { it.collectionId }
-        val entry = entries.find { it.id == entryId } ?: run {
-            _pinSheet.value = PinSheet.None
-            return
-        }
-        val locationId = entry.location.id
         val locationEntries = entries.filter { it.location.id == locationId }
-        val summaries = locationEntries.mapNotNull { e ->
+        if (locationEntries.isEmpty()) return null
+        val collectionMap = _latestCollections.value.associateBy { it.id }
+        val templateMap = _latestTemplates.value.associateBy { it.collectionId }
+        return locationEntries.mapNotNull { e ->
             val col = collectionMap[e.collectionId] ?: return@mapNotNull null
             val template = templateMap[e.collectionId]
             val visitedDate = if (e.review != null) formatShortDate(e.review.created) else null
@@ -354,7 +349,18 @@ class MapOverviewViewModel(
                 visitedDate = visitedDate,
                 summaryPreview = summaryPreview,
             )
-        }.toImmutableList()
+        }
+    }
+
+    fun selectPin(entryId: EntryId) {
+        val entry = _latestEntries.value.find { it.id == entryId } ?: run {
+            _pinSheet.value = PinSheet.None
+            return
+        }
+        val summaries = buildLocationEntries(entry.location.id) ?: run {
+            _pinSheet.value = PinSheet.None
+            return
+        }
         _pinSheet.value = if (summaries.size == 1) {
             PinSheet.Entry(summaries.first())
         } else {
@@ -362,7 +368,7 @@ class MapOverviewViewModel(
                 locationName = entry.location.displayName,
                 lat = entry.location.coordinates.lat,
                 lng = entry.location.coordinates.lng,
-                entries = summaries,
+                entries = summaries.toImmutableList(),
             )
         }
     }
@@ -371,6 +377,19 @@ class MapOverviewViewModel(
         val peek = _pinSheet.value as? PinSheet.Peek ?: return
         val summary = peek.entries.find { it.entryId == entryId } ?: return
         _pinSheet.value = PinSheet.Entry(summary)
+    }
+
+    fun peekLocationFromEntry() {
+        val current = _pinSheet.value as? PinSheet.Entry ?: return
+        val entry = _latestEntries.value.find { it.id == current.entry.entryId } ?: return
+        val summaries = buildLocationEntries(entry.location.id) ?: return
+        if (summaries.size <= 1) return
+        _pinSheet.value = PinSheet.Peek(
+            locationName = entry.location.displayName,
+            lat = entry.location.coordinates.lat,
+            lng = entry.location.coordinates.lng,
+            entries = summaries.toImmutableList(),
+        )
     }
 
     fun dismissSheet() {

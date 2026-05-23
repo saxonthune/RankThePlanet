@@ -120,11 +120,13 @@ fun App() {
                 CollectionEntryDetailScreen(
                     entryId = EntryId(route.entryId),
                     entries = repos.entries,
+                    collections = repos.collections,
                     templates = repos.templates,
                     onEditReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onRemoveEntry = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                     onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
+                    onTapLocation = { navController.navigate(MapOverview()) },
                 )
             }
             composable<ReviewForm> { backStackEntry ->

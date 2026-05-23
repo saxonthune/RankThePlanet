@@ -230,11 +230,15 @@
         },
         "TAP_REMOVE_ENTRY": {
           "target": "CollectionDetail",
-          "description": "User removes this Collection Entry from the Collection (Collection.removeEntry). Does not delete the Location — it may exist in other Collections."
+          "description": "User removes this Collection Entry from the Collection (Collection.removeEntry). Does not delete the Location — it may exist in other Collections. The affordance is an inline two-tap confirm (trashcan → 'Delete Entry?' → remove); this transition fires on the confirmed second tap."
+        },
+        "TAP_LOCATION": {
+          "target": "LocationSheet",
+          "description": "User taps the location region to peek the Location itself — the LocationSheet fan-out of every Collection Entry that references it. When the Location has exactly one Entry (the same one), LocationSheet renders that EntrySheet directly per its single-entry rendering rule."
         },
         "VIEW_COLLECTION": {
           "target": "CollectionDetail",
-          "description": "User opens the Collection that owns this Entry. Useful when the Entry was reached from a map pin rather than from CollectionDetail — it navigates to the owning Collection explicitly rather than following the back stack, which BACK does."
+          "description": "User opens the Collection that owns this Entry by tapping the collection pill (color dot + name) shown beneath the title. Useful when the Entry was reached from a map pin rather than from CollectionDetail — it navigates to the owning Collection explicitly rather than following the back stack, which BACK does."
         },
         "BACK": {
           "target": "CollectionDetail",

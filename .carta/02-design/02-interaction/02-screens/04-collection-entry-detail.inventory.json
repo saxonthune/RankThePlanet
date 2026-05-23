@@ -3,15 +3,19 @@
   "regions": [
     {
       "id": "topBar",
-      "purpose": "Names the Entry by its Location and holds the Entry-level affordances — Back, View the Collection, and Remove."
+      "purpose": "Names the Entry by its Location and holds the Entry-level affordances — Back and the trashcan that removes the Entry via an inline two-tap confirm."
+    },
+    {
+      "id": "collectionPill",
+      "purpose": "A single tappable row beneath the title that surfaces the owning Collection — a color dot painted from the Collection's appearance color followed by the Collection name. The whole row routes to CollectionDetail."
     },
     {
       "id": "location",
-      "purpose": "The Entry's Location — display name, coordinates, cached provider metadata — and the handoffs that act on it."
+      "purpose": "The Entry's Location — display name, coordinates, cached provider metadata — as a tappable row that peeks the Location on the map, plus a button that hands off to an external map app."
     },
     {
       "id": "review",
-      "purpose": "The Entry's Review, shown as the full template field set. Renders one of two states: reviewed (the user has saved data) or unreviewed (the Location is in the Collection but not yet evaluated — every field shown unset)."
+      "purpose": "The Entry's Review, shown as the full template field set. The body is non-interactive so users can select and copy text; a pencil icon on the right edge opens the ReviewForm. Renders one of two states: reviewed (the user has saved data) or unreviewed (the Location is in the Collection but not yet evaluated — every field shown unset)."
     }
   ],
   "affordances": [
@@ -28,14 +32,22 @@
       "region": "topBar",
       "event": "TAP_REMOVE_ENTRY",
       "target": "CollectionDetail",
-      "action": "Collection.removeEntry"
+      "action": "Collection.removeEntry",
+      "notes": "Rendered as a trashcan icon. First tap reveals an inline 'Delete Entry?' label next to the icon; second tap (while armed) fires the removal. Tapping outside the icon dismisses the armed state."
     },
     {
       "id": "view-collection",
       "label": "View the Collection",
-      "region": "topBar",
+      "region": "collectionPill",
       "event": "VIEW_COLLECTION",
       "target": "CollectionDetail"
+    },
+    {
+      "id": "tap-location",
+      "label": "Peek the Location on the map",
+      "region": "location",
+      "event": "TAP_LOCATION",
+      "target": "LocationSheet"
     },
     {
       "id": "open-externally",
@@ -55,7 +67,8 @@
       "region": "review",
       "event": "TAP_EDIT_REVIEW",
       "target": "ReviewForm",
-      "action": "Review.edit"
+      "action": "Review.edit",
+      "notes": "Rendered as a pencil icon on the right edge of the Review header. The review body itself is non-reactive so text remains selectable."
     }
   ],
   "lists": [

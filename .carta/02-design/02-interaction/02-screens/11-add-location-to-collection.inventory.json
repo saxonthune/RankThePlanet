@@ -51,8 +51,9 @@
           "id": "pick-collection",
           "label": "Pick this Collection",
           "event": "PICK_COLLECTION",
-          "target": "ReviewForm",
-          "action": "Location.addToCollection"
+          "target": "MapOverview",
+          "action": "Location.addToCollection",
+          "note": "Commits the Entry and dismisses the sheet; the host carries the new Entry as pending-review-context and renders a Snackbar prompt to author the Review. See doc02.02.02.07."
         }
       },
       "emptyState": "When the user has no Collections, the region shows a hint pointing at New Collection. The candidate Location is held in the host's UiState; tapping New Collection enters CollectionEditor and the flow resumes on its DONE."

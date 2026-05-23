@@ -16,9 +16,10 @@
           "addToCollection": "Entered from CollectionDetail's TAP_ADD_ENTRY. `collection-context` is set and propagates to every Location-opening transition."
         },
         "context": {
-          "collection-context": "Optional Collection carried into add-to-collection mode. Source: CollectionDetail's TAP_ADD_ENTRY. Consumed by: the statusBar region (display) and AddLocationToCollection's pre-selection."
+          "collection-context": "Optional Collection carried into add-to-collection mode. Source: CollectionDetail's TAP_ADD_ENTRY. Consumed by: the statusBar region (display) and AddLocationToCollection's pre-selection.",
+          "pending-review-context": "Optional Entry just created by AddLocationToCollection's PICK_COLLECTION. Transient — the surface renders a Snackbar (\"Review {place}?\" + action) over the bare map; the action fires GO_TO_REVIEW, the dismiss fires DISMISS_REVIEW_BAR, and either drops the context. Not a mode — the chrome is unchanged."
         },
-        "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context"],
+        "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context", "pending-review-context"],
         "actions": [
           "MapOverview.open",
           "MapOverview.pan",
@@ -62,6 +63,15 @@
           "target": "CollectionDetail",
           "guard": "inAddMode",
           "description": "Live only in add-to-collection mode (guard: `collection-context` is set). User abandons the add-to-collection flow from the status bar; return to the originating CollectionDetail without adding a Collection Entry."
+        },
+        "GO_TO_REVIEW": {
+          "target": "ReviewForm",
+          "guard": "hasPendingReview",
+          "description": "Live only when `pending-review-context` is set. User taps the action on the post-add Snackbar to author the Review for the Entry just created by AddLocationToCollection's PICK_COLLECTION."
+        },
+        "DISMISS_REVIEW_BAR": {
+          "guard": "hasPendingReview",
+          "description": "Live only when `pending-review-context` is set. Self-transition — the Snackbar times out or the user dismisses it; drop `pending-review-context` and leave the map untouched. The Entry stays saved; the user can author the Review later via the Entry's other surfaces."
         }
       }
     },
@@ -249,7 +259,7 @@
         },
         "CANCEL": {
           "target": "CollectionDetail",
-          "description": "User cancels without saving; the draft is discarded. (Reachable from AddLocationToCollection and CollectionEntryDetail; static CANCEL targets the Collection context.)"
+          "description": "User cancels without saving; the draft is discarded. (Reachable from MapOverview's GO_TO_REVIEW and CollectionEntryDetail; static CANCEL targets the Collection context.)"
         }
       }
     },
@@ -307,7 +317,7 @@
     },
 
     "AddLocationToCollection": {
-      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to. Rendered as a sheet over MapOverview — the map and the candidate's geographic context stay visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). Reached from LocationDraftSheet's ADD_TO_COLLECTION, which dismisses the draft sheet and presents this one in its place. BACK steps one surface back to LocationDraftSheet, preserving the candidate; CLOSE — the sheet's swipe-down or scrim-tap dismiss-gesture — drops the candidate and any carried collection-context and returns to a clean MapOverview. When reached with collection-context set, the originating Collection is pre-selected in the picker so PICK_COLLECTION confirms rather than chooses.",
+      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, etc.). User picks which Collection to add it to. Rendered as a sheet over MapOverview — the map and the candidate's geographic context stay visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). Reached from LocationDraftSheet's ADD_TO_COLLECTION, which dismisses the draft sheet and presents this one in its place. PICK_COLLECTION commits the Entry and returns to MapOverview carrying the new Entry as `pending-review-context`, so the host can offer a Snackbar prompt to author the Review without forcing the user into the form. BACK steps one surface back to LocationDraftSheet, preserving the candidate; CLOSE — the sheet's swipe-down or scrim-tap dismiss-gesture — drops the candidate and any carried collection-context and returns to a clean MapOverview. When reached with collection-context set, the originating Collection is pre-selected in the picker so PICK_COLLECTION confirms rather than chooses.",
       "tags": ["sheet", "picker"],
       "meta": {
         "surface": "AddLocationToCollection",
@@ -321,8 +331,9 @@
       },
       "on": {
         "PICK_COLLECTION": {
-          "target": "ReviewForm",
-          "description": "User picks a Collection (Location.addToCollection); advance to fill out the Review."
+          "target": "MapOverview",
+          "description": "User picks a Collection (Location.addToCollection). The Entry is committed and the sheet dismisses; MapOverview re-emerges in browse mode carrying the new Entry as `pending-review-context`. The host renders a transient Snackbar (\"Review {place}?\" + action) — tapping the action fires GO_TO_REVIEW into ReviewForm; dismissing fires DISMISS_REVIEW_BAR. Returning to MapOverview instead of jumping straight to ReviewForm preserves the user's map context after a successful add.",
+          "propagates": ["pending-review-context"]
         },
         "TAP_NEW_COLLECTION": {
           "target": "CollectionEditor",

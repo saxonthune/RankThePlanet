@@ -97,6 +97,23 @@
       "event": "CANCEL_ADD",
       "target": "CollectionDetail",
       "appearsInModes": ["addToCollection"]
+    },
+    {
+      "id": "go-to-review",
+      "label": "Review",
+      "region": "map",
+      "event": "GO_TO_REVIEW",
+      "target": "ReviewForm",
+      "reactsToContext": ["pending-review-context"],
+      "rendering": "Material 3 Snackbar action — appears transiently after AddLocationToCollection's PICK_COLLECTION. Not a persistent region; the chrome is unchanged in browse mode."
+    },
+    {
+      "id": "dismiss-review-bar",
+      "label": "Dismiss",
+      "region": "map",
+      "event": "DISMISS_REVIEW_BAR",
+      "reactsToContext": ["pending-review-context"],
+      "rendering": "Snackbar timeout or swipe-dismiss. Drops pending-review-context; the Entry stays saved."
     }
   ],
   "lists": [

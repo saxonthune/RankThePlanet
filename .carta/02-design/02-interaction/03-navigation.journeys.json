@@ -4,57 +4,72 @@
     {
       "id": "tap-pin-multi",
       "description": "Tap a pin shared by multiple Collection Entries → opens the LocationSheet listing all entries at that pin.",
-      "start": "MapOverview"
+      "start": "MapOverview",
+      "events": ["TAP_PIN"]
     },
     {
       "id": "tap-pin-single",
       "description": "Tap a pin owned by exactly one Collection Entry → opens the EntrySheet for that entry.",
-      "start": "MapOverview"
+      "start": "MapOverview",
+      "events": ["TAP_PIN_SINGLE"]
     },
     {
       "id": "open-collections",
       "description": "Tap the Collections button in the MapOverview chrome → CollectionList.",
-      "start": "MapOverview"
+      "start": "MapOverview",
+      "events": ["TAP_COLLECTIONS_BUTTON"]
     },
     {
       "id": "drop-pin",
       "description": "Long-press the map to drop a pin → LocationDraftSheet with nearby resolution candidates.",
-      "start": "MapOverview"
+      "start": "MapOverview",
+      "events": ["DROP_PIN"]
     },
     {
       "id": "pick-search-result",
       "description": "Pick a search result from the search affordance → LocationDraftSheet rendering that result.",
-      "start": "MapOverview"
+      "start": "MapOverview",
+      "events": ["PICK_SEARCH_RESULT"]
     },
     {
       "id": "open-settings",
       "description": "Tap the Settings affordance → Settings surface.",
-      "start": "MapOverview"
+      "start": "MapOverview",
+      "events": ["TAP_SETTINGS"]
     },
     {
       "id": "cancel-add-to-collection",
       "description": "In addToCollection mode, dismiss the status bar → return to CollectionDetail. Mode-only journey: meaningful only when MapOverview carries a collection-context.",
-      "start": "MapOverview"
+      "start": "MapOverview",
+      "events": ["CANCEL_ADD"]
     },
     {
       "id": "drop-pin-to-review",
       "description": "User intent: drop a pin, add it to a Collection, then end up reviewing it. Authored to match the user mental model — DROP_PIN → ADD_TO_COLLECTION → PICK_COLLECTION → return to MapOverview with a temp-bar 'go to review' affordance → ReviewForm. The intermediate MapOverview detour is the intended UX and is the divergence this journey exists to surface.",
-      "start": "MapOverview"
+      "start": "MapOverview",
+      "events": [
+        "DROP_PIN",
+        "ADD_TO_COLLECTION",
+        "PICK_COLLECTION",
+        "RETURN_TO_MAP_WITH_REVIEW_BAR",
+        "GO_TO_REVIEW"
+      ],
+      "notes": {
+        "4": "intended: PICK_COLLECTION should return to MapOverview with a transient 'go to review' status bar, not jump straight to ReviewForm.",
+        "5": "intended: tap the temp 'go to review' bar on MapOverview."
+      }
+    },
+    {
+      "id": "browse-to-submit-review",
+      "description": "From the map, drill into a Collection, open one of its Entries, edit the review, submit, land back on the Entry detail with the review now saved.",
+      "start": "MapOverview",
+      "events": [
+        "TAP_COLLECTIONS_BUTTON",
+        "TAP_COLLECTION",
+        "TAP_ENTRY",
+        "TAP_EDIT_REVIEW",
+        "SUBMIT"
+      ]
     }
-  ],
-  "steps": [
-    { "journey": "tap-pin-multi",           "order": 1, "event": "TAP_PIN" },
-    { "journey": "tap-pin-single",          "order": 1, "event": "TAP_PIN_SINGLE" },
-    { "journey": "open-collections",        "order": 1, "event": "TAP_COLLECTIONS_BUTTON" },
-    { "journey": "drop-pin",                "order": 1, "event": "DROP_PIN" },
-    { "journey": "pick-search-result",      "order": 1, "event": "PICK_SEARCH_RESULT" },
-    { "journey": "open-settings",           "order": 1, "event": "TAP_SETTINGS" },
-    { "journey": "cancel-add-to-collection","order": 1, "event": "CANCEL_ADD" },
-
-    { "journey": "drop-pin-to-review", "order": 1, "event": "DROP_PIN" },
-    { "journey": "drop-pin-to-review", "order": 2, "event": "ADD_TO_COLLECTION" },
-    { "journey": "drop-pin-to-review", "order": 3, "event": "PICK_COLLECTION" },
-    { "journey": "drop-pin-to-review", "order": 4, "event": "RETURN_TO_MAP_WITH_REVIEW_BAR", "note": "intended: PICK_COLLECTION should return to MapOverview with a transient 'go to review' status bar, not jump straight to ReviewForm." },
-    { "journey": "drop-pin-to-review", "order": 5, "event": "GO_TO_REVIEW", "note": "intended: tap the temp 'go to review' bar on MapOverview." }
   ]
 }

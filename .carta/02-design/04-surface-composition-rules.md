@@ -25,6 +25,19 @@ Anti-pattern: parallel booleans (`isAddMode`, `isEditMode`, `hideFab`). Each boo
 
 **Worked example.** `MapOverview` has modes `browse` and `addToCollection`. The statusBar region declares `appearsInModes: ["addToCollection"]` and `reactsToContext: ["collection-context"]`. Every other region's `appearsInModes` is set by Rule 3 below. The mode-only transition `CANCEL_ADD` is guarded by `inAddMode` in the statechart. See [[07-map-overview]] (doc02.02.02.07).
 
+### Not every context creates a mode
+
+Carrying a context value into a surface is not enough on its own to justify a mode. A **mode** is for structural chrome shifts — regions suppressed, slots swapped, the affordance grammar changes. A **transient overlay** (Snackbar, toast) is a context-driven affordance rendered *over* unchanged chrome and should stay one with the host's default mode.
+
+Decision rule:
+
+- Does the context restructure regions or swap chrome slots? → mode.
+- Does it surface a single ephemeral affordance the user can act on or dismiss? → context-driven overlay; no mode.
+
+Spec shape for the overlay case: declare the context on `meta.context`, declare the transitions it gates with guards on the host's `on` map, declare the affordance in the inventory with `reactsToContext` and a `rendering` note naming the Material primitive (e.g. Snackbar). Do **not** add a new entry to `meta.modes` or a new region — the chrome is unchanged.
+
+**Worked example.** `MapOverview` carries `pending-review-context` after `AddLocationToCollection`'s `PICK_COLLECTION`. It does not enter a third mode: the map, search, menuButton, and bottomBar render unchanged. A Material 3 Snackbar appears with a *Review* action gating `GO_TO_REVIEW`; its timeout fires `DISMISS_REVIEW_BAR`. Both transitions are guarded by `hasPendingReview` on the statechart. See [[07-map-overview]] (doc02.02.02.07).
+
 ## Rule 2 — Overlay surfaces are not routes
 
 > A surface that visually overlays another surface — sheet, drawer, popover — is **state owned by the host's UiState**, not a separate route in the NavHost.

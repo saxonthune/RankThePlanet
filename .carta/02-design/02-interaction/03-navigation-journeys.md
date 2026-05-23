@@ -1,6 +1,6 @@
 ---
 title: Navigation Journeys
-summary: User-intent navigation paths, resolved against the statechart to surface unimplemented transitions and unreachable screens
+summary: User-intent navigation paths declared as event/target pairs; diffed against the statechart to surface chart-missing transitions, target mismatches, and undeclared screens
 tags: [design, interaction, navigation, journeys, verification]
 deps: [doc02.02.01]
 ---
@@ -15,39 +15,43 @@ Journeys are **independent of higher-level docs**. They are not derived from use
 
 Two surfaces of source-of-truth disagree:
 
-- The **statechart** says what transitions exist.
-- The **journeys** say what paths a user expects to take.
+- The **statechart** says what transitions the implementation has.
+- The **journeys** say what paths the user is expected to take, *fully declared* — each step names both the event and the screen it lands on.
 
-A journey is **resolved** by walking the statechart: each step's `event` must exist on the current surface's `on` map, and resolution advances to its `target`. The first step that cannot be resolved marks a divergence:
+`journeys-verify` does a pure diff between the two. For each declared `(from, event → to)`, it reports one of:
 
-- The journey is wrong (the user's mental model doesn't match the app) → fix or remove the journey, or
-- The statechart is wrong (the app is missing an affordance or a transition the user reasonably expects) → add it, and the journey resolves on the next pipeline run.
+- **match** — chart and journey agree.
+- **chart-missing** — journey asserts a transition the chart does not implement. The fix is to add the transition (or to retract the journey).
+- **target-mismatch** — chart has the event but goes elsewhere. Either the chart is wrong or the journey is wrong; the diff makes the disagreement explicit.
+- **unknown-surface** — journey names a screen the chart does not define. The fix is to add the screen or rename the journey's target.
 
-Either way the divergence is now visible, named, and reviewed — not implicit.
+There is no implicit fallback, no "resolver walks the statechart" — the journey IS the path declaration; intent-vs-reality is derived, not encoded.
 
 ## Schema
 
 The sidecar declares one top-level array of journeys:
 
-- **`journeys`**: each journey is `{ id, description, start, events, notes? }` where
+- **`journeys`**: each journey is `{ id, description, start, events, targets, notes? }` where
   - `id` is a kebab-case slug, unique within the sidecar.
-  - `start` names the entry surface (must exist in the statechart).
-  - `events` is an ordered string array of the navigation events the user takes from `start`.
-  - `notes` is an optional `{ "<1-based-index>": string }` map carrying per-step commentary (often used to record what the user *intended* a step to do when it doesn't resolve against the statechart).
+  - `start` names the entry surface.
+  - `events` and `targets` are parallel ordered arrays of the same length — the i-th event lands on the i-th target.
+  - `notes` is an optional `{ "<1-based-index>": string }` map carrying per-step commentary.
 
-Internally the pipeline normalizes each journey into flat `(journey, order, event, note?)` step records before resolution — each row compiles one-for-one to a logic-programming fact, so a Datalog/Datascript-backed verifier is a mechanical refactor away. The authoring shape is concise; the internal shape stays flat.
+Internally the pipelines normalize each journey into flat `(journey, order, event, from, to, note?)` step records — each row compiles one-for-one to a logic-programming fact, so a Datalog/Datascript-backed verifier is a mechanical refactor away.
 
-`statechart` at the top of the file names the sibling statechart sidecar to resolve against. A journeys sidecar without a sibling statechart is a spec gap.
+`statechart` at the top of the file names the sibling statechart sidecar to compare against. A journeys sidecar without a sibling statechart is a spec gap.
 
 ## Visualizing journeys
 
-A Luminous pipeline renders this sidecar as a canvas:
-
 ```
-node .luminous/journeys-canvas.pipeline.mjs
+node .luminous/journeys-tree.pipeline.mjs
 ```
 
-It walks `.carta/` for `*.journeys.json`, loads the sibling statechart, resolves each step, and emits a derived canvas pair under `.luminous/generated/` (gitignored). Nodes are the same `rtp.screen` / `rtp.sheet` kinds the statechart pipeline emits — a journey's path is just a sequence of edges between existing surfaces. Edges are `rtp.journey-step` with `journey`, `order`, `event`, and `status` (`resolved` or `unresolved`). Unresolved steps render with a distinct style and a synthetic placeholder target node, so the visible break-point in the path is the bug.
+Emits to `.luminous/generated/` (gitignored).
+
+The pipeline projects the corpus as a prefix trie rooted at each `start` surface, using `rtp.path-step` nodes keyed by `(start, event-prefix)` and `rtp.trie-edge` edges labelled with the single distinguishing event. Journeys sharing an event-prefix share trie nodes; they diverge at the first differing event. Leaves are journey endpoints.
+
+The trie is an **acyclic tree by construction**: each step extends the event path, so revisiting the same screen along a journey produces a *new* trie node rather than a back-edge. A node carrying the same `screen` as an ancestor reads as a return visit; a candidate styling could mark such return-leaves visually distinct from forward-progress leaves.
 
 ## Coverage endgame
 

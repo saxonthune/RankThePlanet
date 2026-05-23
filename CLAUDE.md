@@ -8,6 +8,12 @@ Free, fast, open-source geo diary. User-curated lists of places with per-list re
 
 **Before answering any product, design, or scaffolding question, read `.carta/MANIFEST.md` and any docs whose summary/tags match the task.** Prior decisions and research live there. Do not propose technology, architecture, or behavior without first checking what the workspace has already converged on. This rule outranks brevity — a fast answer that contradicts existing docs is worse than a slow one that aligns with them.
 
+## Project status: pre-alpha
+
+RTP is pre-alpha. **No user data exists in the wild.** Don't reason about backwards compatibility, data migration, version history, or "what happens to existing reviews/templates when X changes." Old template versions, op-log compaction, schema migrations, sync conflict resolution across app versions — all deferred. When the code encounters state that would require a migration path (e.g. a Review instance whose `recorded_template_version` is older than the Collection's current `template_version`), it throws. Surface the error; don't silently coerce. Treat every storage path as if it was just created.
+
+This rule outranks "be defensive" / "handle edge cases." It is load-bearing precisely because production-codebase instincts will push the opposite way.
+
 ## Working philosophy: unfolding design
 
 Docs (and code, when it arrives) **unfold**. Start sparse. Grow only what the next concrete piece of work demands. A one-line doc is a finished doc until someone needs more from it.

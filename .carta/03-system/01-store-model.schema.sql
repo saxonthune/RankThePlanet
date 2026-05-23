@@ -33,9 +33,10 @@ CREATE TABLE template_field (
     collection_id   TEXT NOT NULL REFERENCES collection(id),
     version         INTEGER NOT NULL,
     ordinal         INTEGER NOT NULL,             -- template is an ordered list
-    name            TEXT NOT NULL,
+    name            TEXT NOT NULL,                -- stable machine key; immutable once defined
+    label           TEXT NOT NULL,                -- user-facing display string; freely renamable
     type            TEXT NOT NULL,                -- score|text|enum|boolean|date|power-ranking
-    config          TEXT,                         -- JSON: per-type config
+    config          TEXT,                         -- per-type JSON or NULL; shapes per doc01.03 §3
     required        INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (collection_id, version, name)
 );

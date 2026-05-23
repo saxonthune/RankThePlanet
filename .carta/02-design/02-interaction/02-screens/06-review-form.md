@@ -14,4 +14,6 @@ The surface has three regions. The **topBar** names the Review being authored an
 
 A Review is valid with any subset of its fields filled — a sparse Review is a finished Review ([[03-concepts]], doc01.03 §3). The form never blocks *Save*; a field's `required` flag shows as a marker that nudges, never a gate. The fields-list empty state — a template with no fields — is not a normal state: it points the user back to `CollectionEditor` to author the template.
 
+The form renders the Collection's **current** template version. If the instance's `recorded_template_version` does not match, the data layer throws and the form shows an error state (pre-alpha rule, CLAUDE.md "Project status" / doc01.03 §3 Notes) — no in-form migration. Each field row shows the template's `label`; the form never displays the underlying `name` key.
+
 `Review.start` is **deferred**: it produces the pre-filled draft when the surface opens (today's date and other sensible defaults) and has no user affordance — the form is simply already started on entry. It is listed in the sidecar's `deferred` array so the `screen-inventory` verifier ([[05-verification-system]], doc01.04.02) counts it as an acknowledged gap, not a missing affordance. Nothing here names a Composable or a UiState; that binding is not part of the interaction layer (doc02.02.00).

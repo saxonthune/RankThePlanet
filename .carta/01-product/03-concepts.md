@@ -110,22 +110,22 @@ A Review has two faces, kept inside one concept because they share a single purp
 
 Per Collection (template):
 
-- `template` — an ordered list of fields. Each field has a `name`, a `type`, per-type configuration, and a `required` flag.
+- `template` — an ordered list of fields. Each field has a `name` (stable machine key, immutable once defined), a `label` (user-facing string the form shows), a `type`, per-type `config`, and a `required` flag. `name` is what's stored as the key in an instance's `data` map; `label` is presentation only and may be renamed freely.
 - `template_version` — bumped when the template changes; used to reconcile instances.
 - `summaryField` — optional name of one field in `template`. The field whose value stands in for the Review in compact surfaces (notably `EntrySheet`, doc02.02.02.09). Any field type is eligible: a `score` renders in its configured style (stars, number, icon), a `text` field shows a truncated first line, an `enum` shows the picked option, a `power-ranking` shows its position. When absent, compact surfaces show only the visited/unvisited state and the instance's `created` date.
 
-The field types and their configuration:
+The field types and their per-type `config` (stored as JSON on the field, parsed at the data boundary into a typed `TemplateFieldConfig`):
 
-- `score` — a number within a user-chosen range. Config: `min`, `max`, and a `step` granularity down to one decimal place (e.g. 0–5 by 0.5, 0–10 by 0.1). A separate `render` style governs presentation without changing the stored number — `number`, `stars`, `icon` (a chosen glyph, such as a coffee cup), `slider`, or `bar`. A 4.5-of-5 star rating and an 8.3-of-10 numeric rating are the same `score` type with different config.
-- `text` — freeform text, single- or multi-line.
-- `enum` — one choice from an ordered option list (e.g. `[light, medium, dark]`).
-- `boolean` — a yes/no value.
-- `date` — a calendar date.
-- `power-ranking` — a relative ordering of the Collection's entries; its value is positional, not absolute.
+- `score` — a number within a user-chosen range. Config: `{"min": 0, "max": 5, "step": 0.5, "render": "stars"}`. `step` granularity goes down to one decimal place (e.g. 0–5 by 0.5, 0–10 by 0.1). `render` governs presentation without changing the stored number — `number`, `stars`, `icon` (config carries the chosen glyph name), `slider`, or `bar`. A 4.5-of-5 star rating and an 8.3-of-10 numeric rating are the same `score` type with different config.
+- `text` — freeform text, single- or multi-line. Config: `{"multiline": true}` (defaults to single-line when absent).
+- `enum` — one choice from an ordered option list. Config: `{"options": ["light", "medium", "dark"]}`. The stored value is the chosen option string.
+- `boolean` — a yes/no value. Config: `null`.
+- `date` — a calendar date. Stored as ISO-8601 `YYYY-MM-DD`. Config: `null`.
+- `power-ranking` — a relative ordering of the Collection's entries; its value is positional, not absolute. Config: `null`.
 
 Per Collection Entry (instance) — a Review instance exists only once the user submits one:
 
-- `data` — a map of `field-name → value`, conforming to the template at the recorded version. Any subset of the template's fields may be filled; a single field is as valid as the whole form.
+- `data` — a map of `field-name → value`, conforming to the template at the recorded version. Any subset of the template's fields may be filled; a single field is as valid as the whole form. **Absent key means unset**; an empty string is a distinct value (a deliberately blank text field), not the same as unset. `Review.clear` removes the key; it never writes an empty string in its place.
 - `recorded_template_version` — the template version this instance was written against.
 - `created`, `last_modified`.
 
@@ -155,6 +155,7 @@ Instance:
 - One concept covers both template and instance for now. If sharing makes the template-author and reviewer different people, this may split into a separate **ReviewTemplate** concept — flagged but not pre-built.
 - A Review exists only as part of a Collection Entry, and only once submitted — there are no orphan Reviews, and no empty ones. An entry with no Review instance is unreviewed (§4 visited/unvisited).
 - A Review is valid with any subset of its template's fields filled — like a Letterboxd review, it need not be complete to count. A field's `required` flag marks what the template author considers core; it is used to nudge the user, never to block saving a sparse Review.
+- **Edit against a newer template version.** RTP is pre-alpha (CLAUDE.md "Project status"): when `Review.edit` runs against an instance whose `recorded_template_version` does not match the Collection's current `template_version`, the data layer throws. There is no migration UI, no implicit re-targeting. The schema versioning machinery (template_version bumps, archived old fields) exists so the eventual migration design has the data it needs; it is not yet wired to an edit path. A migration strategy is a future concern, surfacing once user data exists.
 
 ---
 

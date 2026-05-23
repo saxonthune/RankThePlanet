@@ -5,71 +5,71 @@
       "id": "tap-pin-multi",
       "description": "Tap a pin shared by multiple Collection Entries → opens the LocationSheet listing all entries at that pin.",
       "start": "MapOverview",
-      "events": ["TAP_PIN"]
+      "events":  ["TAP_PIN"],
+      "targets": ["LocationSheet"]
     },
     {
       "id": "tap-pin-single",
       "description": "Tap a pin owned by exactly one Collection Entry → opens the EntrySheet for that entry.",
       "start": "MapOverview",
-      "events": ["TAP_PIN_SINGLE"]
+      "events":  ["TAP_PIN_SINGLE"],
+      "targets": ["EntrySheet"]
     },
     {
       "id": "open-collections",
       "description": "Tap the Collections button in the MapOverview chrome → CollectionList.",
       "start": "MapOverview",
-      "events": ["TAP_COLLECTIONS_BUTTON"]
+      "events":  ["TAP_COLLECTIONS_BUTTON"],
+      "targets": ["CollectionList"]
     },
     {
       "id": "drop-pin",
       "description": "Long-press the map to drop a pin → LocationDraftSheet with nearby resolution candidates.",
       "start": "MapOverview",
-      "events": ["DROP_PIN"]
+      "events":  ["DROP_PIN"],
+      "targets": ["LocationDraftSheet"]
     },
     {
       "id": "pick-search-result",
       "description": "Pick a search result from the search affordance → LocationDraftSheet rendering that result.",
       "start": "MapOverview",
-      "events": ["PICK_SEARCH_RESULT"]
+      "events":  ["PICK_SEARCH_RESULT"],
+      "targets": ["LocationDraftSheet"]
     },
     {
       "id": "open-settings",
       "description": "Tap the Settings affordance → Settings surface.",
       "start": "MapOverview",
-      "events": ["TAP_SETTINGS"]
+      "events":  ["TAP_SETTINGS"],
+      "targets": ["Settings"]
     },
     {
       "id": "cancel-add-to-collection",
       "description": "In addToCollection mode, dismiss the status bar → return to CollectionDetail. Mode-only journey: meaningful only when MapOverview carries a collection-context.",
       "start": "MapOverview",
-      "events": ["CANCEL_ADD"]
+      "events":  ["CANCEL_ADD"],
+      "targets": ["CollectionDetail"]
     },
     {
       "id": "drop-pin-to-review",
-      "description": "User intent: drop a pin, add it to a Collection, then end up reviewing it. Authored to match the user mental model — DROP_PIN → ADD_TO_COLLECTION → PICK_COLLECTION → return to MapOverview with a temp-bar 'go to review' affordance → ReviewForm. The intermediate MapOverview detour is the intended UX and is the divergence this journey exists to surface.",
+      "description": "User intent: drop a pin, add it to a Collection, then review it. PICK_COLLECTION lands on MapOverview (showing a transient 'go to review' status bar — a mode of MapOverview, not a separate state). Tapping that bar fires GO_TO_REVIEW → ReviewForm. The statechart does not yet expose GO_TO_REVIEW; the verifier reports it as chart-missing.",
       "start": "MapOverview",
-      "events": [
-        "DROP_PIN",
-        "ADD_TO_COLLECTION",
-        "PICK_COLLECTION",
-        "RETURN_TO_MAP_WITH_REVIEW_BAR",
-        "GO_TO_REVIEW"
-      ],
-      "notes": {
-        "4": "intended: PICK_COLLECTION should return to MapOverview with a transient 'go to review' status bar, not jump straight to ReviewForm.",
-        "5": "intended: tap the temp 'go to review' bar on MapOverview."
-      }
+      "events":  ["DROP_PIN",          "ADD_TO_COLLECTION",       "PICK_COLLECTION", "GO_TO_REVIEW"],
+      "targets": ["LocationDraftSheet","AddLocationToCollection", "MapOverview",     "ReviewForm"]
+    },
+    {
+      "id": "create-collection",
+      "description": "Create a new Collection from scratch. CollectionEditor's DONE steps back one surface to CollectionList, which surfaces a snackbar carrying the just-created Collection; tapping VIEW_NEW_COLLECTION on the snackbar opens that Collection's CollectionDetail. The post-save snackbar context on CollectionList is a new affordance analogous to MapOverview's pending-review-context. Currently the chart's DONE targets CollectionDetail (target-mismatch) and does not declare VIEW_NEW_COLLECTION (chart-missing); the verifier will surface both.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "TAP_NEW_COLLECTION", "DONE",           "VIEW_NEW_COLLECTION"],
+      "targets": ["CollectionList",         "CollectionEditor",   "CollectionList", "CollectionDetail"]
     },
     {
       "id": "browse-to-submit-review",
       "description": "From the map, drill into a Collection, open one of its Entries, edit the review, submit, land back on the Entry detail with the review now saved.",
       "start": "MapOverview",
-      "events": [
-        "TAP_COLLECTIONS_BUTTON",
-        "TAP_COLLECTION",
-        "TAP_ENTRY",
-        "TAP_EDIT_REVIEW",
-        "SUBMIT"
-      ]
+      "events":  ["TAP_COLLECTIONS_BUTTON","TAP_COLLECTION",    "TAP_ENTRY",             "TAP_EDIT_REVIEW","SUBMIT"],
+      "targets": ["CollectionList",        "CollectionDetail",  "CollectionEntryDetail", "ReviewForm",     "CollectionEntryDetail"]
     }
   ]
 }

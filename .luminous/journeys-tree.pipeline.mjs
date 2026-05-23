@@ -142,6 +142,7 @@ function projectGraph(chart, sidecar, trie, packName) {
       to: e.to,
       props: {
         event: e.event,
+        label: e.event,
         journeys: e.journeys,
         journeyCount: e.journeys.length,
         color: repColor,
@@ -203,11 +204,12 @@ function projectPack(packName) {
         directed: true,
         props: { type: 'object', properties: {
           event: { type: 'string' },
+          label: { type: 'string' },
           journeys: { type: 'array', items: { type: 'string' } },
           journeyCount: { type: 'integer', minimum: 1 },
           color: { type: 'string' },
           shared: { type: 'boolean' },
-        }, required: ['event', 'journeys', 'journeyCount'], additionalProperties: false },
+        }, required: ['event', 'label', 'journeys', 'journeyCount'], additionalProperties: false },
         acceptsSource: ['rtp.path-step'],
         acceptsTarget: ['rtp.path-step'],
       },

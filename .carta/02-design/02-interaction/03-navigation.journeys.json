@@ -51,6 +51,27 @@
       "targets": ["CollectionDetail"]
     },
     {
+      "id": "pin-single-open-externally",
+      "description": "Tap a single-entry pin, then hand off the Location to the system maps app. OPEN_EXTERNALLY is a self-transition on EntrySheet (the user stays on EntrySheet while the OS routes them out). The chart does not declare OPEN_EXTERNALLY on EntrySheet — the verifier will report it as chart-missing. EntrySheet's meta.actions also lacks Location.openExternally; that affordance gap belongs to doc02.02.02.09.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE", "OPEN_EXTERNALLY"],
+      "targets": ["EntrySheet",     "EntrySheet"]
+    },
+    {
+      "id": "pin-single-edit-review",
+      "description": "Tap a single-entry pin, edit the Review, save, and land back on EntrySheet with a top snackbar acknowledging the save. Currently SUBMIT targets CollectionEntryDetail (target-mismatch) — for map-rooted edits, returning to EntrySheet preserves the user's map context. The post-submit snackbar context on EntrySheet is a new affordance analogous to MapOverview's pending-review-context.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE", "TAP_EDIT_REVIEW", "SUBMIT"],
+      "targets": ["EntrySheet",     "ReviewForm",      "EntrySheet"]
+    },
+    {
+      "id": "pin-multi-pick-entry",
+      "description": "Tap a multi-entry pin, then pick which Collection's Entry to peek at. Extends tap-pin-multi by one step; shares its prefix and diverges only after LocationSheet.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN",       "TAP_ENTRY"],
+      "targets": ["LocationSheet", "EntrySheet"]
+    },
+    {
       "id": "drop-pin-to-review",
       "description": "User intent: drop a pin, add it to a Collection, then review it. PICK_COLLECTION lands on MapOverview (showing a transient 'go to review' status bar — a mode of MapOverview, not a separate state). Tapping that bar fires GO_TO_REVIEW → ReviewForm. The statechart does not yet expose GO_TO_REVIEW; the verifier reports it as chart-missing.",
       "start": "MapOverview",

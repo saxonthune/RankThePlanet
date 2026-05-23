@@ -261,6 +261,21 @@ object Fixtures {
             location = locations[3],
             review = null,
             added = "2024-08-01T10:00:00Z"
+        ),
+        Entry(
+            id = EntryId("ent-geo-bluebottle"),
+            collectionId = geoDiaryId,
+            location = locations[0],
+            review = ReviewInstance(
+                data = persistentMapOf(
+                    "description" to "Ducked in out of the rain for a pour-over. Watched Mint Plaza wake up.",
+                    "visitedOn" to "2024-08-18"
+                ),
+                recordedTemplateVersion = 1,
+                created = "2024-08-18T08:15:00Z",
+                lastModified = "2024-08-18T08:15:00Z",
+            ),
+            added = "2024-08-18T08:15:00Z"
         )
     )
 

@@ -34,6 +34,7 @@ internal fun LocationDetailPeek(
     peek: PinSheet.Peek,
     onPickEntry: (EntryId) -> Unit,
     onAddEntry: () -> Unit,
+    onConfirmAdd: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -85,19 +86,43 @@ internal fun LocationDetailPeek(
                     }
                 }
                 HorizontalDivider()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(onClick = onAddEntry)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Text(
-                        text = "Add another Entry at this Location",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(start = 12.dp),
-                    )
+                val addToCollection = peek.addToCollection
+                if (addToCollection != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onConfirmAdd)
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Box(
+                            Modifier
+                                .padding(start = 8.dp)
+                                .size(12.dp)
+                                .background(addToCollection.color, CircleShape)
+                        )
+                        Text(
+                            text = "Add to ${addToCollection.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onAddEntry)
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Text(
+                            text = "Add another Entry at this Location",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 12.dp),
+                        )
+                    }
                 }
             }
         }

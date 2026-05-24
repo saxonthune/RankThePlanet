@@ -64,6 +64,7 @@ sealed interface PinSheet {
         val lng: Double,
         val entries: ImmutableList<EntrySummaryUi>,
         val candidateLocation: Location? = null,
+        val addToCollection: CollectionPickRowUi? = null,
     ) : PinSheet
     data class Entry(val entry: EntrySummaryUi) : PinSheet
 }
@@ -564,7 +565,7 @@ class MapOverviewViewModel(
         findNearby()
     }
 
-    fun pickSearchCandidate(hit: SearchHitUi.Candidate, inAddMode: Boolean) {
+    fun pickSearchCandidate(hit: SearchHitUi.Candidate, inAddMode: Boolean, collectionId: CollectionId? = null) {
         if (hit.needsConfirmation) {
             viewModelScope.launch {
                 _isSearching.value = true
@@ -588,17 +589,17 @@ class MapOverviewViewModel(
                             displayName = c.displayName,
                             needsConfirmation = false,
                         )
-                        finalizePick(resolvedHit, c.cachedMetadata, inAddMode)
+                        finalizePick(resolvedHit, c.cachedMetadata, inAddMode, collectionId)
                     }
                     is ProviderResult.Failed -> _error.value = confirmed.error.name
                 }
             }
             return
         }
-        finalizePick(hit, cachedMetadata = null, inAddMode = inAddMode)
+        finalizePick(hit, cachedMetadata = null, inAddMode = inAddMode, collectionId = collectionId)
     }
 
-    private fun finalizePick(hit: SearchHitUi.Candidate, cachedMetadata: String?, inAddMode: Boolean) {
+    private fun finalizePick(hit: SearchHitUi.Candidate, cachedMetadata: String?, inAddMode: Boolean, collectionId: CollectionId? = null) {
         val resolved = Location(
             id = LocationId(Random.nextInt(0x1000000, 0x7fffffff).toString(16)),
             coordinates = Coordinates(hit.lat, hit.lng),
@@ -609,12 +610,17 @@ class MapOverviewViewModel(
             refreshable = hit.sourceId != null,
         )
         if (inAddMode) {
-            _draft.value = LocationDraftSheet.Open(
-                lat = hit.lat,
-                lng = hit.lng,
-                displayName = hit.displayName,
-                phase = DraftPhase.AddToCollection,
-                existingLocation = resolved,
+            val collectionPick = collectionId?.let { id ->
+                derivedBase.value.collectionPicks.find { it.id == id }
+            }
+            // TODO: center camera on resolved.coordinates when Peek opens (no VM-driven camera mechanism exists yet)
+            _pinSheet.value = PinSheet.Peek(
+                locationName = resolved.displayName,
+                lat = resolved.coordinates.lat,
+                lng = resolved.coordinates.lng,
+                entries = persistentListOf(),
+                candidateLocation = resolved,
+                addToCollection = collectionPick,
             )
         } else {
             _pinSheet.value = PinSheet.Peek(
@@ -711,6 +717,27 @@ class MapOverviewViewModel(
                     locationName = locationName,
                 )
                 dismissDraft()
+            }
+        }
+    }
+
+    fun confirmAddCandidateAtPeek() {
+        val peek = _pinSheet.value as? PinSheet.Peek ?: return
+        val candidate = peek.candidateLocation ?: return
+        val target = peek.addToCollection ?: return
+        val locationName = candidate.displayName
+        viewModelScope.launch {
+            val result = collectionsRepo.addEntry(
+                collectionId = target.id,
+                location = candidate,
+                review = ReviewDraft(persistentMapOf()),
+            )
+            result.onSuccess { entry ->
+                _pendingReview.value = PendingReviewPrompt.Pending(
+                    entryId = entry.id,
+                    locationName = locationName,
+                )
+                _pinSheet.value = PinSheet.None
             }
         }
     }

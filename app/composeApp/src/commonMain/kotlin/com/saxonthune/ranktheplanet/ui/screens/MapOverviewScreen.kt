@@ -258,6 +258,7 @@ fun MapOverviewScreen(
                                                 is SearchHitUi.Candidate -> vm.pickSearchCandidate(
                                                     hit = hit,
                                                     inAddMode = mode is MapMode.AddingToCollection,
+                                                    collectionId = (mode as? MapMode.AddingToCollection)?.collectionId,
                                                 )
                                             }
                                         },
@@ -352,6 +353,7 @@ fun MapOverviewScreen(
         onDismiss = { vm.dismissSheet() },
         onPickEntryFromPeek = { vm.openEntryFromPeek(it) },
         onAddEntryAtPeek = { vm.addEntryAtPeekLocation() },
+        onConfirmAddAtPeek = { vm.confirmAddCandidateAtPeek() },
         onTapEntryLocation = { vm.peekLocationFromEntry() },
         onViewCollection = { collectionId ->
             vm.dismissSheet()

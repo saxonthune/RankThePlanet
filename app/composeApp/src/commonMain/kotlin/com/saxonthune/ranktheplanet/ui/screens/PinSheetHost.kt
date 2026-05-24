@@ -17,6 +17,7 @@ internal fun PinSheetHost(
     onDismiss: () -> Unit,
     onPickEntryFromPeek: (EntryId) -> Unit,
     onAddEntryAtPeek: () -> Unit,
+    onConfirmAddAtPeek: () -> Unit,
     onTapEntryLocation: () -> Unit,
     onViewCollection: (CollectionId) -> Unit,
     onEditReview: (EntryId) -> Unit,
@@ -35,6 +36,7 @@ internal fun PinSheetHost(
                 peek = sheet,
                 onPickEntry = onPickEntryFromPeek,
                 onAddEntry = onAddEntryAtPeek,
+                onConfirmAdd = onConfirmAddAtPeek,
             )
             is PinSheet.Entry -> EntryDrawerSheet(
                 entry = sheet.entry,

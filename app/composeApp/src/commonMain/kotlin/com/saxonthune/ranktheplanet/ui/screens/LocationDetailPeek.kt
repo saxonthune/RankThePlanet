@@ -63,12 +63,12 @@ internal fun LocationDetailPeek(
                                 )
                             },
                             supportingContent = {
-                                if (entry.visited) {
-                                    Text("Visited", style = MaterialTheme.typography.bodySmall)
+                                if (entry.reviewed) {
+                                    Text("Reviewed", style = MaterialTheme.typography.bodySmall)
                                 } else {
                                     AssistChip(
                                         onClick = {},
-                                        label = { Text("Not yet visited") },
+                                        label = { Text("Not yet reviewed") },
                                         leadingIcon = {
                                             Icon(Icons.Default.Info, contentDescription = null)
                                         },

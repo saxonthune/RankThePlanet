@@ -11,7 +11,7 @@
     },
     {
       "id": "reviewBlock",
-      "purpose": "Bottom of the sheet — a tall, full-width tap target reflecting the Review. First line shows the visited status: 'Unvisited' when the Entry has no Review instance, or 'Visited {date}' using the Review instance's created date when it does. Second line shows the Review's summary field (Review.template.summaryField, doc01.03 §3) rendered to a single line — a score renders in its configured style (stars, number, icon), text shows a truncated first line, an enum shows the picked option, a power-ranking shows its position; omitted when the template declares no summary field or the Entry is unreviewed. Pressing the block opens the Review form for editing. Sized for an easy tap (at least 56dp tall) with generous vertical padding between the two lines."
+      "purpose": "Bottom of the sheet — a tall, full-width tap target reflecting the Review. First line shows the reviewed status: 'Unreviewed' when the Entry has no Review instance, or 'Reviewed {date}' using the Review instance's created date when it does. Second line shows the Review's summary field (Review.template.summaryField, doc01.03 §3) rendered to a single line — a score renders in its configured style (stars, number, icon), text shows a truncated first line, an enum shows the picked option, a power-ranking shows its position; omitted when the template declares no summary field or the Entry is unreviewed. Pressing the block opens the Review form for editing. Sized for an easy tap (at least 56dp tall) with generous vertical padding between the two lines."
     }
   ],
   "affordances": [

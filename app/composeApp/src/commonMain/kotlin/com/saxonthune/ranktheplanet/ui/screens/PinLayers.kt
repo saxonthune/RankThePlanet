@@ -68,7 +68,7 @@ internal fun PinLayers(
         iconColor = switch(
             kindExpr,
             case("multi", const(offWhite)),
-            case("multi-unvisited", const(grey)),
+            case("multi-unreviewed", const(grey)),
             fallback = colorExpr,
         ),
         iconSize = const(1.0f),
@@ -95,13 +95,13 @@ internal fun PinLayers(
         filter = any(
             kindExpr eq const("reviewed"),
             kindExpr eq const("multi"),
-            kindExpr eq const("multi-unvisited"),
+            kindExpr eq const("multi-unreviewed"),
         ),
         iconImage = switch(
             kindExpr,
             case("reviewed", dotImage),
             case("multi", plusImage),
-            case("multi-unvisited", plusImage),
+            case("multi-unreviewed", plusImage),
             fallback = dotImage,
         ),
         iconColor = const(Color.Black),
@@ -138,8 +138,8 @@ private fun PinFrame.toGeoJsonString(): String =
     }.toString()
 
 private fun PinKind.token(): String = when (this) {
-    PinKind.Unvisited -> "unvisited"
+    PinKind.Unreviewed -> "unreviewed"
     PinKind.Reviewed -> "reviewed"
     PinKind.Multi -> "multi"
-    PinKind.MultiUnvisited -> "multi-unvisited"
+    PinKind.MultiUnreviewed -> "multi-unreviewed"
 }

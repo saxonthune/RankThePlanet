@@ -126,7 +126,7 @@
         "shows": [
           "a pin at the Entry's Location coordinates",
           "the pin colored by its Collection's appearance",
-          "visited or unvisited styling from the Entry's Review status"
+          "reviewed or unreviewed styling from the Entry's Review status"
         ],
         "affordance": {
           "id": "tap-pin",

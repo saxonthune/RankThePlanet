@@ -40,8 +40,8 @@ data class EntrySummaryUi(
     val collectionName: String,
     val collectionColor: Color,
     val locationName: String,
-    val visited: Boolean,
-    val visitedDate: String?,
+    val reviewed: Boolean,
+    val reviewedDate: String?,
     val summaryPreview: String?,
 )
 
@@ -85,7 +85,7 @@ data class CollectionPickRowUi(
     val entryCount: Int,
 )
 
-enum class PinKind { Unvisited, Reviewed, Multi, MultiUnvisited }
+enum class PinKind { Unreviewed, Reviewed, Multi, MultiUnreviewed }
 
 data class PinUi(
     val entryId: EntryId,
@@ -95,7 +95,7 @@ data class PinUi(
     val lng: Double,
     val color: Color,
     val colorHex: String,
-    val visited: Boolean,
+    val reviewed: Boolean,
     val kind: PinKind,
 )
 
@@ -241,12 +241,12 @@ class MapOverviewViewModel(
                 val siblings = byLocation[entry.location.id].orEmpty()
                 val isMulti = siblings.size > 1
                 val anyReviewed = siblings.any { it.review != null }
-                val visited = entry.review != null
+                val reviewed = entry.review != null
                 val kind = when {
                     isMulti && anyReviewed -> PinKind.Multi
-                    isMulti -> PinKind.MultiUnvisited
-                    visited -> PinKind.Reviewed
-                    else -> PinKind.Unvisited
+                    isMulti -> PinKind.MultiUnreviewed
+                    reviewed -> PinKind.Reviewed
+                    else -> PinKind.Unreviewed
                 }
                 PinUi(
                     entryId = entry.id,
@@ -256,7 +256,7 @@ class MapOverviewViewModel(
                     lng = entry.location.coordinates.lng,
                     color = parseAppearanceColor(col.appearance.color),
                     colorHex = col.appearance.color,
-                    visited = visited,
+                    reviewed = reviewed,
                     kind = kind,
                 )
             }.toImmutableList()
@@ -342,7 +342,7 @@ class MapOverviewViewModel(
         return locationEntries.mapNotNull { e ->
             val col = collectionMap[e.collectionId] ?: return@mapNotNull null
             val template = templateMap[e.collectionId]
-            val visitedDate = if (e.review != null) formatShortDate(e.review.created) else null
+            val reviewedDate = if (e.review != null) formatShortDate(e.review.created) else null
             val summaryPreview = run {
                 val field = template?.summaryField ?: return@run null
                 val review = e.review ?: return@run null
@@ -356,8 +356,8 @@ class MapOverviewViewModel(
                 collectionName = col.name,
                 collectionColor = parseAppearanceColor(col.appearance.color),
                 locationName = e.location.displayName,
-                visited = e.review != null,
-                visitedDate = visitedDate,
+                reviewed = e.review != null,
+                reviewedDate = reviewedDate,
                 summaryPreview = summaryPreview,
             )
         }

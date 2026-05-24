@@ -7,7 +7,7 @@
     },
     {
       "id": "entries",
-      "purpose": "The right half of the skinny peek — a vertically scrolling list of every Collection Entry that references this Location, one per Collection. Each row shows the owning Collection's name and appearance color and the Entry's visited/unvisited state."
+      "purpose": "The right half of the skinny peek — a vertically scrolling list of every Collection Entry that references this Location, one per Collection. Each row shows the owning Collection's name and appearance color and the Entry's reviewed/unreviewed state."
     }
   ],
   "affordances": [
@@ -37,7 +37,7 @@
         "shows": [
           "the owning Collection's name",
           "the owning Collection's appearance color",
-          "the Entry's visited or unvisited state"
+          "the Entry's reviewed or unreviewed state"
         ],
         "affordance": {
           "id": "pick-entry",

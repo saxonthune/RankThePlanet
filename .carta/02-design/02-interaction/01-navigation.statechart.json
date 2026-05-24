@@ -5,7 +5,7 @@
   "states": {
 
     "MapOverview": {
-      "description": "The everything view. Default landing surface. Shows pins for every Collection Entry in every visible Collection, colored by Collection appearance and styled by visited/unvisited state. The surface has two entry modes, determined by how the user arrived: the default browse mode (the landing surface), and an add-to-collection mode entered from CollectionDetail's TAP_ADD_ENTRY, in which a Collection is held as entry context (`collection-context`). The map, pins, and search are identical in both modes — add-to-collection mode only adds a status bar naming the target Collection and routes every Location the user opens back to that one Collection. Mode is a parameterized entry context, not a separate surface. See doc01.03 §4.",
+      "description": "The everything view. Default landing surface. Shows pins for every Collection Entry in every visible Collection, colored by Collection appearance and styled by reviewed/unreviewed state. The surface has two entry modes, determined by how the user arrived: the default browse mode (the landing surface), and an add-to-collection mode entered from CollectionDetail's TAP_ADD_ENTRY, in which a Collection is held as entry context (`collection-context`). The map, pins, and search are identical in both modes — add-to-collection mode only adds a status bar naming the target Collection and routes every Location the user opens back to that one Collection. Mode is a parameterized entry context, not a separate surface. See doc01.03 §4.",
       "tags": ["landing", "map"],
       "meta": {
         "surface": "MapOverview",
@@ -112,7 +112,7 @@
     },
 
     "EntrySheet": {
-      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationSheet's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (a downstream rendering choice on MapOverview's TAP_PIN_SINGLE that skips LocationSheet's split peek when there is nothing to fan out to). A lightweight handoff hub, not the canonical detail screen: three stacked pressable regions — a collection row that presses through to the owning Collection, a location block that presses through to the LocationSheet peek of that Location (the user's entry point for adding a sibling Entry at the same Location), and a review block reflecting visited status and the template's summaryField (doc01.03 §3) that presses through to the Review form.",
+      "description": "A bottom-sheet peek of one Collection Entry over MapOverview, reached from LocationSheet's TAP_ENTRY — and the surface a single-entry pin tap effectively lands on (a downstream rendering choice on MapOverview's TAP_PIN_SINGLE that skips LocationSheet's split peek when there is nothing to fan out to). A lightweight handoff hub, not the canonical detail screen: three stacked pressable regions — a collection row that presses through to the owning Collection, a location block that presses through to the LocationSheet peek of that Location (the user's entry point for adding a sibling Entry at the same Location), and a review block reflecting reviewed status and the template's summaryField (doc01.03 §3) that presses through to the Review form.",
       "tags": ["sheet", "map"],
       "meta": {
         "surface": "EntrySheet",

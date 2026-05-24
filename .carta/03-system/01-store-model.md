@@ -27,7 +27,7 @@ Concept → table mapping. The DDL is the sidecar `store-model.schema.sql`; this
 - `location` — a Location (doc01.03 §2). Surrogate `id` for foreign keys; `UNIQUE (source_type, source_id)` carries the real identity. `cached_metadata` is opaque JSON.
 - `collection` — a Collection (§1). Holds `name`, optional `description`, `appearance`, the current `template_version`, and `is_visible` (absorbs Map Overview's persistent `collectionFilter`, §4).
 - `template_field` — Review template fields (§3), keyed `(collection_id, version, name)`. Carries `label` (user-facing string, distinct from `name` which is the immutable machine key) and `config` (per-type JSON; shape per doc01.03 §3, `NULL` for types whose config defaults). `editTemplate` bumps `collection.template_version`; old fields stay under their old version rather than being deleted — this is how "removed fields archived but not destroyed" works.
-- `entry` — an entry = a Location within a Collection, optionally carrying a Review. The Review *instance* folds in here (`data` JSON, `recorded_template_version`); there is no separate review table, because a Review never exists outside an entry (§3). `data` is `NULL` until the user submits a Review — a NULL-data entry is **unreviewed** (§3), which is what drives the Map Overview's unvisited pin styling. Once non-NULL, `data` is a JSON object whose keys match `template_field.name` at the recorded version; **absent key = unset**, empty-string is a distinct deliberate value (doc01.03 §3). `UNIQUE (collection_id, location_id)`: a Location appears at most once per Collection.
+- `entry` — an entry = a Location within a Collection, optionally carrying a Review. The Review *instance* folds in here (`data` JSON, `recorded_template_version`); there is no separate review table, because a Review never exists outside an entry (§3). `data` is `NULL` until the user submits a Review — a NULL-data entry is **unreviewed** (§3), which is what drives the Map Overview's unreviewed pin styling. Once non-NULL, `data` is a JSON object whose keys match `template_field.name` at the recorded version; **absent key = unset**, empty-string is a distinct deliberate value (doc01.03 §3). `UNIQUE (collection_id, location_id)`: a Location appears at most once per Collection.
 - `op_log` — append-only mutation log; see below.
 
 `viewport` and `selectedPin` (§4) are device-local session state, not in either store — they belong in a tiny file restored synchronously at launch (doc01.01 cold-start playbook).
@@ -46,7 +46,7 @@ Durability is step 2. Steps 3–5 may lag or fail without risking data.
 
 ## Overview projection (memoized secondary store)
 
-A derived projection holding exactly what `MapOverview.open()` needs to paint the first frame: `viewport`, `collectionFilter`, and `visiblePins` (entry id, lat/lng, collection color, visited flag). No review `data`, no templates.
+A derived projection holding exactly what `MapOverview.open()` needs to paint the first frame: `viewport`, `collectionFilter`, and `visiblePins` (entry id, lat/lng, collection color, reviewed flag). No review `data`, no templates.
 
 It is a **pure function of the local store** — rebuildable, never authoritative. If missing, stale, or corrupt, it is discarded and rebuilt; no data loss is possible.
 

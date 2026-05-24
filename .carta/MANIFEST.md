@@ -63,8 +63,8 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 
 | doc02.00 | `00-index.md` |  |  | — | — | — |
 | doc02.01 | `01-architecture.md` | Tech stack decisions: Compose Multiplatform + maplibre-compose for the map-first cross-platform app | design, architecture, stack, cmp, maplibre | doc01.01 | doc01.05, doc01.06.01, doc02.03, doc03.01, doc03.04, doc03.05 | — |
-| doc02.03 | `03-theme-tokens.md` | Three-tier design token system (primitive, semantic, provider) for the CMP theme: RtpColors, RtpSpacing, RtpTypography and the RtpTheme accessor | design, theme, tokens, styling, cmp | doc02.01 | — | — |
-| doc02.04 | `04-surface-composition-rules.md` | Two design rules for how surfaces compose — same-surface-different-mode, overlay-surfaces-are-not-routes | design, interaction, composition, rules | doc02.02.01, doc01.05 | — | — |
+| doc02.03 | `03-theme-tokens.md` | Three-tier design token system (primitive, semantic, provider) for the CMP theme: RtpColors, RtpSpacing, RtpTypography and the RtpTheme accessor | design, theme, tokens, styling, cmp | doc02.01 | doc02.05.00 | — |
+| doc02.04 | `04-surface-composition-rules.md` | Two design rules for how surfaces compose — same-surface-different-mode, overlay-surfaces-are-not-routes | design, interaction, composition, rules | doc02.02.01, doc01.05 | doc02.05.00 | — |
 
 ### Interaction
 
@@ -88,6 +88,14 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc02.02.02.12 | `02-interaction/02-screens/12-manage-providers.md` | Affordance inventory for the ManageProviders surface — current default header, list of provider rows that route to per-provider config | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.13 | `02-interaction/02-screens/13-provider-config.md` | Affordance inventory for the ProviderConfig surface — per-provider setup parameterized by provider-context, key entry for BYOK providers | design, interaction, screens | doc02.02.01, doc01.03, doc03.02.02 | — | inventory.json |
 | doc02.02.03 | `02-interaction/03-navigation-journeys.md` | User-intent navigation paths declared as event/target pairs; diffed against the statechart to surface chart-missing transitions, target mismatches, and undeclared screens | design, interaction, navigation, journeys, verification | doc02.02.01 | — | navigation.journeys.json |
+
+### Visual Language
+
+| Ref | File | Summary | Tags | Deps | Refs | Attachments |
+|-----|------|---------|------|------|------|-------------|
+
+| doc02.05.00 | `05-visual-language/00-index.md` | How RTP looks and feels on a screen — principles derived from a running grievance log, anchored to the broader UX canon | design, visual-language, index | doc02.03, doc02.04 | — | — |
+| doc02.05.01 | `05-visual-language/01-grievance-log.md` | Raw observations of what is off in current RTP screens — the source material for visual-language principles | design, visual-language, grievances, log | doc02.05 | — | — |
 
 ## 03-system — System
 
@@ -128,10 +136,11 @@ Quick lookup for file-path→doc mapping:
 | `coverage` | doc01.04.02 |
 | `data` | doc03.02.00, doc03.02.01 |
 | `debugging` | doc01.06.00, doc01.06.01 |
-| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.03, doc02.03, doc02.04 |
+| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.03, doc02.03, doc02.04, doc02.05.00, doc02.05.01 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
 | `gesture` | doc01.06.01 |
-| `index` | doc00.00, doc01.00, doc01.06.00, doc02.02.00, doc02.02.02.00, doc03.00 |
+| `grievances` | doc02.05.01 |
+| `index` | doc00.00, doc01.00, doc01.06.00, doc02.02.00, doc02.02.02.00, doc02.05.00, doc03.00 |
 | `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.03, doc02.04 |
 | `interfaces` | doc03.02.00, doc03.02.01 |
 | `ios` | doc01.06.01 |
@@ -139,6 +148,7 @@ Quick lookup for file-path→doc mapping:
 | `latency` | doc01.06.01 |
 | `licensing` | doc03.02.02 |
 | `location` | doc03.02.01, doc03.02.02 |
+| `log` | doc02.05.01 |
 | `luminous` | doc01.04.03 |
 | `maintenance` | doc00.02 |
 | `maplibre` | doc01.06.01, doc02.01, doc03.04, doc03.05 |
@@ -177,4 +187,5 @@ Quick lookup for file-path→doc mapping:
 | `use-cases` | doc01.02 |
 | `ux` | doc01.02 |
 | `verification` | doc01.04.02, doc02.02.03 |
+| `visual-language` | doc02.05.00, doc02.05.01 |
 | `wiring` | doc03.03 |

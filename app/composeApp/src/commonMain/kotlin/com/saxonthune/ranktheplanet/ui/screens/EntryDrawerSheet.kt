@@ -68,12 +68,12 @@ internal fun EntryDrawerSheet(
             modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
         ) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                val visitedLine = when {
-                    entry.visited && entry.visitedDate != null -> "Visited ${entry.visitedDate}"
-                    entry.visited -> "Visited"
-                    else -> "Unvisited"
+                val reviewedLine = when {
+                    entry.reviewed && entry.reviewedDate != null -> "Reviewed ${entry.reviewedDate}"
+                    entry.reviewed -> "Reviewed"
+                    else -> "Unreviewed"
                 }
-                Text(visitedLine, style = MaterialTheme.typography.bodyLarge)
+                Text(reviewedLine, style = MaterialTheme.typography.bodyLarge)
                 if (entry.summaryPreview != null) {
                     Spacer(Modifier.height(4.dp))
                     Text(

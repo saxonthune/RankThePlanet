@@ -176,7 +176,7 @@ object Fixtures {
             collectionId = nytTop100Id,
             location = locations[1],
             review = ReviewInstance(
-                data = persistentMapOf("rating" to "5", "notes" to "Exceptional tasting menu", "visited" to "true"),
+                data = persistentMapOf("rating" to "5", "notes" to "Exceptional tasting menu"),
                 recordedTemplateVersion = 1,
                 created = "2024-02-14T20:00:00Z",
                 lastModified = "2024-02-14T20:00:00Z",
@@ -188,7 +188,7 @@ object Fixtures {
             collectionId = nytTop100Id,
             location = locations[2],
             review = ReviewInstance(
-                data = persistentMapOf("rating" to "4", "notes" to "Creative seasonal menu", "visited" to "true"),
+                data = persistentMapOf("rating" to "4", "notes" to "Creative seasonal menu"),
                 recordedTemplateVersion = 1,
                 created = "2024-03-20T19:00:00Z",
                 lastModified = "2024-03-20T19:00:00Z",
@@ -305,10 +305,6 @@ object Fixtures {
                 TemplateField(
                     name = "notes", label = "Notes", type = FieldType.Text,
                     config = TemplateFieldConfig.Text(multiline = true), ordinal = 1,
-                ),
-                TemplateField(
-                    name = "visited", label = "Visited", type = FieldType.Boolean,
-                    config = TemplateFieldConfig.BooleanField, ordinal = 2,
                 ),
             )
         ),

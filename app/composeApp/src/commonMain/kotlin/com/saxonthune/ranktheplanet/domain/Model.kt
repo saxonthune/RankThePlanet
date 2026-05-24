@@ -99,7 +99,7 @@ data class VisiblePin(
     val entryId: EntryId,
     val coordinates: Coordinates,
     val collectionColor: String,
-    val visited: Boolean
+    val reviewed: Boolean
 )
 
 data class MapOverviewState(

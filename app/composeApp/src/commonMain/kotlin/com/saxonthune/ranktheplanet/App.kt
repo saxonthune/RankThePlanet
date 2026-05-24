@@ -11,11 +11,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.saxonthune.ranktheplanet.data.CollectionRepository
+import com.saxonthune.ranktheplanet.data.EntryRepository
+import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.fake.FakeRepositories
 import com.saxonthune.ranktheplanet.data.location.DefaultLocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.secure.SecureStore
 import com.saxonthune.ranktheplanet.data.secure.createSecureStore
+import com.saxonthune.ranktheplanet.data.sql.SqlRepositories
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.domain.SourceType
@@ -47,10 +51,14 @@ import com.saxonthune.ranktheplanet.ui.screens.SettingsScreen
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
 
 @Composable
-fun App() {
+fun App(repos: SqlRepositories? = null) {
     RtpTheme {
         val navController = rememberNavController()
-        val repos = remember { FakeRepositories() }
+        val fake = if (repos == null) remember { FakeRepositories() } else null
+        val collections: CollectionRepository = repos?.collections ?: fake!!.collections
+        val entries: EntryRepository = repos?.entries ?: fake!!.entries
+        val templates: TemplateRepository = repos?.templates ?: fake!!.templates
+
         val secureStore = remember { createSecureStore() }
         val registry by produceState<LocationProviderRegistry?>(initialValue = null, secureStore) {
             value = DefaultLocationProviderRegistry.create(secureStore)
@@ -62,7 +70,7 @@ fun App() {
                 val collectionId = route.addToCollectionId
                 val collectionName by produceState<String?>(initialValue = collectionId, collectionId) {
                     if (collectionId != null) {
-                        repos.collections.observe(CollectionId(collectionId)).collect { collection ->
+                        collections.observe(CollectionId(collectionId)).collect { collection ->
                             value = collection?.name ?: collectionId
                         }
                     }
@@ -77,9 +85,9 @@ fun App() {
                 }
                 MapOverviewScreen(
                     mode = mode,
-                    collections = repos.collections,
-                    entries = repos.entries,
-                    templates = repos.templates,
+                    collections = collections,
+                    entries = entries,
+                    templates = templates,
                     providerRegistry = r,
                     onCancelAdd = { navController.popBackStack() },
                     onOpenCollections = { navController.navigate(CollectionList) },
@@ -94,8 +102,8 @@ fun App() {
             }
             composable<CollectionList> {
                 CollectionListScreen(
-                    collections = repos.collections,
-                    entries = repos.entries,
+                    collections = collections,
+                    entries = entries,
                     onNewCollection = { navController.navigate(CollectionEditor) },
                     onImport = { navController.navigate(ImportFlow) },
                     onBack = { navController.popBackStack() },
@@ -106,9 +114,9 @@ fun App() {
                 val route = backStackEntry.toRoute<CollectionDetail>()
                 CollectionDetailScreen(
                     collectionId = CollectionId(route.collectionId),
-                    collections = repos.collections,
-                    entries = repos.entries,
-                    templates = repos.templates,
+                    collections = collections,
+                    entries = entries,
+                    templates = templates,
                     onAddEntry = { navController.navigate(MapOverview(route.collectionId)) },
                     onEditCollection = { navController.navigate(CollectionEditor) },
                     onBack = { navController.popBackStack() },
@@ -119,9 +127,9 @@ fun App() {
                 val route = backStackEntry.toRoute<CollectionEntryDetail>()
                 CollectionEntryDetailScreen(
                     entryId = EntryId(route.entryId),
-                    entries = repos.entries,
-                    collections = repos.collections,
-                    templates = repos.templates,
+                    entries = entries,
+                    collections = collections,
+                    templates = templates,
                     onEditReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onRemoveEntry = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
@@ -132,7 +140,7 @@ fun App() {
             composable<ReviewForm> { backStackEntry ->
                 val route = backStackEntry.toRoute<ReviewForm>()
                 val vm: ReviewFormViewModel = viewModel {
-                    ReviewFormViewModel(EntryId(route.entryId), repos.entries, repos.collections, repos.templates)
+                    ReviewFormViewModel(EntryId(route.entryId), entries, collections, templates)
                 }
                 val state by vm.uiState.collectAsStateWithLifecycle()
                 LaunchedEffect(vm) {

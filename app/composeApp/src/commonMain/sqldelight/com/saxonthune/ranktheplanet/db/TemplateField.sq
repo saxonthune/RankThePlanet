@@ -14,3 +14,13 @@ CREATE TABLE template_field (
 
 selectAll:
 SELECT * FROM template_field;
+
+selectByCollectionAndVersion:
+SELECT * FROM template_field WHERE collection_id = ? AND version = ? ORDER BY ordinal;
+
+insertField:
+INSERT INTO template_field (collection_id, version, ordinal, name, label, type, config, required)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteByCollectionAndVersion:
+DELETE FROM template_field WHERE collection_id = ? AND version = ?;

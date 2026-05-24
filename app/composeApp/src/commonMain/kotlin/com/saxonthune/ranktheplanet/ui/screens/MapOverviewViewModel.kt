@@ -62,6 +62,7 @@ sealed interface PinSheet {
         val lat: Double,
         val lng: Double,
         val entries: ImmutableList<EntrySummaryUi>,
+        val candidateLocation: Location? = null,
     ) : PinSheet
     data class Entry(val entry: EntrySummaryUi) : PinSheet
 }
@@ -354,7 +355,7 @@ class MapOverviewViewModel(
                     lng = c.coordinates.lng,
                     sourceType = c.sourceType,
                     sourceId = c.sourceId,
-                    detail = null,
+                    detail = c.detail,
                 )
             }
             is ProviderResult.Failed -> {
@@ -537,8 +538,10 @@ class MapOverviewViewModel(
 
     fun addEntryAtPeekLocation() {
         val peek = _pinSheet.value as? PinSheet.Peek ?: return
-        val firstEntryId = peek.entries.firstOrNull()?.entryId ?: return
-        val location = _latestEntries.value.find { it.id == firstEntryId }?.location ?: return
+        val location = peek.candidateLocation
+            ?: peek.entries.firstOrNull()?.entryId
+                ?.let { id -> _latestEntries.value.find { it.id == id }?.location }
+            ?: return
         _draft.value = LocationDraftSheet.Open(
             lat = location.coordinates.lat,
             lng = location.coordinates.lng,
@@ -556,6 +559,35 @@ class MapOverviewViewModel(
     fun startDraft(lat: Double, lng: Double, displayName: String? = null) {
         _draft.value = LocationDraftSheet.Open(lat, lng, displayName)
         findNearby()
+    }
+
+    fun pickSearchCandidate(hit: SearchHitUi.Candidate, inAddMode: Boolean) {
+        val resolved = Location(
+            id = LocationId(Random.nextInt(0x1000000, 0x7fffffff).toString(16)),
+            coordinates = Coordinates(hit.lat, hit.lng),
+            displayName = hit.displayName,
+            sourceType = hit.sourceType,
+            sourceId = hit.sourceId ?: "",
+            cachedMetadata = null,
+            refreshable = hit.sourceId != null,
+        )
+        if (inAddMode) {
+            _draft.value = LocationDraftSheet.Open(
+                lat = hit.lat,
+                lng = hit.lng,
+                displayName = hit.displayName,
+                phase = DraftPhase.AddToCollection,
+                existingLocation = resolved,
+            )
+        } else {
+            _pinSheet.value = PinSheet.Peek(
+                locationName = resolved.displayName,
+                lat = resolved.coordinates.lat,
+                lng = resolved.coordinates.lng,
+                entries = persistentListOf(),
+                candidateLocation = resolved,
+            )
+        }
     }
 
     fun dismissDraft() {
@@ -602,8 +634,8 @@ class MapOverviewViewModel(
     fun backToDraft() {
         val current = _draft.value as? LocationDraftSheet.Open ?: return
         val existing = current.existingLocation
-        if (existing != null) {
-            val summaries = buildLocationEntries(existing.id).orEmpty()
+        val summaries = existing?.let { buildLocationEntries(it.id) }
+        if (existing != null && summaries != null) {
             _draft.value = LocationDraftSheet.None
             _pinSheet.value = PinSheet.Peek(
                 locationName = existing.displayName,
@@ -611,6 +643,8 @@ class MapOverviewViewModel(
                 lng = existing.coordinates.lng,
                 entries = summaries.toImmutableList(),
             )
+        } else if (existing != null) {
+            dismissDraft()
         } else {
             _draft.value = current.copy(phase = DraftPhase.Draft)
         }

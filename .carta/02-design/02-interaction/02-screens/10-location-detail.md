@@ -8,7 +8,7 @@ verify: [{"kind":"screen-inventory","sidecar":"10-location-detail.inventory.json
 
 # Location Detail
 
-The affordance inventory for the `LocationSheet` surface — a skinny bottom-sheet peek of one Location and every Collection Entry that references it, opened by tapping a pin on `MapOverview` ([[03-concepts]], doc01.03 §2). **The source of truth is the carta sidecar `10-location-detail.inventory.json`** ([[00-index]], doc02.02.02.00 explains the shape); this `.md` is a lean companion.
+The affordance inventory for the `LocationSheet` surface — a skinny bottom-sheet peek of one Location and every Collection Entry that references it, opened by tapping a pin on `MapOverview` or by picking a provider candidate from `MapOverview`'s search in browse mode ([[03-concepts]], doc01.03 §2). On the search-pick path the candidate arrives as `location-context` with no Entries yet — the peek's *Add another Entry at this Location* affordance is the only meaningful next step. **The source of truth is the carta sidecar `10-location-detail.inventory.json`** ([[00-index]], doc02.02.02.00 explains the shape); this `.md` is a lean companion.
 
 `LocationSheet` renders as a sheet (`meta.modality: sheet`) hosted by `MapOverview` (`meta.host: MapOverview`); the sheet's state lives in the host's UiState rather than being its own route ([[04-surface-composition-rules]], doc02.04).
 

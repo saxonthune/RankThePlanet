@@ -31,7 +31,8 @@
       "region": "collections",
       "event": "TAP_NEW_COLLECTION",
       "target": "CollectionEditor",
-      "action": "Collection.create"
+      "action": "Collection.create",
+      "note": "Propagates return-to-draft-context. The candidate Location stays in the MapOverview host's UiState while the editor is on top; CollectionEditor's DONE_AS_DRAFT_RETURN pops back to MapOverview, commits the candidate against the just-created Collection, and surfaces the same post-add Snackbar as PICK_COLLECTION."
     }
   ],
   "lists": [
@@ -56,7 +57,7 @@
           "note": "Commits the Entry and dismisses the sheet; the host carries the new Entry as pending-review-context and renders a Snackbar prompt to author the Review. See doc02.02.02.07."
         }
       },
-      "emptyState": "When the user has no Collections, the region shows a hint pointing at New Collection. The candidate Location is held in the host's UiState; tapping New Collection enters CollectionEditor and the flow resumes on its DONE."
+      "emptyState": "When the user has no Collections, the region shows a hint pointing at New Collection. The candidate Location is held in the host's UiState; tapping New Collection enters CollectionEditor with return-to-draft-context, and DONE_AS_DRAFT_RETURN resumes the flow by committing the candidate against the just-created Collection."
     }
   ],
   "deferred": ["Collection.addEntry"]

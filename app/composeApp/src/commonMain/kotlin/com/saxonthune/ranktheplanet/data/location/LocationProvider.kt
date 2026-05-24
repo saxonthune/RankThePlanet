@@ -8,7 +8,8 @@ data class LocationCandidate(
     val displayName: String,
     val sourceType: SourceType,
     val sourceId: String?,
-    val cachedMetadata: String?
+    val cachedMetadata: String?,
+    val detail: String? = null,
 )
 
 sealed interface ProviderResult<out T> {

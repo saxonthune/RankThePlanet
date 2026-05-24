@@ -31,10 +31,17 @@
     },
     {
       "id": "pick-search-result",
-      "description": "Pick a search result from the search affordance → LocationDraftSheet rendering that result.",
+      "description": "Browse-mode pick of a provider candidate → LocationSheet showing the resolved Location with an empty entries list, where TAP_ADD_ENTRY is the next step into AddLocationToCollection.",
       "start": "MapOverview",
       "events":  ["PICK_SEARCH_RESULT"],
-      "targets": ["LocationDraftSheet"]
+      "targets": ["LocationSheet"]
+    },
+    {
+      "id": "pick-search-result-for-add",
+      "description": "Add-to-collection mode pick of a provider candidate → AddLocationToCollection with the candidate pre-filled and the originating Collection pre-selected (skips both LocationSheet and LocationDraftSheet). Mode-only journey: meaningful only when MapOverview carries a collection-context.",
+      "start": "MapOverview",
+      "events":  ["PICK_SEARCH_RESULT_FOR_ADD"],
+      "targets": ["AddLocationToCollection"]
     },
     {
       "id": "open-settings",
@@ -105,6 +112,13 @@
       "start": "MapOverview",
       "events":  ["TAP_PIN_SINGLE", "VIEW_COLLECTION"],
       "targets": ["EntrySheet",     "CollectionDetail"]
+    },
+    {
+      "id": "drop-pin-new-collection-to-review",
+      "description": "Drop a pin, open AddLocationToCollection, pick *New Collection* to create one mid-flow, finish the editor, land back on MapOverview with the candidate auto-committed against the just-created Collection, then tap the post-add Snackbar to author the Review. The CollectionEditor detour preserves the in-flight candidate in the MapOverview host's UiState; DONE_AS_DRAFT_RETURN is modeled as a distinct event from DONE because the schema's one-transition-per-event constraint cannot branch on `return-to-draft-context`.",
+      "start": "MapOverview",
+      "events":  ["DROP_PIN",          "ADD_TO_COLLECTION",       "TAP_NEW_COLLECTION", "DONE_AS_DRAFT_RETURN", "GO_TO_REVIEW"],
+      "targets": ["LocationDraftSheet","AddLocationToCollection", "CollectionEditor",   "MapOverview",          "ReviewForm"]
     },
     {
       "id": "browse-to-submit-review",

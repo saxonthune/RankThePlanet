@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -98,8 +100,16 @@ fun MapOverviewScreen(
     onNewCollectionForDraft: () -> Unit,
     onGoToReview: (EntryId) -> Unit,
     onPendingReviewDismissed: () -> Unit,
+    pendingNewCollectionForDraft: String? = null,
+    onPendingNewCollectionForDraftConsumed: () -> Unit = {},
 ) {
     val vm = viewModel { MapOverviewViewModel(collections, entries, providerRegistry, templates, projection, session, locations) }
+
+    LaunchedEffect(pendingNewCollectionForDraft) {
+        val id = pendingNewCollectionForDraft ?: return@LaunchedEffect
+        vm.pickCollectionForDraft(CollectionId(id))
+        onPendingNewCollectionForDraftConsumed()
+    }
     val state by vm.uiState.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -107,6 +117,13 @@ fun MapOverviewScreen(
     val sheetState = rememberModalBottomSheetState()
 
     var searchExpanded by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+
+    val closeSearch = {
+        searchExpanded = false
+        searchQuery = ""
+        vm.onQueryChange("")
+    }
 
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
@@ -174,6 +191,10 @@ fun MapOverviewScreen(
         }
     }
 
+    BackHandler(enabled = searchExpanded) {
+        closeSearch()
+    }
+
     BackHandler(enabled = state.draft is LocationDraftSheet.Open || state.pinSheet !is PinSheet.None) {
         val draft = state.draft
         if (draft is LocationDraftSheet.Open) {
@@ -193,11 +214,17 @@ fun MapOverviewScreen(
                             containerColor = Color.Transparent,
                         ),
                         navigationIcon = {
-                            when (mode) {
-                                is MapMode.Browse -> IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            when {
+                                searchExpanded -> IconButton(onClick = { closeSearch() }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Close search",
+                                    )
+                                }
+                                mode is MapMode.Browse -> IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                     Icon(Icons.Default.Menu, contentDescription = "Open the app menu")
                                 }
-                                is MapMode.AddingToCollection -> IconButton(onClick = onCancelAdd) {
+                                mode is MapMode.AddingToCollection -> IconButton(onClick = onCancelAdd) {
                                     Icon(Icons.Default.Close, contentDescription = "Cancel adding")
                                 }
                             }
@@ -206,9 +233,13 @@ fun MapOverviewScreen(
                         actions = {
                             SearchBarField(
                                 expanded = searchExpanded,
+                                query = searchQuery,
                                 onFocus = { searchExpanded = true },
                                 onSearch = { vm.onSubmitSearch(it) },
-                                onQueryChange = { vm.onQueryChange(it) },
+                                onQueryChange = {
+                                    searchQuery = it
+                                    vm.onQueryChange(it)
+                                },
                             )
                         },
                     )
@@ -219,41 +250,18 @@ fun MapOverviewScreen(
                         ) {
                             Column {
                                 state.searchHits.forEach { hit ->
-                                    when (hit) {
-                                        is SearchHitUi.ExistingEntry -> {
-                                            ListItem(
-                                                headlineContent = { Text(hit.displayName) },
-                                                leadingContent = {
-                                                    Row {
-                                                        hit.dots.forEach { dotColor ->
-                                                            Box(
-                                                                modifier = androidx.compose.ui.Modifier
-                                                                    .size(10.dp)
-                                                                    .background(dotColor, CircleShape)
-                                                            )
-                                                            Spacer(modifier = androidx.compose.ui.Modifier.width(2.dp))
-                                                        }
-                                                    }
-                                                },
-                                                modifier = Modifier.clickable {
-                                                    vm.pickExistingHit(hit.locationId)
-                                                },
-                                            )
-                                        }
-                                        is SearchHitUi.Candidate -> {
-                                            ListItem(
-                                                headlineContent = { Text(hit.displayName) },
-                                                supportingContent = hit.detail?.let { { Text(it) } },
-                                                modifier = Modifier.clickable {
-                                                    vm.startDraft(
-                                                        lat = hit.lat,
-                                                        lng = hit.lng,
-                                                        displayName = hit.displayName,
-                                                    )
-                                                },
-                                            )
-                                        }
-                                    }
+                                    SearchHitRow(
+                                        hit = hit,
+                                        onClick = {
+                                            when (hit) {
+                                                is SearchHitUi.ExistingEntry -> vm.pickExistingHit(hit.locationId)
+                                                is SearchHitUi.Candidate -> vm.pickSearchCandidate(
+                                                    hit = hit,
+                                                    inAddMode = mode is MapMode.AddingToCollection,
+                                                )
+                                            }
+                                        },
+                                    )
                                     HorizontalDivider()
                                 }
                             }
@@ -373,12 +381,69 @@ fun MapOverviewScreen(
             onAdoptCandidate = { vm.adoptCandidate(it) },
             onKeepCoordinates = { vm.keepCoordinates() },
             onBackToDraft = { vm.backToDraft() },
-            onNewCollection = {
-                vm.dismissDraft()
-                onNewCollectionForDraft()
-            },
+            onNewCollection = { onNewCollectionForDraft() },
             onPickCollection = { vm.pickCollectionForDraft(it) },
         )
+    }
+}
+
+@Composable
+private fun SearchHitRow(
+    hit: SearchHitUi,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            modifier = Modifier.size(32.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            when (hit) {
+                is SearchHitUi.ExistingEntry -> {
+                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        hit.dots.take(3).forEach { dotColor ->
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .background(dotColor, CircleShape)
+                            )
+                        }
+                    }
+                }
+                is SearchHitUi.Candidate -> {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = hit.displayName,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+            val detail = (hit as? SearchHitUi.Candidate)?.detail
+            if (detail != null) {
+                Text(
+                    text = detail,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 }
 

@@ -21,7 +21,16 @@
       "label": "Finish editing",
       "region": "topBar",
       "event": "DONE",
-      "target": "CollectionDetail"
+      "target": "CollectionDetail",
+      "altAffordances": [
+        {
+          "id": "done-as-draft-return",
+          "label": "Finish editing (return to map and commit candidate)",
+          "event": "DONE_AS_DRAFT_RETURN",
+          "target": "MapOverview",
+          "note": "Same Save affordance as DONE. Fires this alt event when return-to-draft-context is set (editor reached from AddLocationToCollection's TAP_NEW_COLLECTION). The host commits the in-flight candidate Location against the just-created Collection (Location.addToCollection) and emerges in MapOverview with pending-review-context."
+        }
+      ]
     },
     {
       "id": "cancel",

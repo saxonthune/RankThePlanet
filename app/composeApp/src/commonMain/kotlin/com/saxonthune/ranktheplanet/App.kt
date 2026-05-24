@@ -3,8 +3,10 @@ package com.saxonthune.ranktheplanet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -71,6 +73,7 @@ fun App(graph: RtpAppGraph? = null) {
         val registry by produceState<LocationProviderRegistry?>(initialValue = null, secureStore) {
             value = DefaultLocationProviderRegistry.create(secureStore)
         }
+        var pendingNewCollectionForDraft by remember { mutableStateOf<String?>(null) }
         NavHost(navController = navController, startDestination = MapOverview()) {
             composable<MapOverview> { backStackEntry ->
                 val r = registry ?: return@composable
@@ -106,9 +109,13 @@ fun App(graph: RtpAppGraph? = null) {
                     onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
                     onEditReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onPickCollectionForDraft = { },
-                    onNewCollectionForDraft = { navController.navigate(CollectionEditor()) },
+                    onNewCollectionForDraft = {
+                        navController.navigate(CollectionEditor(addToDraft = true))
+                    },
                     onGoToReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onPendingReviewDismissed = { },
+                    pendingNewCollectionForDraft = pendingNewCollectionForDraft,
+                    onPendingNewCollectionForDraftConsumed = { pendingNewCollectionForDraft = null },
                 )
             }
             composable<CollectionList> {
@@ -178,7 +185,10 @@ fun App(graph: RtpAppGraph? = null) {
                 CollectionEditorScreen(
                     viewModel = vm,
                     onSaved = { id ->
-                        if (mode is EditorMode.Create) {
+                        if (route.addToDraft) {
+                            pendingNewCollectionForDraft = id.value
+                            navController.popBackStack()
+                        } else if (mode is EditorMode.Create) {
                             navController.navigate(CollectionDetail(id.value)) {
                                 popUpTo<CollectionEditor> { inclusive = true }
                             }

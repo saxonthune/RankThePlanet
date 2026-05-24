@@ -102,31 +102,40 @@ class OsmLocationProvider(
     private fun PhotonFeature.toCandidate(): LocationCandidate {
         val lng = geometry.coordinates.getOrElse(0) { 0.0 }
         val lat = geometry.coordinates.getOrElse(1) { 0.0 }
-        val nameParts = listOfNotNull(
-            properties.name,
-            properties.city,
-            properties.state,
-            properties.country
-        )
-        val displayName = if (nameParts.isEmpty()) "(unknown)" else nameParts.joinToString(", ")
+        val streetLine = listOfNotNull(properties.housenumber, properties.street)
+            .joinToString(" ")
+            .takeIf { it.isNotBlank() }
+        val primary = properties.name ?: streetLine ?: properties.city ?: "(unknown)"
+        val detailParts = buildList {
+            if (properties.name != null && streetLine != null) add(streetLine)
+            properties.city?.let { add(it) }
+            properties.state?.let { add(it) }
+            properties.country?.let { add(it) }
+        }.filterNot { it == primary }
+        val detail = detailParts.joinToString(", ").takeIf { it.isNotBlank() }
         val sourceId = buildSourceId(properties.osm_type, properties.osm_id)
         return LocationCandidate(
             coordinates = Coordinates(lat = lat, lng = lng),
-            displayName = displayName,
+            displayName = primary,
             sourceType = SourceType.Osm,
             sourceId = sourceId,
-            cachedMetadata = json.encodeToString(this)
+            cachedMetadata = json.encodeToString(this),
+            detail = detail,
         )
     }
 
     private fun NominatimPlace.toCandidate(): LocationCandidate {
+        val parts = displayName.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        val primary = parts.firstOrNull() ?: displayName
+        val detail = parts.drop(1).joinToString(", ").takeIf { it.isNotBlank() }
         val sourceId = buildSourceId(osm_type, osm_id)
         return LocationCandidate(
             coordinates = Coordinates(lat = lat.toDouble(), lng = lon.toDouble()),
-            displayName = displayName,
+            displayName = primary,
             sourceType = SourceType.Osm,
             sourceId = sourceId,
-            cachedMetadata = json.encodeToString(this)
+            cachedMetadata = json.encodeToString(this),
+            detail = detail,
         )
     }
 

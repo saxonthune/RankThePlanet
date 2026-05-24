@@ -52,9 +52,15 @@
           "propagates": ["collection-context"]
         },
         "PICK_SEARCH_RESULT": {
-          "target": "LocationDraftSheet",
-          "description": "User picks an unadopted provider candidate from the search result list. The picked candidate opens in LocationDraftSheet for inspection before it is committed. One of two terminal events on the search list — the other is PICK_SEARCH_ENTRY for hits that already correspond to a saved Location.",
-          "propagates": ["collection-context"]
+          "target": "LocationSheet",
+          "description": "Browse-mode pick of an unadopted provider candidate. The candidate already carries everything a Location needs (displayName, coordinates, sourceType, sourceId) so it skips LocationDraftSheet's coordinate-resolution step and opens LocationSheet with the candidate as `location-context`. The entries list is empty for a fresh candidate; the peek's `TAP_ADD_ENTRY` is the next step into AddLocationToCollection. Sibling to PICK_SEARCH_RESULT_FOR_ADD (the add-mode variant) and PICK_SEARCH_ENTRY (the existing-Location variant); modeled as distinct events because the schema permits only one transition per event.",
+          "propagates": ["location-context"]
+        },
+        "PICK_SEARCH_RESULT_FOR_ADD": {
+          "target": "AddLocationToCollection",
+          "guard": "inAddMode",
+          "description": "Add-mode pick of an unadopted provider candidate. Live only when `collection-context` is set (the user reached MapOverview via CollectionDetail's TAP_ADD_ENTRY). Skips LocationSheet — the user already committed to adding a Location to a Collection, so the peek would be friction — and opens AddLocationToCollection directly with the candidate as `location-context` and the originating Collection pre-selected. Same affordance as PICK_SEARCH_RESULT; modeled as a distinct event because the target differs by mode and the schema permits only one transition per event.",
+          "propagates": ["collection-context", "location-context"]
         },
         "PICK_SEARCH_ENTRY": {
           "target": "LocationSheet",
@@ -83,13 +89,16 @@
     },
 
     "LocationSheet": {
-      "description": "A skinny bottom-sheet peek over MapOverview, reached either by tapping a multi-entry pin or by tapping the locationBlock on EntrySheet. The left half identifies the Location; the right half is a scrolling list of every Collection Entry that references it, followed by an *Add another Entry at this Location* affordance that lets the user bind a new Entry to the same Location. The list renders for any Entry count ≥ 1, so a single-entry list is a one-row list above the add affordance — used as the entry point for adding sibling Entries from EntrySheet's TAP_LOCATION. Tapping an entry row picks it and opens EntrySheet. See doc01.03 §2.",
+      "description": "A skinny bottom-sheet peek over MapOverview, reached by tapping a multi-entry pin, by tapping the locationBlock on EntrySheet, or by picking a provider candidate from MapOverview's search in browse mode (PICK_SEARCH_RESULT carries the candidate as `location-context`). The left half identifies the Location; the right half is a scrolling list of every Collection Entry that references it, followed by an *Add another Entry at this Location* affordance that lets the user bind a new Entry to the same Location. The list renders for any Entry count ≥ 1, so a single-entry list is a one-row list above the add affordance — used as the entry point for adding sibling Entries from EntrySheet's TAP_LOCATION. For a fresh provider candidate reached via search, the entries list is empty and the add affordance is the only meaningful next step. Tapping an entry row picks it and opens EntrySheet. See doc01.03 §2.",
       "tags": ["sheet", "map"],
       "meta": {
         "surface": "LocationSheet",
         "modality": "sheet",
         "host": "MapOverview",
-        "reads": ["location", "entries-for-location", "collections-with-location"],
+        "context": {
+          "location-context": "Forwarded by MapOverview's PICK_SEARCH_RESULT when a provider candidate is picked in browse mode. The candidate Location backs the peek; its entries list is empty because no Entry references it yet. TAP_ADD_ENTRY forwards the same `location-context` onward to AddLocationToCollection."
+        },
+        "reads": ["location", "entries-for-location", "collections-with-location", "location-context"],
         "actions": ["Location.openExternally", "Location.refresh"]
       },
       "on": {
@@ -285,30 +294,40 @@
       "meta": {
         "surface": "CollectionEditor",
         "modality": "fullScreen",
-        "reads": ["collection", "template"],
+        "context": {
+          "return-to-draft-context": "Optional. Set by AddLocationToCollection's TAP_NEW_COLLECTION when the user creates a new Collection mid-flow with an in-flight candidate Location in the MapOverview host's UiState. When set, the Save affordance fires DONE_AS_DRAFT_RETURN (commit candidate against the just-created Collection, return to MapOverview with pending-review-context) instead of DONE (continue into CollectionDetail). The context itself carries no payload — the candidate Location already lives in the host's UiState and survives the editor being on top of the back stack."
+        },
+        "reads": ["collection", "template", "return-to-draft-context"],
         "actions": ["Collection.create", "Collection.edit", "Review.defineTemplate", "Review.editTemplate", "Review.useBuiltIn"]
       },
       "on": {
         "DONE": {
           "target": "CollectionDetail",
-          "description": "Collection metadata and template authored or edited; continue into the Collection."
+          "description": "Collection metadata and template authored or edited; continue into the Collection. The Save affordance fires this event when `return-to-draft-context` is unset (the default — reached from CollectionList's TAP_NEW_COLLECTION or CollectionDetail's TAP_EDIT_COLLECTION)."
+        },
+        "DONE_AS_DRAFT_RETURN": {
+          "target": "MapOverview",
+          "guard": "hasReturnToDraftContext",
+          "label": "Finish editing (return to map and commit candidate)",
+          "description": "Same Save affordance as DONE; modeled as a distinct event because the target differs by entry context and the schema permits only one transition per event. Live only when `return-to-draft-context` is set (the editor was reached from AddLocationToCollection's TAP_NEW_COLLECTION). The host commits the in-flight candidate Location against the just-created Collection (Location.addToCollection) and re-emerges in browse mode carrying the new Entry as `pending-review-context` — same post-add Snackbar machinery as AddLocationToCollection's PICK_COLLECTION.",
+          "propagates": ["pending-review-context"]
         },
         "CLOSE": {
           "target": "CollectionDetail",
-          "description": "Cancel without committing changes."
+          "description": "Cancel without committing changes. The chart names CollectionDetail as a representative target — in practice Cancel pops back to whichever surface opened the editor (CollectionDetail when reached from TAP_EDIT_COLLECTION; CollectionList when reached from its TAP_NEW_COLLECTION; AddLocationToCollection — i.e. MapOverview-with-candidate — when reached with `return-to-draft-context`). The schema's one-transition-per-event constraint forces a single named target; the verifier surfaces the per-path mismatch as target-mismatch in the journey corpus."
         }
       }
     },
 
     "LocationDraftSheet": {
-      "description": "A candidate Location not yet committed — a point dropped on the map or a search result picked from MapOverview. Shows the coordinates and offers nearby resolution candidates (Location.resolveNearby). The user keeps the coordinates as-is (Location.dropPin commits a manual Location) or adopts a resolved candidate. Rendered as a sheet over MapOverview — the map stays visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). See doc01.03 §2.",
+      "description": "A candidate Location not yet committed — a point dropped on the map. Shows the coordinates and offers nearby resolution candidates (Location.resolveNearby). The user keeps the coordinates as-is (Location.dropPin commits a manual Location) or adopts a resolved candidate. Rendered as a sheet over MapOverview — the map stays visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). Search-picked candidates skip this surface — they already carry a resolved Location and route straight into AddLocationToCollection via `location-context`. See doc01.03 §2.",
       "tags": ["sheet", "map"],
       "meta": {
         "surface": "LocationDraftSheet",
         "modality": "sheet",
         "host": "MapOverview",
         "context": {
-          "collection-context": "Forwarded by MapOverview's DROP_PIN / PICK_SEARCH_RESULT when add-to-collection mode is active. Not consumed by this surface; carried onward to AddLocationToCollection so the originating Collection is pre-selected."
+          "collection-context": "Forwarded by MapOverview's DROP_PIN when add-to-collection mode is active. Not consumed by this surface; carried onward to AddLocationToCollection so the originating Collection is pre-selected."
         },
         "reads": ["candidate-location", "nearby-candidates", "collection-context"],
         "actions": ["Location.dropPin", "Location.resolveNearby"]
@@ -332,7 +351,7 @@
     },
 
     "AddLocationToCollection": {
-      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, or an existing Location surfaced by LocationSheet's *Add another Entry at this Location*). User picks which Collection to add it to. Rendered as a sheet over MapOverview — the map and the candidate's geographic context stay visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). Reached from LocationDraftSheet's ADD_TO_COLLECTION (which dismisses the draft sheet and presents this one in its place) or from LocationSheet's TAP_ADD_ENTRY (which skips LocationDraftSheet because the Location is already settled — `location-context` carries the existing Location forward). PICK_COLLECTION commits the Entry and returns to MapOverview carrying the new Entry as `pending-review-context`, so the host can offer a Snackbar prompt to author the Review without forcing the user into the form. BACK steps one surface back — to LocationDraftSheet on the draft path, or to LocationSheet on the existing-Location path — preserving the carried context. CLOSE — the sheet's swipe-down or scrim-tap dismiss-gesture — drops any carried context and returns to a clean MapOverview. When reached with collection-context set, the originating Collection is pre-selected in the picker so PICK_COLLECTION confirms rather than chooses.",
+      "description": "Location-first flow: a Location is already chosen (dropped pin, shared link, a provider candidate picked from MapOverview's search in add mode, or an existing Location surfaced by LocationSheet's *Add another Entry at this Location*). User picks which Collection to add it to. Rendered as a sheet over MapOverview — the map and the candidate's geographic context stay visible behind it, and the host's UiState owns the sheet rather than this being a separate route (see [[04-surface-composition-rules]], doc02.04). Reached from LocationDraftSheet's ADD_TO_COLLECTION (which dismisses the draft sheet and presents this one in its place), from MapOverview's PICK_SEARCH_RESULT_FOR_ADD (the add-mode pick of a search candidate, which skips LocationSheet and LocationDraftSheet — `location-context` carries the candidate, `collection-context` carries the target Collection), or from LocationSheet's TAP_ADD_ENTRY (which skips LocationDraftSheet because the Location is already settled — `location-context` carries the Location forward, whether persisted from a pin tap or fresh from a browse-mode search pick). PICK_COLLECTION commits the Entry and returns to MapOverview carrying the new Entry as `pending-review-context`, so the host can offer a Snackbar prompt to author the Review without forcing the user into the form. BACK steps one surface back — to LocationDraftSheet on the draft path, to LocationSheet on the LocationSheet-derived path, or to MapOverview on the add-mode search-pick path (no prior sheet to re-present). CLOSE — the sheet's swipe-down or scrim-tap dismiss-gesture — drops any carried context and returns to a clean MapOverview. When reached with collection-context set, the originating Collection is pre-selected in the picker so PICK_COLLECTION confirms rather than chooses.",
       "tags": ["sheet", "picker"],
       "meta": {
         "surface": "AddLocationToCollection",
@@ -340,7 +359,7 @@
         "host": "MapOverview",
         "context": {
           "collection-context": "Forwarded from LocationDraftSheet's ADD_TO_COLLECTION. Consumed: pre-selects the Collection in the picker so PICK_COLLECTION confirms rather than chooses.",
-          "location-context": "Forwarded from LocationSheet's TAP_ADD_ENTRY. An already-committed Location (display name + coordinates + source) reused as the new Entry's Location, in place of LocationDraftSheet's candidate. Consumed by Location.addToCollection."
+          "location-context": "Forwarded from LocationSheet's TAP_ADD_ENTRY or MapOverview's PICK_SEARCH_RESULT_FOR_ADD. A resolved Location (display name + coordinates + source) — either an already-committed Location from LocationSheet, or a provider-resolved candidate picked from search — reused as the new Entry's Location in place of LocationDraftSheet's draft candidate. Consumed by Location.addToCollection."
         },
         "reads": ["collections", "candidate-location", "collection-context", "location-context"],
         "actions": ["Location.addToCollection", "Collection.addEntry", "Collection.create"]
@@ -353,11 +372,12 @@
         },
         "TAP_NEW_COLLECTION": {
           "target": "CollectionEditor",
-          "description": "None of the existing Collections fit; create a new one (Collection.create) in the CollectionEditor."
+          "description": "None of the existing Collections fit; create a new one (Collection.create) in the CollectionEditor. The in-flight candidate Location stays in the MapOverview host's UiState while the editor is on top of the back stack; CollectionEditor's DONE_AS_DRAFT_RETURN reads `return-to-draft-context` and pops back to MapOverview, committing the candidate against the just-created Collection (Location.addToCollection) and emerging with `pending-review-context` — same post-add Snackbar as PICK_COLLECTION. Distinct from the create-from-CollectionList entry point: there, CollectionEditor's DONE proceeds into CollectionDetail because no candidate is waiting to be committed.",
+          "propagates": ["return-to-draft-context"]
         },
         "BACK": {
           "target": "LocationDraftSheet",
-          "description": "Step one surface back. On the draft path (no `location-context`) returns to LocationDraftSheet with the candidate intact; on the existing-Location path (with `location-context`, entered from LocationSheet's TAP_ADD_ENTRY) returns to LocationSheet instead, preserving the carried Location. The host's UiState owns the carried context; the previous sheet re-presents unchanged."
+          "description": "Step one surface back. On the draft path (no `location-context`) returns to LocationDraftSheet with the candidate intact; on the LocationSheet-derived path (with `location-context`, entered from LocationSheet's TAP_ADD_ENTRY) returns to LocationSheet, preserving the carried Location; on the add-mode search-pick path (with `location-context`, entered from MapOverview's PICK_SEARCH_RESULT_FOR_ADD) returns to MapOverview with no prior sheet to re-present. The host's UiState owns the carried context; the previous sheet re-presents unchanged."
         },
         "CLOSE": {
           "target": "MapOverview",

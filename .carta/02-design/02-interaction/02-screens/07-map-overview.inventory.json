@@ -162,12 +162,19 @@
         ],
         "affordance": {
           "id": "pick-search-result",
-          "label": "Pick a provider candidate",
+          "label": "Pick a provider candidate (browse mode)",
           "event": "PICK_SEARCH_RESULT",
-          "target": "LocationDraftSheet",
-          "appliesWhen": "the hit is an unadopted provider candidate — no saved Location with this (sourceType, sourceId)"
+          "target": "LocationSheet",
+          "appliesWhen": "the hit is an unadopted provider candidate — no saved Location with this (sourceType, sourceId) — and the user is in browse mode (no `collection-context`)"
         },
         "altAffordances": [
+          {
+            "id": "pick-search-result-for-add",
+            "label": "Pick a provider candidate (add-to-collection mode)",
+            "event": "PICK_SEARCH_RESULT_FOR_ADD",
+            "target": "AddLocationToCollection",
+            "appliesWhen": "same affordance as pick-search-result, but emitted when `collection-context` is set so the candidate is funneled straight into the collection picker, skipping LocationSheet"
+          },
           {
             "id": "pick-search-entry",
             "label": "Pick an existing entry",

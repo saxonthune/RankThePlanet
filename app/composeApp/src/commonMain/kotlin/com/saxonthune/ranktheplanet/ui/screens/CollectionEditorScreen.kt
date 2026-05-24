@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -38,6 +40,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -188,9 +192,11 @@ private fun MetadataSection(
         )
 
         Text("Color", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        var showCustomPicker by remember { mutableStateOf(false) }
+        val isCustomColor = AppearancePalette.swatches.none { it.color == appearance.color }
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(AppearancePalette.swatches) { swatch ->
-                val selected = swatch.color == appearance.color
+                val selected = !isCustomColor && swatch.color == appearance.color
                 val color = parseHexColor(swatch.color)
                 Box(
                     modifier = Modifier
@@ -204,7 +210,121 @@ private fun MetadataSection(
                         .clickable { onAppearanceChange(swatch) },
                 )
             }
+            item {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isCustomColor) parseHexColor(appearance.color)
+                            else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        .border(
+                            width = if (isCustomColor) 3.dp else 1.dp,
+                            color = if (isCustomColor) MaterialTheme.colorScheme.onBackground
+                                else MaterialTheme.colorScheme.outline,
+                            shape = CircleShape,
+                        )
+                        .clickable { showCustomPicker = true },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (!isCustomColor) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Custom color",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
         }
+        if (showCustomPicker) {
+            CustomColorPickerDialog(
+                initial = appearance.color,
+                onDismiss = { showCustomPicker = false },
+                onConfirm = { hex ->
+                    onAppearanceChange(appearance.copy(color = hex))
+                    showCustomPicker = false
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun CustomColorPickerDialog(
+    initial: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    val initialRgb = remember(initial) { hexToRgbOrNull(initial) ?: Triple(128, 128, 128) }
+    var r by remember { mutableStateOf(initialRgb.first) }
+    var g by remember { mutableStateOf(initialRgb.second) }
+    var b by remember { mutableStateOf(initialRgb.third) }
+    var hexText by remember { mutableStateOf(rgbToHex(r, g, b)) }
+
+    fun syncHexFromRgb() {
+        hexText = rgbToHex(r, g, b)
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Custom color") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(r / 255f, g / 255f, b / 255f))
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp)),
+                )
+                OutlinedTextField(
+                    value = hexText,
+                    onValueChange = { input ->
+                        hexText = input
+                        hexToRgbOrNull(input)?.let { (nr, ng, nb) ->
+                            r = nr; g = ng; b = nb
+                        }
+                    },
+                    label = { Text("Hex") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                ChannelSlider("R", r, Color(0xFFE53935)) { r = it; syncHexFromRgb() }
+                ChannelSlider("G", g, Color(0xFF43A047)) { g = it; syncHexFromRgb() }
+                ChannelSlider("B", b, Color(0xFF1E88E5)) { b = it; syncHexFromRgb() }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(rgbToHex(r, g, b)) }) { Text("OK") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
+}
+
+@Composable
+private fun ChannelSlider(label: String, value: Int, tint: Color, onChange: (Int) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(label, style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(16.dp))
+        Slider(
+            value = value.toFloat(),
+            onValueChange = { onChange(it.toInt()) },
+            valueRange = 0f..255f,
+            colors = SliderDefaults.colors(thumbColor = tint, activeTrackColor = tint),
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            value.toString(),
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.width(32.dp),
+        )
     }
 }
 
@@ -692,14 +812,26 @@ private fun FieldConfigEditor(
 }
 
 private fun parseHexColor(hex: String): Color {
+    val (r, g, b) = hexToRgbOrNull(hex) ?: return Color.Gray
+    return Color(r / 255f, g / 255f, b / 255f)
+}
+
+private fun hexToRgbOrNull(hex: String): Triple<Int, Int, Int>? {
     return try {
         val cleaned = hex.trimStart('#')
-        val long = cleaned.toLong(16)
-        val r = ((long shr 16) and 0xFF) / 255f
-        val g = ((long shr 8) and 0xFF) / 255f
-        val b = (long and 0xFF) / 255f
-        Color(r, g, b)
+        if (cleaned.length != 6) return null
+        val v = cleaned.toLong(16)
+        Triple(
+            ((v shr 16) and 0xFF).toInt(),
+            ((v shr 8) and 0xFF).toInt(),
+            (v and 0xFF).toInt(),
+        )
     } catch (_: Exception) {
-        Color.Gray
+        null
     }
+}
+
+private fun rgbToHex(r: Int, g: Int, b: Int): String {
+    fun pad(v: Int) = v.coerceIn(0, 255).toString(16).padStart(2, '0').uppercase()
+    return "#${pad(r)}${pad(g)}${pad(b)}"
 }

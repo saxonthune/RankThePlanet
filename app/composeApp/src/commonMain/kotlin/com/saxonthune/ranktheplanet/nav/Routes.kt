@@ -8,7 +8,10 @@ import kotlinx.serialization.Serializable
 @Serializable data class CollectionDetail(val collectionId: String)
 @Serializable data class CollectionEntryDetail(val entryId: String)
 @Serializable data class ReviewForm(val entryId: String)
-@Serializable data class CollectionEditor(val collectionId: String? = null)
+@Serializable data class CollectionEditor(
+    val collectionId: String? = null,
+    val addToDraft: Boolean = false,
+)
 @Serializable object ImportFlow
 @Serializable object Settings
 @Serializable object ManageProviders

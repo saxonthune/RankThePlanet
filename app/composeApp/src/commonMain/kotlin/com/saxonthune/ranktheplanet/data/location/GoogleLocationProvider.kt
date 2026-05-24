@@ -105,12 +105,14 @@ class GoogleLocationProvider(
             formattedAddress = formattedAddress,
             types = types,
         )
+        val detail = formattedAddress?.takeIf { it.isNotBlank() && it != name }
         return LocationCandidate(
             coordinates = Coordinates(lat = loc.latitude, lng = loc.longitude),
             displayName = name,
             sourceType = SourceType.Google,
             sourceId = placeId,
             cachedMetadata = json.encodeToString(metadata),
+            detail = detail,
         )
     }
 }

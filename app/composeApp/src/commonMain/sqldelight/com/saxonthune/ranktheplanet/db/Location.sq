@@ -14,3 +14,19 @@ CREATE TABLE location (
 
 selectAll:
 SELECT * FROM location;
+
+findByIdentity:
+SELECT * FROM location WHERE source_type = ? AND source_id = ?;
+
+selectById:
+SELECT * FROM location WHERE id = ?;
+
+insert:
+INSERT INTO location (id, source_type, source_id, lat, lng, display_name, cached_metadata, refreshable)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE location SET source_type = ?, source_id = ?, lat = ?, lng = ?, display_name = ?, cached_metadata = ?, refreshable = ? WHERE id = ?;
+
+delete:
+DELETE FROM location WHERE id = ?;

@@ -89,6 +89,9 @@ kotlin {
             implementation(kotlin("test"))
             implementation(libs.ktor.client.mock)
         }
+        jvmTest.dependencies {
+            implementation(libs.kotlinx.coroutines.test)
+        }
     }
 }
 

@@ -8,6 +8,8 @@ import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.location.ProviderResult
+import com.saxonthune.ranktheplanet.data.projection.OverviewProjection
+import com.saxonthune.ranktheplanet.data.session.SessionStateStore
 import com.saxonthune.ranktheplanet.domain.Collection
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.Coordinates
@@ -18,6 +20,7 @@ import com.saxonthune.ranktheplanet.domain.LocationId
 import com.saxonthune.ranktheplanet.domain.ReviewDraft
 import com.saxonthune.ranktheplanet.domain.ReviewTemplate
 import com.saxonthune.ranktheplanet.domain.SourceType
+import com.saxonthune.ranktheplanet.domain.Viewport
 import com.saxonthune.ranktheplanet.ui.theme.parseAppearanceColor
 import com.saxonthune.ranktheplanet.util.formatShortDate
 import kotlinx.collections.immutable.ImmutableList
@@ -132,6 +135,7 @@ data class MapOverviewUiState(
     val isResolvingNearby: Boolean = false,
     val error: String? = null,
     val pendingReview: PendingReviewPrompt = PendingReviewPrompt.None,
+    val viewport: Viewport? = null,
 )
 
 class MapOverviewViewModel(
@@ -139,8 +143,11 @@ class MapOverviewViewModel(
     private val entriesRepo: EntryRepository,
     private val providerRegistry: LocationProviderRegistry,
     private val templatesRepo: TemplateRepository,
+    private val projection: OverviewProjection,
+    private val session: SessionStateStore,
 ) : ViewModel() {
 
+    private val _restoredViewport = MutableStateFlow<Viewport?>(null)
     private val hiddenCollections = MutableStateFlow<Set<CollectionId>>(emptySet())
     private val searchResults = MutableStateFlow<List<SearchResultUi>>(emptyList())
     private val isSearching = MutableStateFlow(false)
@@ -159,6 +166,9 @@ class MapOverviewViewModel(
     val pinController = PinRenderController()
 
     init {
+        viewModelScope.launch {
+            _restoredViewport.value = projection.loadOverview().viewport
+        }
         loadData()
         viewModelScope.launch {
             providerRegistry.defaultFlow.drop(1).collect {
@@ -277,34 +287,39 @@ class MapOverviewViewModel(
 
     val uiState: StateFlow<MapOverviewUiState> = combine(
         combine(
-            derivedBase,
-            searchResults,
-            isSearching,
-            _pinSheet,
-            _error,
-        ) { base, results, searching, sheet, error ->
-            MapOverviewUiState(
-                pins = base.pins,
-                collectionRows = base.collectionRows,
-                collectionPicks = base.collectionPicks,
-                searchResults = results.toImmutableList(),
-                isSearching = searching,
-                isLoading = false,
-                pinSheet = sheet,
-                error = error,
+            combine(
+                derivedBase,
+                searchResults,
+                isSearching,
+                _pinSheet,
+                _error,
+            ) { base, results, searching, sheet, error ->
+                MapOverviewUiState(
+                    pins = base.pins,
+                    collectionRows = base.collectionRows,
+                    collectionPicks = base.collectionPicks,
+                    searchResults = results.toImmutableList(),
+                    isSearching = searching,
+                    isLoading = false,
+                    pinSheet = sheet,
+                    error = error,
+                )
+            },
+            combine(_draft, _nearbyCandidates, _isResolvingNearby) { draft, nearby, resolving ->
+                Triple(draft, nearby.toImmutableList(), resolving)
+            },
+            _pendingReview,
+        ) { state, draftBundle, pendingReview ->
+            state.copy(
+                draft = draftBundle.first,
+                nearbyCandidates = draftBundle.second,
+                isResolvingNearby = draftBundle.third,
+                pendingReview = pendingReview,
             )
         },
-        combine(_draft, _nearbyCandidates, _isResolvingNearby) { draft, nearby, resolving ->
-            Triple(draft, nearby.toImmutableList(), resolving)
-        },
-        _pendingReview,
-    ) { state, draftBundle, pendingReview ->
-        state.copy(
-            draft = draftBundle.first,
-            nearbyCandidates = draftBundle.second,
-            isResolvingNearby = draftBundle.third,
-            pendingReview = pendingReview,
-        )
+        _restoredViewport,
+    ) { state, viewport ->
+        state.copy(viewport = viewport)
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapOverviewUiState())
 
@@ -513,5 +528,9 @@ class MapOverviewViewModel(
 
     fun clearPendingReview() {
         _pendingReview.value = PendingReviewPrompt.None
+    }
+
+    fun onViewportChange(viewport: Viewport) {
+        viewModelScope.launch { session.saveViewport(viewport) }
     }
 }

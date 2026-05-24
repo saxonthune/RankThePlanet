@@ -14,3 +14,19 @@ CREATE TABLE collection (
 
 selectAll:
 SELECT * FROM collection;
+
+observeAll:
+SELECT * FROM collection;
+
+observeById:
+SELECT * FROM collection WHERE id = ?;
+
+insert:
+INSERT INTO collection (id, name, description, appearance_color, appearance_pin_style, template_version, is_visible, created, last_modified)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+bumpLastModified:
+UPDATE collection SET last_modified = ? WHERE id = ?;
+
+bumpLastModifiedAndTemplateVersion:
+UPDATE collection SET last_modified = ?, template_version = ? WHERE id = ?;

@@ -13,3 +13,78 @@ CREATE TABLE entry (
 
 selectAll:
 SELECT * FROM entry;
+
+observeAll:
+SELECT
+    entry.id AS entry_id,
+    entry.collection_id,
+    entry.location_id,
+    entry.data,
+    entry.recorded_template_version,
+    entry.created AS entry_created,
+    entry.last_modified AS entry_last_modified,
+    location.id AS loc_id,
+    location.source_type,
+    location.source_id,
+    location.lat,
+    location.lng,
+    location.display_name,
+    location.cached_metadata,
+    location.refreshable
+FROM entry JOIN location ON entry.location_id = location.id;
+
+observeByCollection:
+SELECT
+    entry.id AS entry_id,
+    entry.collection_id,
+    entry.location_id,
+    entry.data,
+    entry.recorded_template_version,
+    entry.created AS entry_created,
+    entry.last_modified AS entry_last_modified,
+    location.id AS loc_id,
+    location.source_type,
+    location.source_id,
+    location.lat,
+    location.lng,
+    location.display_name,
+    location.cached_metadata,
+    location.refreshable
+FROM entry JOIN location ON entry.location_id = location.id
+WHERE entry.collection_id = ?;
+
+observeById:
+SELECT
+    entry.id AS entry_id,
+    entry.collection_id,
+    entry.location_id,
+    entry.data,
+    entry.recorded_template_version,
+    entry.created AS entry_created,
+    entry.last_modified AS entry_last_modified,
+    location.id AS loc_id,
+    location.source_type,
+    location.source_id,
+    location.lat,
+    location.lng,
+    location.display_name,
+    location.cached_metadata,
+    location.refreshable
+FROM entry JOIN location ON entry.location_id = location.id
+WHERE entry.id = ?;
+
+insert:
+INSERT INTO entry (id, collection_id, location_id, data, recorded_template_version, created, last_modified)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateReviewData:
+UPDATE entry SET data = ?, recorded_template_version = ?, last_modified = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM entry WHERE id = ?;
+
+selectByCollectionAndLocation:
+SELECT id FROM entry WHERE collection_id = ? AND location_id = ?;
+
+updateLocationId:
+UPDATE entry SET location_id = ? WHERE location_id = ?;

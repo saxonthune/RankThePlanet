@@ -10,3 +10,7 @@ CREATE TABLE op_log (
 
 selectAll:
 SELECT * FROM op_log;
+
+append:
+INSERT INTO op_log (op_id, ts, device_id, kind, payload)
+VALUES (?, ?, ?, ?, ?);

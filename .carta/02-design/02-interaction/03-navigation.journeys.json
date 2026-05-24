@@ -121,6 +121,13 @@
       "targets": ["LocationDraftSheet","AddLocationToCollection", "CollectionEditor",   "MapOverview",          "ReviewForm"]
     },
     {
+      "id": "collection-add-entry-via-search",
+      "description": "Collection-rooted add flow via search. From the map, open the Collections list, drill into one Collection, tap *Add entry* to enter MapOverview in add-to-collection mode, then TAP_SEARCH to open a dedicated LocationSearch surface (a sheet/view, not the inline search-on-map field — search deserves its own surface so typing has room and the map can be deprioritized). Pick a suggestion: because `collection-context` is set, PICK_SEARCH_RESULT_FOR_ADD opens LocationSheet centered on the candidate, carrying a confirmation affordance labeled *Add to • {CollectionName}* where the • is a colored dot rendering the Collection's appearance color. The peek's purpose in add-mode is confirmation of the chosen Location — not a Collection picker. CONFIRM_ADD commits the Entry against the pre-selected Collection (Location.addToCollection) and returns to the originating CollectionDetail with a transient Snackbar carrying the new Entry; its Edit action fires GO_TO_REVIEW into ReviewForm. Divergences the verifier will surface: LocationSearch is an undeclared surface (unknown-surface); TAP_SEARCH is not on MapOverview (chart-missing); PICK_SEARCH_RESULT_FOR_ADD currently targets AddLocationToCollection rather than LocationSheet (target-mismatch — the picker step is redundant when `collection-context` already names the Collection); CONFIRM_ADD is not on LocationSheet (chart-missing); GO_TO_REVIEW is not on CollectionDetail (chart-missing). Together they describe an analogue of MapOverview's post-add Snackbar machinery rooted on CollectionDetail, and a search surface promoted out of MapOverview's chrome.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "TAP_COLLECTION",    "TAP_ADD_ENTRY", "TAP_SEARCH",     "PICK_SEARCH_RESULT_FOR_ADD", "CONFIRM_ADD",      "GO_TO_REVIEW"],
+      "targets": ["CollectionList",         "CollectionDetail",  "MapOverview",   "LocationSearch", "LocationSheet",              "CollectionDetail", "ReviewForm"]
+    },
+    {
       "id": "browse-to-submit-review",
       "description": "From the map, drill into a Collection, open one of its Entries, edit the review, submit, land back on the Entry detail with the review now saved.",
       "start": "MapOverview",

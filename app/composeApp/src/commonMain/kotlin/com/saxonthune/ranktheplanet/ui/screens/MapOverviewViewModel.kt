@@ -7,6 +7,7 @@ import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.LocationRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
+import com.saxonthune.ranktheplanet.data.location.LocationCandidate
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.location.ProviderResult
 import com.saxonthune.ranktheplanet.data.projection.OverviewProjection
@@ -136,6 +137,7 @@ sealed interface SearchHitUi {
         val sourceType: SourceType,
         val sourceId: String?,
         val detail: String?,
+        val needsConfirmation: Boolean = false,
     ) : SearchHitUi
 }
 
@@ -356,6 +358,7 @@ class MapOverviewViewModel(
                     sourceType = c.sourceType,
                     sourceId = c.sourceId,
                     detail = c.detail,
+                    needsConfirmation = c.needsConfirmation,
                 )
             }
             is ProviderResult.Failed -> {
@@ -562,13 +565,47 @@ class MapOverviewViewModel(
     }
 
     fun pickSearchCandidate(hit: SearchHitUi.Candidate, inAddMode: Boolean) {
+        if (hit.needsConfirmation) {
+            viewModelScope.launch {
+                _isSearching.value = true
+                val stub = LocationCandidate(
+                    coordinates = Coordinates(hit.lat, hit.lng),
+                    displayName = hit.displayName,
+                    sourceType = hit.sourceType,
+                    sourceId = hit.sourceId,
+                    cachedMetadata = null,
+                    detail = hit.detail,
+                    needsConfirmation = true,
+                )
+                val confirmed = providerRegistry.default().confirm(stub)
+                _isSearching.value = false
+                when (confirmed) {
+                    is ProviderResult.Ok -> {
+                        val c = confirmed.value
+                        val resolvedHit = hit.copy(
+                            lat = c.coordinates.lat,
+                            lng = c.coordinates.lng,
+                            displayName = c.displayName,
+                            needsConfirmation = false,
+                        )
+                        finalizePick(resolvedHit, c.cachedMetadata, inAddMode)
+                    }
+                    is ProviderResult.Failed -> _error.value = confirmed.error.name
+                }
+            }
+            return
+        }
+        finalizePick(hit, cachedMetadata = null, inAddMode = inAddMode)
+    }
+
+    private fun finalizePick(hit: SearchHitUi.Candidate, cachedMetadata: String?, inAddMode: Boolean) {
         val resolved = Location(
             id = LocationId(Random.nextInt(0x1000000, 0x7fffffff).toString(16)),
             coordinates = Coordinates(hit.lat, hit.lng),
             displayName = hit.displayName,
             sourceType = hit.sourceType,
             sourceId = hit.sourceId ?: "",
-            cachedMetadata = null,
+            cachedMetadata = cachedMetadata,
             refreshable = hit.sourceId != null,
         )
         if (inAddMode) {

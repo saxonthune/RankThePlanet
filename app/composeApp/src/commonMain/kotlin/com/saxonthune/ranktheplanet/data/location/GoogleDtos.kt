@@ -19,3 +19,25 @@ data class GoogleLocalizedText(val text: String? = null, val languageCode: Strin
 
 @Serializable
 data class GoogleLatLng(val latitude: Double = 0.0, val longitude: Double = 0.0)
+
+@Serializable
+data class GoogleAutocompleteResponse(val suggestions: List<GoogleAutocompleteSuggestion> = emptyList())
+
+@Serializable
+data class GoogleAutocompleteSuggestion(val placePrediction: GooglePlacePrediction? = null)
+
+@Serializable
+data class GooglePlacePrediction(
+    val placeId: String? = null,
+    val text: GooglePredictionText? = null,
+    val structuredFormat: GoogleStructuredFormat? = null,
+)
+
+@Serializable
+data class GooglePredictionText(val text: String? = null)
+
+@Serializable
+data class GoogleStructuredFormat(
+    val mainText: GooglePredictionText? = null,
+    val secondaryText: GooglePredictionText? = null,
+)

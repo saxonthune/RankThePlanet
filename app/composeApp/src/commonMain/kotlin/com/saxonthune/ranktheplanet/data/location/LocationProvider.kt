@@ -10,6 +10,7 @@ data class LocationCandidate(
     val sourceId: String?,
     val cachedMetadata: String?,
     val detail: String? = null,
+    val needsConfirmation: Boolean = false,
 )
 
 sealed interface ProviderResult<out T> {
@@ -25,4 +26,6 @@ interface LocationProvider {
     suspend fun resolve(query: String, near: Coordinates? = null): ProviderResult<List<LocationCandidate>>
     suspend fun resolveNearby(coordinates: Coordinates): ProviderResult<List<LocationCandidate>>
     suspend fun healthCheck(): ProviderResult<Unit>
+    suspend fun confirm(candidate: LocationCandidate): ProviderResult<LocationCandidate> =
+        ProviderResult.Ok(candidate)
 }

@@ -62,6 +62,7 @@ import com.saxonthune.ranktheplanet.domain.FieldType
 import com.saxonthune.ranktheplanet.domain.ReviewTemplate
 import com.saxonthune.ranktheplanet.domain.TemplateFieldConfig
 import com.saxonthune.ranktheplanet.ui.RtpModalScaffold
+import com.saxonthune.ranktheplanet.ui.dismissKeyboardOnTap
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -102,6 +103,7 @@ fun CollectionEditorScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .dismissKeyboardOnTap()
                 .verticalScroll(rememberScrollState()),
         ) {
             if (uiState.isLoading) {
@@ -414,6 +416,7 @@ fun TemplateFieldEditorSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .dismissKeyboardOnTap()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 32.dp)
                 .verticalScroll(rememberScrollState()),

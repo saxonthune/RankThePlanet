@@ -19,6 +19,9 @@ Pure Kotlin in `commonMain`. Domain types from `domain/Model.kt` (doc03.02) — 
 interface LocationRepository {
     // Identity-shaped read. The dedupe seam: a candidate adopted from one
     // provider call must not create a second Location row for the same place.
+    // Also the seam MapOverview's search-result merge uses to suppress
+    // provider candidates whose identity already corresponds to a saved
+    // Location (doc02.02.02.07).
     fun findByIdentity(sourceType: SourceType, sourceId: String): Location?
 
     // Idempotent write. Creates a row when no identity match exists; updates
@@ -34,7 +37,7 @@ interface LocationRepository {
 }
 ```
 
-The three methods cover the Location concept's persistence actions exactly — search and resolution stay on `LocationProvider` (doc03.02.02), which produces `LocationCandidate`s the user adopts into Locations via `upsert`.
+The three methods cover the Location concept's persistence actions exactly — provider-side search stays on `LocationProvider` (doc03.02.02), which produces `LocationCandidate`s the user adopts into Locations via `upsert`. The existing-entry half of MapOverview's search list (doc02.02.02.07) is not a repository concern either: it is an in-memory filter over the surface's already-collected entry stream, biased by the live viewport. A dedicated text-query method on the repository unfolds only when the entry stream grows too large to filter in memory.
 
 ## How it composes with the provider
 

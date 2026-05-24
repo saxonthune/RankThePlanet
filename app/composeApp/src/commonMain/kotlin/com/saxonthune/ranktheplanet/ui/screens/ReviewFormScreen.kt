@@ -1,6 +1,8 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,12 +22,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.saxonthune.ranktheplanet.domain.FieldType
 import com.saxonthune.ranktheplanet.domain.TemplateField
 import com.saxonthune.ranktheplanet.domain.TemplateFieldConfig
 import com.saxonthune.ranktheplanet.ui.RtpModalScaffold
+import com.saxonthune.ranktheplanet.ui.dismissKeyboardOnTap
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -63,6 +68,7 @@ fun ReviewFormScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .dismissKeyboardOnTap()
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -136,13 +142,17 @@ private fun FieldRow(
             }
             FieldType.Text -> {
                 val config = field.config as? TemplateFieldConfig.Text
+                val focusManager = LocalFocusManager.current
+                val multiline = config?.multiline == true
                 OutlinedTextField(
                     value = value.orEmpty(),
                     onValueChange = onEdit,
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("Add a note") },
-                    maxLines = if (config?.multiline == true) Int.MAX_VALUE else 1,
-                    singleLine = config?.multiline != true,
+                    maxLines = if (multiline) Int.MAX_VALUE else 1,
+                    singleLine = !multiline,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 )
             }
             FieldType.Boolean -> {

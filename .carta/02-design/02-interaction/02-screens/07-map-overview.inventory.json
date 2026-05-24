@@ -17,11 +17,11 @@
     },
     {
       "id": "search",
-      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the navigationIcon. Tapping it widens the field and raises the keyboard; submitting resolves Location candidates. Present in both modes — finding a place is part of completing the add flow."
+      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the navigationIcon. Tapping it widens the field and raises the keyboard. Results are biased near the current map viewport — the visible center is the query's locality anchor — and interleave two sources: Locations the user already has Entries for (rendered with their owning Collection's color dot) and unadopted provider candidates. Whether the field queries per keystroke or only on submit is a per-provider trait declared on LocationProvider (doc03.02.02); the field follows the active provider's setting. Present in both modes — finding a place is part of completing the add flow."
     },
     {
-      "id": "bottomBar",
-      "purpose": "A panel along the bottom of the surface holding entry to the Collection list. Suppressed in add-to-collection mode (replaced by statusBar in the same slot) so the user cannot start a second flow.",
+      "id": "collectionsButton",
+      "purpose": "An extended floating action button anchored bottom-end over the map, holding entry to the Collection list. Suppressed in add-to-collection mode so the user cannot start a second flow.",
       "appearsInModes": ["browse"]
     },
     {
@@ -31,7 +31,7 @@
     },
     {
       "id": "statusBar",
-      "purpose": "Occupies the bottom slot of the surface in add-to-collection mode (replacing bottomBar), naming the target Collection — \"Adding to {collectionName}\".",
+      "purpose": "A panel along the bottom of the surface in add-to-collection mode, naming the target Collection — \"Adding to {collectionName}\".",
       "appearsInModes": ["addToCollection"],
       "reactsToContext": ["collection-context"]
     }
@@ -77,7 +77,7 @@
     {
       "id": "open-collections",
       "label": "Browse Collections",
-      "region": "bottomBar",
+      "region": "collectionsButton",
       "event": "TAP_COLLECTIONS_BUTTON",
       "target": "CollectionList",
       "appearsInModes": ["browse"]
@@ -147,26 +147,39 @@
           }
         ]
       },
-      "emptyState": "Before any Collection has Entries the map shows no pins; the bottomBar still points the user toward creating a Collection."
+      "emptyState": "Before any Collection has Entries the map shows no pins; the collectionsButton still points the user toward creating a Collection."
     },
     {
       "id": "search-results",
       "region": "search",
-      "iterates": "Location",
+      "iterates": "SearchHit",
       "reads": "provider-results",
       "item": {
         "shows": [
-          "the candidate Location's displayName",
-          "address or category from the provider, when supplied"
+          "the hit's displayName",
+          "address or category, when supplied",
+          "for existing-entry hits: the owning Collection's color dot (one dot per Entry referencing the Location); for candidate hits: no dot"
         ],
         "affordance": {
           "id": "pick-search-result",
-          "label": "Pick a search result",
+          "label": "Pick a provider candidate",
           "event": "PICK_SEARCH_RESULT",
-          "target": "LocationDraftSheet"
-        }
+          "target": "LocationDraftSheet",
+          "appliesWhen": "the hit is an unadopted provider candidate — no saved Location with this (sourceType, sourceId)"
+        },
+        "altAffordances": [
+          {
+            "id": "pick-search-entry",
+            "label": "Pick an existing entry",
+            "event": "PICK_SEARCH_ENTRY",
+            "target": "LocationSheet",
+            "appliesWhen": "the hit is an existing Location with at least one Collection Entry — LocationSheet's single-entry rendering shortcut applies downstream"
+          }
+        ]
       },
-      "emptyState": "An empty or unsubmitted search field shows no results; results appear only after the user submits a query — there is no search-ahead. The map stays the focus."
+      "composition": "The list is one ranked view over two upstream sources, merged at the surface and never persisted: (a) existing-entry hits derived in-memory from `all-entries` filtered by the query, biased by the live `viewport`; (b) unadopted provider candidates from the active LocationProvider's `resolve(query, near=viewport.center)` (doc03.02.02). The declared `reads: provider-results` names the async/external source; the existing-entry half rides the surface's already-loaded `all-entries` stream and needs no separate read.",
+      "ordering": "Hits compete on a single axis — proximity to the viewport center, with displayName match strength as the tiebreaker — not segregated into existing-vs-candidate sections. Duplicate suppression: a provider candidate whose (sourceType, sourceId) matches a saved Location via LocationRepository.findByIdentity is dropped in favor of the existing-entry hit.",
+      "emptyState": "An empty search field shows no results; the map stays the focus. Existing-entry matches surface as soon as the query is non-empty. Provider candidates surface per the active provider's `supportsTypeahead` trait (per keystroke when true, on submit otherwise — see doc03.02.02)."
     },
     {
       "id": "collections",

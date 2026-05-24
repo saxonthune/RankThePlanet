@@ -20,6 +20,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 
 // TODO: migrate to DockedSearchBar when material3 DockedSearchBar + SearchBarDefaults.InputField lands in commonMain.
@@ -31,6 +32,7 @@ internal fun SearchBarField(
 ) {
     var query by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     val widthFraction by animateFloatAsState(
         targetValue = if (expanded) 0.8f else 0.4f,
         animationSpec = spring(),
@@ -55,6 +57,9 @@ internal fun SearchBarField(
             .focusRequester(focusRequester)
             .onFocusChanged { if (it.isFocused && !expanded) onFocus() },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),
+        keyboardActions = KeyboardActions(onSearch = {
+            onSearch(query)
+            focusManager.clearFocus()
+        }),
     )
 }

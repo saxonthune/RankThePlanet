@@ -50,8 +50,24 @@ enum class ProviderError { NETWORK, RATE_LIMITED, NOT_CONFIGURED, PROVIDER_ERROR
 interface LocationProvider {
     val type: SourceType
 
-    // Forward / text search. Backs Location.resolve (doc01.03 §2).
-    suspend fun resolve(query: String): ProviderResult<List<LocationCandidate>>
+    // Whether `resolve` may be invoked per keystroke against this provider.
+    // True when the backing service permits — and is built for — per-keystroke
+    // autocomplete (Photon, Google Text Search). False when the backing service
+    // forbids it (public Nominatim) or charges per call in a way that makes
+    // per-keystroke querying unreasonable without further mitigation.
+    // Read by MapOverview's search field to decide between typeahead and
+    // submit-only behavior.
+    val supportsTypeahead: Boolean
+
+    // Forward / text search. Backs Location.resolve (doc01.03 §2). The
+    // optional `near` is a viewport-bias hint — the provider ranks results
+    // nearer this coordinate higher when supported, and ignores it otherwise.
+    // It is a bias, not a filter: a strong textual match far from `near`
+    // still appears.
+    suspend fun resolve(
+        query: String,
+        near: Coordinates? = null,
+    ): ProviderResult<List<LocationCandidate>>
 
     // Reverse / proximity search. Backs Location.resolveNearby (doc01.03 §2).
     suspend fun resolveNearby(coordinates: Coordinates): ProviderResult<List<LocationCandidate>>
@@ -59,6 +75,8 @@ interface LocationProvider {
 ```
 
 `resolve` and `resolveNearby` are the seam's whole surface — they back the two search actions of the Location concept and nothing else. `dropPin` produces a `Manual` Location with no provider involved, so it is not on this interface. `SourceType.Manual` is therefore never a provider `type`.
+
+The `near` hint maps cleanly onto each backing service: Photon's `lat`/`lon` bias parameters, Google Text Search's `locationBias` field. A provider whose backing service has no equivalent (a candidate kind not in the current catalogue) ignores `near` without error — biasing is best-effort, never a precondition.
 
 ### The registry
 
@@ -87,6 +105,8 @@ interface LocationProviderRegistry {
 
 Because both services speak OSM object identity (`osm_type` + `osm_id`, e.g. `N240109189`), a place found through either resolves to the **same `(sourceType, sourceId)`**. The two services are sub-configuration of one provider, not two providers. The Location concept therefore needs no multi-resolution model: a single resolution per Location holds regardless of which endpoint answered. (The multi-identity model flagged in doc01.03 §2 is for genuinely distinct providers — a Google `place_id` *and* an OSM node for one real place — which is `merge` territory, not this.)
 
+`OsmLocationProvider.supportsTypeahead` is `true` — `resolve` runs against Photon, which is built for per-keystroke autocomplete. The Nominatim constraint applies only to reverse geocoding (`resolveNearby`), which the search field does not invoke.
+
 A Photon result that carries no `osm_id` (an interpolated address) yields a candidate with no stable `sourceId`. Adopting it produces a `manual`-style Location — the same coordinates-only outcome as a dropped pin (doc01.03 §2), not a special case.
 
 ### Endpoint constraints
@@ -114,6 +134,8 @@ Google Places is the first BYOK provider. The user supplies an API key on the `P
 Both endpoints accept a field mask via the `X-Goog-FieldMask` header; the provider requests only the fields needed to build a candidate (`places.id`, `places.displayName`, `places.location`, `places.formattedAddress`) plus a small tail of fields safe to cache (see below). The API key travels in the `X-Goog-Api-Key` header — never in the URL — so it does not land in logs.
 
 A candidate carries `sourceType = Google`, `sourceId = place.id` (the stable `places/XXXX` resource name), and a minimal `cachedMetadata` payload conforming to the caching rule below.
+
+`GoogleLocationProvider.supportsTypeahead` is `true` — Text Search permits per-keystroke querying and the provider coalesces identical-query bursts client-side to keep the user's billed call volume in line with what was actually typed. A future Places API Autocomplete integration could replace Text Search here when the lower-cost session-billed shape is desired; that is endpoint configuration, not a new provider slot.
 
 ### Endpoint constraints
 

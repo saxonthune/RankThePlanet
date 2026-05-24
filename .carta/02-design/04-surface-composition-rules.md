@@ -36,7 +36,7 @@ Decision rule:
 
 Spec shape for the overlay case: declare the context on `meta.context`, declare the transitions it gates with guards on the host's `on` map, declare the affordance in the inventory with `reactsToContext` and a `rendering` note naming the Material primitive (e.g. Snackbar). Do **not** add a new entry to `meta.modes` or a new region — the chrome is unchanged.
 
-**Worked example.** `MapOverview` carries `pending-review-context` after `AddLocationToCollection`'s `PICK_COLLECTION`. It does not enter a third mode: the map, search, menuButton, and bottomBar render unchanged. A Material 3 Snackbar appears with a *Review* action gating `GO_TO_REVIEW`; its timeout fires `DISMISS_REVIEW_BAR`. Both transitions are guarded by `hasPendingReview` on the statechart. See [[07-map-overview]] (doc02.02.02.07).
+**Worked example.** `MapOverview` carries `pending-review-context` after `AddLocationToCollection`'s `PICK_COLLECTION`. It does not enter a third mode: the map, search, menuButton, and collectionsButton render unchanged. A Material 3 Snackbar appears with a *Review* action gating `GO_TO_REVIEW`; its timeout fires `DISMISS_REVIEW_BAR`. Both transitions are guarded by `hasPendingReview` on the statechart. See [[07-map-overview]] (doc02.02.02.07).
 
 ## Rule 2 — Overlay surfaces are not routes
 

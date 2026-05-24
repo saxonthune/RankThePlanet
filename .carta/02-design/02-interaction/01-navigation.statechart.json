@@ -53,7 +53,12 @@
         },
         "PICK_SEARCH_RESULT": {
           "target": "LocationDraftSheet",
-          "description": "User types into the map's search field (Location.resolve, see meta.actions), then picks one candidate from the result list. The picked candidate opens in LocationDraftSheet for inspection before it is committed.",
+          "description": "User picks an unadopted provider candidate from the search result list. The picked candidate opens in LocationDraftSheet for inspection before it is committed. One of two terminal events on the search list — the other is PICK_SEARCH_ENTRY for hits that already correspond to a saved Location.",
+          "propagates": ["collection-context"]
+        },
+        "PICK_SEARCH_ENTRY": {
+          "target": "LocationSheet",
+          "description": "User picks a search hit that already corresponds to a Location with at least one Collection Entry — the hit renders with its Collection's color dot. Opens LocationSheet over the map, which fans out the Entries (or renders EntrySheet directly when the Location has exactly one Entry). One of two terminal events on the search list — the other is PICK_SEARCH_RESULT for unadopted provider candidates.",
           "propagates": ["collection-context"]
         },
         "TAP_SETTINGS": {

@@ -64,7 +64,7 @@ private fun CollectionBreadcrumb(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 2.dp),
     ) {
         Box(
             Modifier
@@ -88,10 +88,12 @@ private fun LocationTitle(
     Text(
         text = entry.locationName,
         style = MaterialTheme.typography.headlineMedium,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 8.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 20.dp),
     )
 }
 

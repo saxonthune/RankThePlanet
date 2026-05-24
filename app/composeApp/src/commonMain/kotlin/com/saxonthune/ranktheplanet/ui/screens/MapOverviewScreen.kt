@@ -5,18 +5,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +28,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -232,17 +229,8 @@ fun MapOverviewScreen(
                 }
             },
             bottomBar = {
-                when (mode) {
-                    is MapMode.Browse -> BottomAppBar(
-                        actions = {
-                            TextButton(onClick = onOpenCollections) {
-                                Icon(Icons.Default.Layers, contentDescription = null)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Collections")
-                            }
-                        },
-                    )
-                    is MapMode.AddingToCollection -> Surface(
+                if (mode is MapMode.AddingToCollection) {
+                    Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -257,6 +245,15 @@ fun MapOverviewScreen(
                             Text("Adding to ${mode.collectionName}")
                         }
                     }
+                }
+            },
+            floatingActionButton = {
+                if (mode is MapMode.Browse) {
+                    ExtendedFloatingActionButton(
+                        onClick = onOpenCollections,
+                        icon = { Icon(Icons.Default.Layers, contentDescription = null) },
+                        text = { Text("Collections") },
+                    )
                 }
             },
         ) { _ ->

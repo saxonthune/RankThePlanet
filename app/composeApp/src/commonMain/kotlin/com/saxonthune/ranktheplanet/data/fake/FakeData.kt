@@ -159,8 +159,57 @@ object Fixtures {
     )
 
     val entries = listOf(
-        // TEMP: only The High Line entry, for pin-render debugging. Restore the
-        // full entry list when done (see git history for 9-entry version).
+        Entry(
+            id = EntryId("ent-bluebottle"),
+            collectionId = dripCoffeeId,
+            location = locations[0],
+            review = ReviewInstance(
+                data = persistentMapOf("overall" to "5", "notes" to "Perfect filter, calm atmosphere"),
+                recordedTemplateVersion = 1,
+                created = "2024-01-15T09:00:00Z",
+                lastModified = "2024-01-15T09:00:00Z",
+            ),
+            added = "2024-01-10T08:00:00Z"
+        ),
+        Entry(
+            id = EntryId("ent-perse"),
+            collectionId = nytTop100Id,
+            location = locations[1],
+            review = ReviewInstance(
+                data = persistentMapOf("rating" to "5", "notes" to "Exceptional tasting menu", "visited" to "true"),
+                recordedTemplateVersion = 1,
+                created = "2024-02-14T20:00:00Z",
+                lastModified = "2024-02-14T20:00:00Z",
+            ),
+            added = "2024-02-01T10:00:00Z"
+        ),
+        Entry(
+            id = EntryId("ent-lumon"),
+            collectionId = nytTop100Id,
+            location = locations[2],
+            review = ReviewInstance(
+                data = persistentMapOf("rating" to "4", "notes" to "Creative seasonal menu", "visited" to "true"),
+                recordedTemplateVersion = 1,
+                created = "2024-03-20T19:00:00Z",
+                lastModified = "2024-03-20T19:00:00Z",
+            ),
+            added = "2024-03-15T14:00:00Z"
+        ),
+        Entry(
+            id = EntryId("ent-geo-central-park"),
+            collectionId = geoDiaryId,
+            location = locations[4],
+            review = ReviewInstance(
+                data = persistentMapOf(
+                    "description" to "Read on a bench by The Mall while the buskers set up. First real warm afternoon of the year.",
+                    "visitedOn" to "2024-04-12"
+                ),
+                recordedTemplateVersion = 1,
+                created = "2024-04-12T15:30:00Z",
+                lastModified = "2024-04-12T15:30:00Z",
+            ),
+            added = "2024-04-12T15:30:00Z"
+        ),
         Entry(
             id = EntryId("ent-geo-high-line"),
             collectionId = geoDiaryId,
@@ -176,9 +225,6 @@ object Fixtures {
             ),
             added = "2024-05-03T18:45:00Z"
         ),
-    )
-    @Suppress("unused")
-    private val unusedEntries = listOf(
         Entry(
             id = EntryId("ent-geo-prospect-park"),
             collectionId = geoDiaryId,

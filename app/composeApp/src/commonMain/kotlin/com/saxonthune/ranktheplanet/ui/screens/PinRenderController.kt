@@ -1,6 +1,5 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
-import com.saxonthune.ranktheplanet.util.PinTrace
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
@@ -27,17 +26,12 @@ class PinRenderController {
 
     val frames: Flow<PinFrame> = combine(_pins, _revision) { p, r -> PinFrame(p, r) }
 
-    /** Synchronous read of the current pin set. For diagnostic probes (PinTrace); UI consumers use [frames]. */
-    val currentPins: ImmutableList<PinUi> get() = _pins.value
-
     fun setPins(pins: ImmutableList<PinUi>) {
-        PinTrace.log("ctrl/setPins", "count" to pins.size)
         _pins.value = pins
     }
 
     fun forceRedraw() {
         _revision.update { it + 1 }
-        PinTrace.log("ctrl/forceRedraw", "revision" to _revision.value)
     }
 }
 

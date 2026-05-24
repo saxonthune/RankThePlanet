@@ -43,13 +43,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
@@ -60,12 +58,10 @@ import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.ui.RtpErrorState
-import com.saxonthune.ranktheplanet.util.PinTrace
 import com.saxonthune.ranktheplanet.util.tuneMapForFastTaps
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraPosition
-import org.maplibre.compose.camera.CameraProjection
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.MapOptions
@@ -101,9 +97,6 @@ fun MapOverviewScreen(
 
     var searchExpanded by remember { mutableStateOf(false) }
 
-    // Capture surface color here — must not be read inside the MaplibreMap content lambda.
-    val pinLabelHalo = MaterialTheme.colorScheme.surface
-
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
             target = Position(longitude = -73.9855, latitude = 40.7580),
@@ -119,26 +112,6 @@ fun MapOverviewScreen(
         repeat(40) {
             if (tuneMapForFastTaps()) return@LaunchedEffect
             delay(50)
-        }
-    }
-
-    // PinTrace: log camera-motion transitions and sample render coverage during pan.
-    // Goal is to confirm or rule out stale tile-cache theory — see doc03.04 / doc03.05.
-    LaunchedEffect(cameraState) {
-        snapshotFlow { cameraState.isCameraMoving }.collect { moving ->
-            PinTrace.log(
-                "cam/${if (moving) "start" else "stop"}",
-                "zoom" to cameraState.position.zoom.toFixed2(),
-            )
-            cameraState.projection?.let { probePinCoverage(it, vm.pinController.currentPins) }
-        }
-    }
-    LaunchedEffect(cameraState, vm) {
-        while (true) {
-            if (cameraState.isCameraMoving) {
-                cameraState.projection?.let { probePinCoverage(it, vm.pinController.currentPins) }
-            }
-            delay(150)
         }
     }
 
@@ -257,7 +230,6 @@ fun MapOverviewScreen(
                     baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/bright"),
                     options = MapOptions(ornamentOptions = OrnamentOptions.OnlyLogo),
                     onMapLoadFinished = {
-                        PinTrace.log("map/loadFinished")
                         vm.pinController.forceRedraw()
                     },
                     onMapLongClick = { position, _ ->
@@ -267,7 +239,6 @@ fun MapOverviewScreen(
                 ) {
                     PinLayers(
                         controller = vm.pinController,
-                        labelHaloColor = pinLabelHalo,
                         onPinClick = { vm.selectPin(it) },
                     )
                 }
@@ -344,56 +315,3 @@ fun MapOverviewScreen(
     }
 }
 
-/**
- * For each in-memory pin whose lat/lng falls inside the visible bbox, probe
- * `queryRenderedFeatures` at the pin's screen position against the `pins-body`
- * layer. A pin that is geometrically in view but produces zero rendered features
- * is the smoking gun for the stale-tile-cache theory (doc03.04 / doc03.05).
- *
- * Cheap — O(visible pins) per call. queryRenderedFeatures is a sync delegate to
- * the native render thread; safe from a coroutine on the main dispatcher.
- */
-private fun probePinCoverage(projection: CameraProjection, pins: List<PinUi>) {
-    val bbox = projection.queryVisibleBoundingBox()
-    val inView = pins.filter {
-        it.lat in bbox.south..bbox.north && it.lng in bbox.west..bbox.east
-    }
-    val missing = mutableListOf<String>()
-    var rendered = 0
-    val details = mutableListOf<String>()
-    inView.forEach { pin ->
-        val anchor = projection.screenLocationFromPosition(Position(longitude = pin.lng, latitude = pin.lat))
-        val rect = DpRect(
-            left = anchor.x - 8.dp,
-            top = anchor.y - 36.dp,
-            right = anchor.x + 8.dp,
-            bottom = anchor.y + 2.dp,
-        )
-        val hitsBody = projection.queryRenderedFeatures(rect, setOf("pins-body"))
-        val hitsAny = if (hitsBody.isEmpty()) projection.queryRenderedFeatures(rect) else hitsBody
-        if (hitsBody.isEmpty()) {
-            missing += pin.locationName
-            // Screen offset of the missing pin and whether any layer renders at that rect.
-            // x/y in dp from top-left of map composable; anyHits names layers other than pins-body
-            // that did intersect the rect.
-            val anyLayerNames = hitsAny.mapNotNull { it.properties?.get("name")?.toString() }.distinct()
-            details += "${pin.locationName}@(${anchor.x.value.toInt()},${anchor.y.value.toInt()}) anyHits=${anyLayerNames.size}"
-        } else {
-            rendered++
-        }
-    }
-    PinTrace.log(
-        "probe",
-        "expected" to inView.size,
-        "rendered" to rendered,
-        "missing" to (if (missing.isEmpty()) "-" else missing.joinToString(",")),
-        "details" to (if (details.isEmpty()) "-" else details.joinToString("|")),
-    )
-}
-
-private fun Double.toFixed2(): String {
-    val scaled = (this * 100).toLong()
-    val whole = scaled / 100
-    val frac = (if (scaled < 0) -scaled else scaled) % 100
-    return "$whole.${frac.toString().padStart(2, '0')}"
-}

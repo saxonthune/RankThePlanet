@@ -1,15 +1,10 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import com.saxonthune.ranktheplanet.util.PinTrace
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import com.saxonthune.ranktheplanet.domain.EntryId
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.json.JsonPrimitive
@@ -25,10 +20,7 @@ import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.convertToColor
 import org.maplibre.compose.expressions.dsl.eq
 import org.maplibre.compose.expressions.dsl.feature
-import org.maplibre.compose.expressions.dsl.format
 import org.maplibre.compose.expressions.dsl.image
-import org.maplibre.compose.expressions.dsl.offset
-import org.maplibre.compose.expressions.dsl.span
 import org.maplibre.compose.expressions.dsl.switch
 import org.maplibre.compose.expressions.value.SymbolAnchor
 import org.maplibre.compose.layers.SymbolLayer
@@ -46,7 +38,6 @@ import ranktheplanet.composeapp.generated.resources.pin_mark_plus
 @MaplibreComposable
 internal fun PinLayers(
     controller: PinRenderController,
-    labelHaloColor: Color,
     onPinClick: (EntryId) -> Unit,
 ) {
     // Push-based GeoJsonSource: every emission from `controller.frames` rebuilds the
@@ -60,9 +51,6 @@ internal fun PinLayers(
     // NoSuchElementException). JsonString hands the raw GeoJSON to MapLibre's native parser
     // and skips the Kotlin-side polymorphic dispatch entirely.
     val data = remember(frame) { GeoJsonData.JsonString(frame.toGeoJsonString()) }
-    LaunchedEffect(frame) {
-        PinTrace.log("layer/push", "revision" to frame.revision, "count" to frame.pins.size)
-    }
     val source = rememberGeoJsonSource(data = data, options = GeoJsonOptions(buffer = 512))
 
     val bodyImage = image(painterResource(Res.drawable.pin_body), drawAsSdf = true)
@@ -121,22 +109,6 @@ internal fun PinLayers(
         iconAllowOverlap = const(true),
         iconIgnorePlacement = const(true),
         iconAnchor = const(SymbolAnchor.Bottom),
-    )
-    SymbolLayer(
-        id = "pin-labels",
-        source = source,
-        minZoom = 12f,
-        textField = format(span(feature["name"].asString())),
-        textSize = const(12.sp),
-        textOffset = offset(0f.em, 1.2f.em),
-        textAnchor = const(SymbolAnchor.Top),
-        textOptional = const(true),
-        iconAllowOverlap = const(true),
-        iconIgnorePlacement = const(true),
-        textAllowOverlap = const(true),
-        textIgnorePlacement = const(true),
-        textHaloColor = const(labelHaloColor),
-        textHaloWidth = const(1.dp),
     )
 }
 

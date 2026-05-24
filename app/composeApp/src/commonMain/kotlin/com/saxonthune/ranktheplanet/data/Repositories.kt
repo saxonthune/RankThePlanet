@@ -17,6 +17,12 @@ interface CollectionRepository {
     fun observeAll(): Flow<List<Collection>>
     fun observe(id: CollectionId): Flow<Collection?>
     suspend fun create(name: String, description: String? = null, appearance: Appearance): Result<Collection>
+    suspend fun editMetadata(
+        id: CollectionId,
+        name: String,
+        description: String?,
+        appearance: Appearance,
+    ): Result<Collection>
     suspend fun addEntry(collectionId: CollectionId, location: Location, review: ReviewDraft): Result<Entry>
     suspend fun removeEntry(entryId: EntryId): Result<Unit>
 }

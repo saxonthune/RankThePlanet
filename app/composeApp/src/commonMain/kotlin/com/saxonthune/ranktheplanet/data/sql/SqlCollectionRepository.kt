@@ -81,6 +81,47 @@ internal class SqlCollectionRepository(
         }
     }
 
+    override suspend fun editMetadata(
+        id: CollectionId,
+        name: String,
+        description: String?,
+        appearance: Appearance,
+    ): Result<Collection> = withContext(Dispatchers.Default) {
+        runCatching {
+            database.transactionWithResult {
+                val current = database.collectionQueries.observeById(id.value)
+                    .executeAsOneOrNull()
+                    ?: throw IllegalArgumentException("Collection not found: ${id.value}")
+                val now = nowIso()
+                database.collectionQueries.updateMetadata(
+                    name = name,
+                    description = description,
+                    appearance_color = appearance.color,
+                    appearance_pin_style = appearance.pinStyle,
+                    last_modified = now,
+                    id = id.value,
+                )
+                opLogWriter.append(Op.CollectionMetadataEdited(
+                    collectionId = id.value,
+                    name = name,
+                    description = description,
+                    appearanceColor = appearance.color,
+                    appearancePinStyle = appearance.pinStyle,
+                ))
+                Collection(
+                    id = id,
+                    name = name,
+                    description = description,
+                    appearance = appearance,
+                    templateVersion = current.template_version.toInt(),
+                    isVisible = current.is_visible == 1L,
+                    created = current.created,
+                    lastModified = now,
+                )
+            }
+        }
+    }
+
     override suspend fun addEntry(
         collectionId: CollectionId,
         location: Location,

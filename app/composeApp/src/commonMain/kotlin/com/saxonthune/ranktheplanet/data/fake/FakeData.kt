@@ -360,6 +360,24 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
         return Result.success(collection)
     }
 
+    override suspend fun editMetadata(
+        id: CollectionId,
+        name: String,
+        description: String?,
+        appearance: Appearance,
+    ): Result<Collection> {
+        val current = store.collections.value.find { it.id == id }
+            ?: return Result.failure(IllegalArgumentException("Collection not found: ${id.value}"))
+        val updated = current.copy(
+            name = name,
+            description = description,
+            appearance = appearance,
+            lastModified = FAKE_NOW,
+        )
+        store.collections.update { list -> list.map { if (it.id == id) updated else it } }
+        return Result.success(updated)
+    }
+
     override suspend fun addEntry(
         collectionId: CollectionId,
         location: Location,

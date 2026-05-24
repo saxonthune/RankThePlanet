@@ -21,6 +21,15 @@ internal sealed interface Op {
     ) : Op { override val kind = "collection.created" }
 
     @Serializable
+    data class CollectionMetadataEdited(
+        val collectionId: String,
+        val name: String,
+        val description: String?,
+        val appearanceColor: String,
+        val appearancePinStyle: String,
+    ) : Op { override val kind = "collection.metadata.edited" }
+
+    @Serializable
     data class EntryAdded(
         val entryId: String,
         val collectionId: String,
@@ -75,6 +84,7 @@ internal sealed interface Op {
 
 internal fun Op.toPayloadJson(): String = when (this) {
     is Op.CollectionCreated -> opJson.encodeToString(this)
+    is Op.CollectionMetadataEdited -> opJson.encodeToString(this)
     is Op.EntryAdded -> opJson.encodeToString(this)
     is Op.EntryRemoved -> opJson.encodeToString(this)
     is Op.ReviewEdited -> opJson.encodeToString(this)

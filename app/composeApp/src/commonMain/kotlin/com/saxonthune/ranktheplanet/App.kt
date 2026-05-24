@@ -45,10 +45,12 @@ import com.saxonthune.ranktheplanet.ui.screens.ManageProvidersViewModel
 import com.saxonthune.ranktheplanet.ui.screens.MapOverviewScreen
 import com.saxonthune.ranktheplanet.ui.screens.ProviderConfigScreen
 import com.saxonthune.ranktheplanet.ui.screens.ProviderConfigViewModel
+import com.saxonthune.ranktheplanet.ui.screens.CollectionEditorScreen
+import com.saxonthune.ranktheplanet.ui.screens.CollectionEditorViewModel
+import com.saxonthune.ranktheplanet.ui.screens.EditorMode
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormEvent
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormScreen
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormViewModel
-import com.saxonthune.ranktheplanet.ui.screens.CollectionEditorScreen
 import com.saxonthune.ranktheplanet.ui.screens.SettingsScreen
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
 
@@ -101,7 +103,7 @@ fun App(graph: RtpAppGraph? = null) {
                     onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
                     onEditReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onPickCollectionForDraft = { },
-                    onNewCollectionForDraft = { navController.navigate(CollectionEditor) },
+                    onNewCollectionForDraft = { navController.navigate(CollectionEditor()) },
                     onGoToReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onPendingReviewDismissed = { },
                 )
@@ -110,7 +112,7 @@ fun App(graph: RtpAppGraph? = null) {
                 CollectionListScreen(
                     collections = collections,
                     entries = entries,
-                    onNewCollection = { navController.navigate(CollectionEditor) },
+                    onNewCollection = { navController.navigate(CollectionEditor()) },
                     onImport = { navController.navigate(ImportFlow) },
                     onBack = { navController.popBackStack() },
                     onOpenCollection = { id -> navController.navigate(CollectionDetail(id.value)) },
@@ -124,7 +126,7 @@ fun App(graph: RtpAppGraph? = null) {
                     entries = entries,
                     templates = templates,
                     onAddEntry = { navController.navigate(MapOverview(route.collectionId)) },
-                    onEditCollection = { navController.navigate(CollectionEditor) },
+                    onEditCollection = { navController.navigate(CollectionEditor(route.collectionId)) },
                     onBack = { navController.popBackStack() },
                     onOpenEntry = { id -> navController.navigate(CollectionEntryDetail(id.value)) },
                 )
@@ -164,9 +166,23 @@ fun App(graph: RtpAppGraph? = null) {
                     onCancel = { navController.popBackStack() },
                 )
             }
-            composable<CollectionEditor> {
+            composable<CollectionEditor> { entry ->
+                val route = entry.toRoute<CollectionEditor>()
+                val mode: EditorMode = route.collectionId
+                    ?.let { EditorMode.Edit(CollectionId(it)) }
+                    ?: EditorMode.Create
+                val vm = viewModel { CollectionEditorViewModel(mode, collections, templates) }
                 CollectionEditorScreen(
-                    onFinish = { navController.popBackStack() },
+                    viewModel = vm,
+                    onSaved = { id ->
+                        if (mode is EditorMode.Create) {
+                            navController.navigate(CollectionDetail(id.value)) {
+                                popUpTo<CollectionEditor> { inclusive = true }
+                            }
+                        } else {
+                            navController.popBackStack()
+                        }
+                    },
                     onCancel = { navController.popBackStack() },
                 )
             }

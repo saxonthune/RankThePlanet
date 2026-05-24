@@ -28,5 +28,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 bumpLastModified:
 UPDATE collection SET last_modified = ? WHERE id = ?;
 
+updateMetadata:
+UPDATE collection SET name = ?, description = ?, appearance_color = ?, appearance_pin_style = ?, last_modified = ? WHERE id = ?;
+
 bumpLastModifiedAndTemplateVersion:
 UPDATE collection SET last_modified = ?, template_version = ? WHERE id = ?;

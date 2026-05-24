@@ -7,7 +7,7 @@ Pod::Spec.new do |spec|
     spec.license                  = ''
     spec.summary                  = 'RankThePlanet shared Compose UI'
     spec.vendored_frameworks      = 'build/cocoapods/framework/ComposeApp.framework'
-    spec.libraries                = 'c++'
+                
     spec.ios.deployment_target    = '15.0'
     spec.dependency 'MapLibre', '6.17.1'
                 
@@ -51,4 +51,5 @@ Pod::Spec.new do |spec|
         }
     ]
     spec.resources = ['build/compose/cocoapods/compose-resources']
+    spec.libraries = 'sqlite3'
 end

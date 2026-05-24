@@ -30,6 +30,11 @@ kotlin {
         homepage = "https://github.com/saxonthune/RankThePlanet"
         ios.deploymentTarget = "15.0"
         podfile = project.file("../iosApp/Podfile")
+        // SQLDelight native-driver (via co.touchlab:sqliter) references the iOS
+        // system sqlite3. Static framework passes those symbols through; the
+        // consumer iOS app must link sqlite3. Declared on the podspec so
+        // CocoaPods adds -lsqlite3 to the iosApp target automatically.
+        extraSpecAttributes["libraries"] = "'sqlite3'"
         framework {
             baseName = "ComposeApp"
             isStatic = true

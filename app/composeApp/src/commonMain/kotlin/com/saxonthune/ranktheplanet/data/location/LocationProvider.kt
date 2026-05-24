@@ -20,7 +20,8 @@ enum class ProviderError { NETWORK, RATE_LIMITED, NOT_CONFIGURED, PROVIDER_ERROR
 
 interface LocationProvider {
     val type: SourceType
-    suspend fun resolve(query: String): ProviderResult<List<LocationCandidate>>
+    val supportsTypeahead: Boolean
+    suspend fun resolve(query: String, near: Coordinates? = null): ProviderResult<List<LocationCandidate>>
     suspend fun resolveNearby(coordinates: Coordinates): ProviderResult<List<LocationCandidate>>
     suspend fun healthCheck(): ProviderResult<Unit>
 }

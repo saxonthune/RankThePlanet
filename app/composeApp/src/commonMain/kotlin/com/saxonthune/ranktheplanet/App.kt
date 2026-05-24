@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
+import com.saxonthune.ranktheplanet.data.LocationRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.fake.FakeRepositories
 import com.saxonthune.ranktheplanet.data.location.DefaultLocationProviderRegistry
@@ -62,6 +63,7 @@ fun App(graph: RtpAppGraph? = null) {
         val collections: CollectionRepository = graph?.repos?.collections ?: fake!!.collections
         val entries: EntryRepository = graph?.repos?.entries ?: fake!!.entries
         val templates: TemplateRepository = graph?.repos?.templates ?: fake!!.templates
+        val locations: LocationRepository = graph?.repos?.locations ?: fake!!.locations
         val projection: OverviewProjection = graph?.projection ?: fake!!.overviewProjection
         val session: SessionStateStore = graph?.session ?: fake!!.sessionStateStore
 
@@ -94,6 +96,7 @@ fun App(graph: RtpAppGraph? = null) {
                     collections = collections,
                     entries = entries,
                     templates = templates,
+                    locations = locations,
                     providerRegistry = r,
                     projection = projection,
                     session = session,

@@ -24,19 +24,25 @@ class GoogleLocationProvider(
 ) : LocationProvider {
 
     override val type: SourceType = SourceType.Google
+    override val supportsTypeahead: Boolean = true
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    override suspend fun resolve(query: String): ProviderResult<List<LocationCandidate>> {
+    override suspend fun resolve(query: String, near: Coordinates?): ProviderResult<List<LocationCandidate>> {
         if (query.isBlank()) return ProviderResult.Ok(emptyList())
         val key = apiKey()
         if (key.isNullOrBlank()) return ProviderResult.Failed(ProviderError.NOT_CONFIGURED)
         return try {
+            val body = if (near != null) {
+                """{"textQuery":"$query","locationBias":{"circle":{"center":{"latitude":${near.lat},"longitude":${near.lng}},"radius":50000.0}}}"""
+            } else {
+                """{"textQuery":"$query"}"""
+            }
             val response = client.post("$endpointBase/places:searchText") {
                 contentType(ContentType.Application.Json)
                 header("X-Goog-Api-Key", key)
                 header("X-Goog-FieldMask", FIELD_MASK)
-                setBody("""{"textQuery":"$query"}""")
+                setBody(body)
             }
             if (!response.status.isSuccess()) {
                 return ProviderResult.Failed(ProviderError.PROVIDER_ERROR)

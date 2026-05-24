@@ -1,13 +1,18 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Layers
@@ -50,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
+import com.saxonthune.ranktheplanet.data.LocationRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.projection.OverviewProjection
@@ -79,6 +85,7 @@ fun MapOverviewScreen(
     collections: CollectionRepository,
     entries: EntryRepository,
     templates: TemplateRepository,
+    locations: LocationRepository,
     providerRegistry: LocationProviderRegistry,
     projection: OverviewProjection,
     session: SessionStateStore,
@@ -92,7 +99,7 @@ fun MapOverviewScreen(
     onGoToReview: (EntryId) -> Unit,
     onPendingReviewDismissed: () -> Unit,
 ) {
-    val vm = viewModel { MapOverviewViewModel(collections, entries, providerRegistry, templates, projection, session) }
+    val vm = viewModel { MapOverviewViewModel(collections, entries, providerRegistry, templates, projection, session, locations) }
     val state by vm.uiState.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -200,27 +207,53 @@ fun MapOverviewScreen(
                             SearchBarField(
                                 expanded = searchExpanded,
                                 onFocus = { searchExpanded = true },
-                                onSearch = { vm.search(it) },
+                                onSearch = { vm.onSubmitSearch(it) },
+                                onQueryChange = { vm.onQueryChange(it) },
                             )
                         },
                     )
-                    if (searchExpanded && state.searchResults.isNotEmpty()) {
+                    if (searchExpanded && state.searchHits.isNotEmpty()) {
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             tonalElevation = 8.dp,
                         ) {
                             Column {
-                                state.searchResults.forEach { result ->
-                                    ListItem(
-                                        headlineContent = { Text(result.displayName) },
-                                        modifier = Modifier.clickable {
-                                            vm.startDraft(
-                                                lat = result.lat,
-                                                lng = result.lng,
-                                                displayName = result.displayName,
+                                state.searchHits.forEach { hit ->
+                                    when (hit) {
+                                        is SearchHitUi.ExistingEntry -> {
+                                            ListItem(
+                                                headlineContent = { Text(hit.displayName) },
+                                                leadingContent = {
+                                                    Row {
+                                                        hit.dots.forEach { dotColor ->
+                                                            Box(
+                                                                modifier = androidx.compose.ui.Modifier
+                                                                    .size(10.dp)
+                                                                    .background(dotColor, CircleShape)
+                                                            )
+                                                            Spacer(modifier = androidx.compose.ui.Modifier.width(2.dp))
+                                                        }
+                                                    }
+                                                },
+                                                modifier = Modifier.clickable {
+                                                    vm.pickExistingHit(hit.locationId)
+                                                },
                                             )
-                                        },
-                                    )
+                                        }
+                                        is SearchHitUi.Candidate -> {
+                                            ListItem(
+                                                headlineContent = { Text(hit.displayName) },
+                                                supportingContent = hit.detail?.let { { Text(it) } },
+                                                modifier = Modifier.clickable {
+                                                    vm.startDraft(
+                                                        lat = hit.lat,
+                                                        lng = hit.lng,
+                                                        displayName = hit.displayName,
+                                                    )
+                                                },
+                                            )
+                                        }
+                                    }
                                     HorizontalDivider()
                                 }
                             }

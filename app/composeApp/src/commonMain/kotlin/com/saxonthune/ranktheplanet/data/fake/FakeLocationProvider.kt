@@ -9,6 +9,7 @@ import com.saxonthune.ranktheplanet.domain.SourceType
 class FakeLocationProvider : LocationProvider {
 
     override val type = SourceType.Fake
+    override val supportsTypeahead: Boolean = true
 
     private val candidates = Fixtures.locations.map { location ->
         LocationCandidate(
@@ -20,7 +21,7 @@ class FakeLocationProvider : LocationProvider {
         )
     }
 
-    override suspend fun resolve(query: String): ProviderResult<List<LocationCandidate>> {
+    override suspend fun resolve(query: String, near: Coordinates?): ProviderResult<List<LocationCandidate>> {
         if (query.isBlank()) return ProviderResult.Ok(emptyList())
         return ProviderResult.Ok(
             candidates.filter { it.displayName.contains(query, ignoreCase = true) }

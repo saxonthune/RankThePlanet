@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class OsmLocationProviderTest {
@@ -106,6 +107,56 @@ class OsmLocationProviderTest {
         val result = provider.resolve("anywhere")
         assertIs<ProviderResult.Failed>(result)
         assertEquals(ProviderError.PROVIDER_ERROR, result.error)
+    }
+
+    @Test
+    fun `resolve with near appends lat and lon to the Photon URL`() = runBlocking {
+        val photonJson = """{"type":"FeatureCollection","features":[]}"""
+        var capturedUrl: String? = null
+        val engine = MockEngine { request ->
+            capturedUrl = request.url.toString()
+            respond(
+                content = photonJson,
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; isLenient = true })
+            }
+        }
+        val provider = OsmLocationProvider(client)
+        provider.resolve("coffee", near = com.saxonthune.ranktheplanet.domain.Coordinates(lat = 37.7749, lng = -122.4194))
+
+        assertNotNull(capturedUrl)
+        assert(capturedUrl!!.contains("lat=37.7749")) { "Expected lat=37.7749 in URL: $capturedUrl" }
+        assert(capturedUrl!!.contains("lon=-122.4194")) { "Expected lon=-122.4194 in URL: $capturedUrl" }
+    }
+
+    @Test
+    fun `resolve without near does not append lat and lon to the Photon URL`() = runBlocking {
+        val photonJson = """{"type":"FeatureCollection","features":[]}"""
+        var capturedUrl: String? = null
+        val engine = MockEngine { request ->
+            capturedUrl = request.url.toString()
+            respond(
+                content = photonJson,
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; isLenient = true })
+            }
+        }
+        val provider = OsmLocationProvider(client)
+        provider.resolve("coffee")
+
+        assertNotNull(capturedUrl)
+        assert(!capturedUrl!!.contains("lat=")) { "Expected no lat param in URL: $capturedUrl" }
+        assert(!capturedUrl!!.contains("lon=")) { "Expected no lon param in URL: $capturedUrl" }
     }
 
     @Test

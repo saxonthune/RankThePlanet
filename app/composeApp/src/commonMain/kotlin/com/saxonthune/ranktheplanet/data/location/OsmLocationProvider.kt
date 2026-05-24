@@ -22,6 +22,7 @@ class OsmLocationProvider(
 ) : LocationProvider {
 
     override val type: SourceType = SourceType.Osm
+    override val supportsTypeahead: Boolean = true
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
@@ -42,12 +43,16 @@ class OsmLocationProvider(
         }
     }
 
-    override suspend fun resolve(query: String): ProviderResult<List<LocationCandidate>> {
+    override suspend fun resolve(query: String, near: Coordinates?): ProviderResult<List<LocationCandidate>> {
         throttle()
         return try {
             val response = client.get("$photonBase/api") {
                 parameter("q", query)
                 parameter("limit", "10")
+                if (near != null) {
+                    parameter("lat", near.lat.toString())
+                    parameter("lon", near.lng.toString())
+                }
             }
             if (!response.status.isSuccess()) {
                 return ProviderResult.Failed(ProviderError.PROVIDER_ERROR)

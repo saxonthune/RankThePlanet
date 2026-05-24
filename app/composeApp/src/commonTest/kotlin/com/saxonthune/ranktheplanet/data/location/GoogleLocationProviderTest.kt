@@ -10,7 +10,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
+import io.ktor.http.content.OutgoingContent
+import io.ktor.http.content.TextContent
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
@@ -101,6 +104,72 @@ class GoogleLocationProviderTest {
         val result = provider.resolve("anywhere")
         assertIs<ProviderResult.Failed>(result)
         assertEquals(ProviderError.NOT_CONFIGURED, result.error)
+    }
+
+    @Test
+    fun `resolve with near includes locationBias circle in request body`() = runBlocking {
+        val placesJson = """{"places":[]}"""
+        var capturedBody: String? = null
+        val engine = MockEngine { request ->
+            capturedBody = (request.body as? OutgoingContent.ByteArrayContent)?.bytes()?.decodeToString()
+                ?: (request.body as? TextContent)?.text
+            respond(
+                content = placesJson,
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; isLenient = true })
+            }
+        }
+        val provider = GoogleLocationProvider(
+            client = client,
+            apiKey = { "test-key" },
+        )
+        provider.resolve("coffee", near = com.saxonthune.ranktheplanet.domain.Coordinates(lat = 37.7749, lng = -122.4194))
+
+        assertNotNull(capturedBody)
+        val parsed = Json.parseToJsonElement(capturedBody!!).jsonObject
+        val bias = parsed["locationBias"]?.jsonObject
+        assertNotNull(bias, "locationBias must be present in request body")
+        val circle = bias["circle"]?.jsonObject
+        assertNotNull(circle, "locationBias.circle must be present")
+        val center = circle["center"]?.jsonObject
+        assertNotNull(center, "locationBias.circle.center must be present")
+        assertEquals(37.7749, center["latitude"]?.jsonPrimitive?.double)
+        assertEquals(-122.4194, center["longitude"]?.jsonPrimitive?.double)
+        assertEquals(50000.0, circle["radius"]?.jsonPrimitive?.double)
+    }
+
+    @Test
+    fun `resolve without near does not include locationBias in request body`() = runBlocking {
+        val placesJson = """{"places":[]}"""
+        var capturedBody: String? = null
+        val engine = MockEngine { request ->
+            capturedBody = (request.body as? OutgoingContent.ByteArrayContent)?.bytes()?.decodeToString()
+                ?: (request.body as? TextContent)?.text
+            respond(
+                content = placesJson,
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; isLenient = true })
+            }
+        }
+        val provider = GoogleLocationProvider(
+            client = client,
+            apiKey = { "test-key" },
+        )
+        provider.resolve("coffee")
+
+        assertNotNull(capturedBody)
+        val parsed = Json.parseToJsonElement(capturedBody!!).jsonObject
+        assertFalse(parsed.containsKey("locationBias"), "locationBias must NOT be present when near is null")
     }
 
     @Test

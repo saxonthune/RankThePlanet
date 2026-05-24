@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
+import com.saxonthune.ranktheplanet.data.LocationRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.location.ProviderResult
@@ -28,11 +29,16 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlin.random.Random
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -109,11 +115,28 @@ data class CollectionFilterRowUi(
     val shown: Boolean,
 )
 
-data class SearchResultUi(
-    val displayName: String,
-    val lat: Double,
-    val lng: Double,
-)
+sealed interface SearchHitUi {
+    val displayName: String
+    val lat: Double
+    val lng: Double
+
+    data class ExistingEntry(
+        override val displayName: String,
+        override val lat: Double,
+        override val lng: Double,
+        val locationId: LocationId,
+        val dots: ImmutableList<Color>,
+    ) : SearchHitUi
+
+    data class Candidate(
+        override val displayName: String,
+        override val lat: Double,
+        override val lng: Double,
+        val sourceType: SourceType,
+        val sourceId: String?,
+        val detail: String?,
+    ) : SearchHitUi
+}
 
 data class NearbyCandidateUi(
     val displayName: String,
@@ -126,7 +149,7 @@ data class MapOverviewUiState(
     val pins: ImmutableList<PinUi> = persistentListOf(),
     val collectionRows: ImmutableList<CollectionFilterRowUi> = persistentListOf(),
     val collectionPicks: ImmutableList<CollectionPickRowUi> = persistentListOf(),
-    val searchResults: ImmutableList<SearchResultUi> = persistentListOf(),
+    val searchHits: ImmutableList<SearchHitUi> = persistentListOf(),
     val isSearching: Boolean = false,
     val isLoading: Boolean = true,
     val pinSheet: PinSheet = PinSheet.None,
@@ -138,6 +161,7 @@ data class MapOverviewUiState(
     val viewport: Viewport? = null,
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MapOverviewViewModel(
     private val collectionsRepo: CollectionRepository,
     private val entriesRepo: EntryRepository,
@@ -145,13 +169,13 @@ class MapOverviewViewModel(
     private val templatesRepo: TemplateRepository,
     private val projection: OverviewProjection,
     private val session: SessionStateStore,
+    private val locationsRepo: LocationRepository,
 ) : ViewModel() {
 
     private val _restoredViewport = MutableStateFlow<Viewport?>(null)
+    private val _liveViewport = MutableStateFlow<Viewport?>(null)
     private val hiddenCollections = MutableStateFlow<Set<CollectionId>>(emptySet())
-    private val searchResults = MutableStateFlow<List<SearchResultUi>>(emptyList())
-    private val isSearching = MutableStateFlow(false)
-    private val lastQuery = MutableStateFlow<String?>(null)
+    private val _isSearching = MutableStateFlow(false)
     private val _pinSheet = MutableStateFlow<PinSheet>(PinSheet.None)
     private val _draft = MutableStateFlow<LocationDraftSheet>(LocationDraftSheet.None)
     private val _pendingReview = MutableStateFlow<PendingReviewPrompt>(PendingReviewPrompt.None)
@@ -163,6 +187,9 @@ class MapOverviewViewModel(
     private val _latestEntries = MutableStateFlow<List<Entry>>(emptyList())
     private val _latestTemplates = MutableStateFlow<List<ReviewTemplate>>(emptyList())
 
+    private val _query = MutableStateFlow("")
+    private val _submit = MutableSharedFlow<String>(extraBufferCapacity = 1)
+
     val pinController = PinRenderController()
 
     init {
@@ -170,12 +197,6 @@ class MapOverviewViewModel(
             _restoredViewport.value = projection.loadOverview().viewport
         }
         loadData()
-        viewModelScope.launch {
-            providerRegistry.defaultFlow.drop(1).collect {
-                lastQuery.value?.takeIf { it.isNotBlank() }?.let { search(it) }
-                if (_draft.value is LocationDraftSheet.Open) findNearby()
-            }
-        }
     }
 
     fun retry() {
@@ -284,20 +305,125 @@ class MapOverviewViewModel(
         }
     }
 
+    private val existingHitsFlow = combine(
+        _query,
+        _liveViewport,
+        _latestEntries,
+        _latestCollections,
+    ) { q, vp, entries, collections ->
+        if (q.isBlank()) return@combine emptyList()
+        val collectionMap = collections.associateBy { it.id }
+        val matched = entries.filter { it.location.displayName.contains(q, ignoreCase = true) }
+        val byLocation = matched.groupBy { it.location.id }
+        byLocation.entries
+            .map { (locationId, locationEntries) ->
+                val first = locationEntries.first()
+                val dots = locationEntries.mapNotNull { e ->
+                    val col = collectionMap[e.collectionId] ?: return@mapNotNull null
+                    parseAppearanceColor(col.appearance.color)
+                }.toImmutableList()
+                SearchHitUi.ExistingEntry(
+                    displayName = first.location.displayName,
+                    lat = first.location.coordinates.lat,
+                    lng = first.location.coordinates.lng,
+                    locationId = locationId,
+                    dots = dots,
+                )
+            }
+            .let { hits ->
+                if (vp == null) hits
+                else hits.sortedBy { h ->
+                    val dLat = h.lat - vp.centerLat
+                    val dLng = h.lng - vp.centerLng
+                    dLat * dLat + dLng * dLng
+                }
+            }
+            .take(20)
+    }
+
+    private suspend fun runProviderSearch(query: String): List<SearchHitUi.Candidate> {
+        _isSearching.value = true
+        val near = _liveViewport.value?.let { Coordinates(it.centerLat, it.centerLng) }
+        val result = providerRegistry.default().resolve(query, near)
+        _isSearching.value = false
+        return when (result) {
+            is ProviderResult.Ok -> result.value.map { c ->
+                SearchHitUi.Candidate(
+                    displayName = c.displayName,
+                    lat = c.coordinates.lat,
+                    lng = c.coordinates.lng,
+                    sourceType = c.sourceType,
+                    sourceId = c.sourceId,
+                    detail = null,
+                )
+            }
+            is ProviderResult.Failed -> {
+                _error.value = result.error.name
+                emptyList()
+            }
+        }
+    }
+
+    private val candidatesFlow: StateFlow<List<SearchHitUi.Candidate>> =
+        providerRegistry.defaultFlow.flatMapLatest { provider ->
+            if (provider.supportsTypeahead) {
+                _query
+                    .mapLatest { q ->
+                        if (q.isBlank()) return@mapLatest emptyList()
+                        delay(250)
+                        runProviderSearch(q)
+                    }
+            } else {
+                _submit
+                    .filter { it.isNotBlank() }
+                    .mapLatest { runProviderSearch(it) }
+            }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private val searchHitsFlow = combine(existingHitsFlow, candidatesFlow, _query) { existing, candidates, q ->
+        if (q.isBlank()) return@combine persistentListOf()
+        val deduped = candidates.filter { c ->
+            c.sourceId == null || locationsRepo.findByIdentity(c.sourceType, c.sourceId) == null
+        }
+        rankAndInterleave(existing, deduped, _liveViewport.value)
+    }
+
+    private fun rankAndInterleave(
+        existing: List<SearchHitUi.ExistingEntry>,
+        candidates: List<SearchHitUi.Candidate>,
+        viewport: Viewport?,
+    ): ImmutableList<SearchHitUi> {
+        val all: List<SearchHitUi> = existing + candidates
+        return if (viewport == null) {
+            all.take(25).toImmutableList()
+        } else {
+            all.sortedWith(
+                compareBy(
+                    { h ->
+                        val dLat = h.lat - viewport.centerLat
+                        val dLng = h.lng - viewport.centerLng
+                        dLat * dLat + dLng * dLng
+                    },
+                    { h -> if (h is SearchHitUi.Candidate) 1 else 0 },
+                )
+            ).take(25).toImmutableList()
+        }
+    }
+
     val uiState: StateFlow<MapOverviewUiState> = combine(
         combine(
             combine(
                 derivedBase,
-                searchResults,
-                isSearching,
+                searchHitsFlow,
+                _isSearching,
                 _pinSheet,
                 _error,
-            ) { base, results, searching, sheet, error ->
+            ) { base, hits, searching, sheet, error ->
                 MapOverviewUiState(
                     pins = base.pins,
                     collectionRows = base.collectionRows,
                     collectionPicks = base.collectionPicks,
-                    searchResults = results.toImmutableList(),
+                    searchHits = hits,
                     isSearching = searching,
                     isLoading = false,
                     pinSheet = sheet,
@@ -328,23 +454,17 @@ class MapOverviewViewModel(
         }
     }
 
-    fun search(query: String) {
-        lastQuery.value = query
-        viewModelScope.launch {
-            isSearching.value = true
-            val result = providerRegistry.default().resolve(query)
-            searchResults.value = when (result) {
-                is ProviderResult.Ok -> result.value.map { candidate ->
-                    SearchResultUi(
-                        displayName = candidate.displayName,
-                        lat = candidate.coordinates.lat,
-                        lng = candidate.coordinates.lng,
-                    )
-                }
-                is ProviderResult.Failed -> emptyList()
-            }
-            isSearching.value = false
-        }
+    fun onQueryChange(value: String) {
+        _query.value = value
+    }
+
+    fun onSubmitSearch(value: String) {
+        _submit.tryEmit(value)
+    }
+
+    fun pickExistingHit(locationId: LocationId) {
+        val entry = _latestEntries.value.firstOrNull { it.location.id == locationId } ?: return
+        selectPin(entry.id)
     }
 
     private fun buildLocationEntries(locationId: LocationId): List<EntrySummaryUi>? {
@@ -529,6 +649,7 @@ class MapOverviewViewModel(
     }
 
     fun onViewportChange(viewport: Viewport) {
+        _liveViewport.value = viewport
         viewModelScope.launch { session.saveViewport(viewport) }
     }
 }

@@ -29,6 +29,7 @@ internal fun SearchBarField(
     expanded: Boolean,
     onFocus: () -> Unit,
     onSearch: (String) -> Unit,
+    onQueryChange: (String) -> Unit = {},
 ) {
     var query by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
@@ -41,7 +42,10 @@ internal fun SearchBarField(
 
     TextField(
         value = query,
-        onValueChange = { query = it },
+        onValueChange = {
+            query = it
+            onQueryChange(it)
+        },
         placeholder = { Text("Search") },
         singleLine = true,
         shape = CircleShape,

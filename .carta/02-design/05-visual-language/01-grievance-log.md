@@ -26,15 +26,6 @@ Conventions:
 
 ## Open grievances
 
-EntrySheet (doc02.02.02.09):
-
-- **G001** — EntrySheet, 2026-05-23: collection chip ("NYT Top 100"), entry name ("Per Sé"), and review status row are rendered with equal typographic weight and uniform dividers between them, so the sheet reads as a list of peers rather than as parent context / subject / status. [candidate cluster: information-hierarchy]
-- **G002** — EntrySheet, 2026-05-23: the sheet's background color stops short of the bottom safe area, leaving a darker strip below; the container does not extend through window insets. [candidate cluster: surface-intentionality]
-- **G003** — EntrySheet, 2026-05-23: every row in the sheet has the same hairline divider, which signals peer relationships the rows don't actually have. [candidate cluster: information-hierarchy]
-- **G004** — EntrySheet, 2026-05-23: "Per Sé" — the subject of the sheet — does not sit at display weight relative to the surrounding rows; spacing around it is the same as around the chip and the status row. [candidate cluster: information-hierarchy]
-- **G005** — EntrySheet, 2026-05-23: the row reads as a passive status string sitting in a slot users expect to be interactive. There is no signifier for *edit review*, *write review*, or *re-visit*. [candidate cluster: affordance-vs-status; **partly resolved 2026-05-23 — see Resolved/withdrawn**]
-- **G007** — EntrySheet, 2026-05-23: a `debug: EntryDrawerSheet` label is rendered in the sheet. Build-config leak, not a visual-language issue — recorded here only so it does not get conflated with a real grievance.
-
 MapOverview (doc02.02.02.07):
 
 - **G008** — MapOverview, 2026-05-23: the Search pill floats over the map without an anchor system — no shared inset from the safe area, no consistent corner radius / elevation with any other map overlay (none yet exist, but the rule needs to be set before a second overlay arrives). [candidate cluster: overlay-placement]
@@ -48,12 +39,16 @@ App-wide:
 
 Names are provisional; promote to a principle doc when the cluster has ≥3 grievances and the name stabilizes.
 
-- **information-hierarchy** — G001, G003, G004. Three grievances against the same surface; close to graduating. Likely first principle doc.
-- **surface-intentionality** — G002, G010. Two grievances. Needs a third before graduating. Candidate framing: *no Material default survives past prototype.*
-- **affordance-vs-status** — G005. The vocabulary half (visited vs reviewed) is settled in [[03-concepts]] (doc01.03); what remains is the visual question of whether a status string in an interactive slot needs an explicit edit signifier (pencil, chevron) or whether the whole-row tap target is enough. Watch for a second grievance before promoting.
+- **surface-intentionality** — G010 (G002 resolved). One grievance left. Needs more before graduating. Candidate framing: *no Material default survives past prototype.*
 - **overlay-placement** — G008, G009. Two grievances. Watch for a third when a second map overlay is introduced (FAB, attribution, location pill).
+- **information-hierarchy** — G001, G003, G004 all resolved by the EntrySheet rework. The cluster is **graduation-ready**: it has the three concrete supporting grievances, the fix has been validated in code, and the vocabulary is stable (*parent context → subject → tertiary action*, expressed by type weight and spacing, not by dividers between heterogeneous items). Promote to a principle doc when the next surface needs it.
 
 ## Resolved / withdrawn
 
+- **G001** — EntrySheet, 2026-05-23: collection chip / entry name / review status rendered with equal weight and uniform dividers. **Resolved 2026-05-24**: rebuilt `EntryDrawerSheet` with a small collection breadcrumb, a display-weight Location title, and a tertiary review row — three regions of deliberately unequal visual weight expressing *parent context → subject → tertiary action* (see [[09-entry-drawer]], doc02.02.02.09; principle still to graduate from the `information-hierarchy` cluster).
+- **G002** — EntrySheet, 2026-05-23: sheet background stops short of the bottom safe area. **Resolved 2026-05-24**: `PinSheetHost` sets `contentWindowInsets = { WindowInsets(0) }` on the `ModalBottomSheet`, so the sheet's `containerColor` extends through the system gesture inset; sheet content (`EntryDrawerSheet`, `LocationDetailPeek`) applies its own `navigationBarsPadding()` to clear the inset for its content.
+- **G003** — EntrySheet, 2026-05-23: hairline dividers between heterogeneous rows. **Resolved 2026-05-24**: all three `HorizontalDivider`s removed from `EntryDrawerSheet`; hierarchy is expressed by spacing and type weight instead.
+- **G004** — EntrySheet, 2026-05-23: "Per Sé" not at display weight. **Resolved 2026-05-24**: Location title now renders at Material 3 `headlineMedium` with generous vertical padding, visually dominating the sheet.
+- **G005** — EntrySheet, 2026-05-23: status row missing an interactive signifier. **Resolved 2026-05-24** (in addition to the vocabulary portion below): `reviewBlock` now carries a trailing outlined edit (pencil) icon in `onSurfaceVariant`; the whole row remains the tap target.
 - **G006** — EntrySheet, 2026-05-23: "Visited" and "Reviewed" used inconsistently across the app. **Resolved 2026-05-23**: the concept settled on **reviewed / unreviewed** as the single vocabulary for the derived state ([[03-concepts]], doc01.03 §3, §4). Use cases ([[02-use-cases]], doc01.02), screen inventories, the store model ([[01-store-model]], doc03.01), and the EntrySheet / LocationSheet / MapOverview code paths were updated in the same change.
-- **G005** (vocabulary portion) — same change: the EntrySheet `reviewBlock` now reads `Reviewed {date}` or `Unreviewed`, never `Visited`. The unresolved portion (whether the row needs an explicit edit signifier) stays open above.
+- **G007** — EntrySheet, 2026-05-23: `debug: EntryDrawerSheet` label leaked into the sheet. **Resolved 2026-05-24**: `DebugSheetLabel` call removed from `EntryDrawerSheet`. (`LocationDetailPeek` still renders its own debug label; not yet grieved against.)

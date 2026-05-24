@@ -32,7 +32,7 @@ class PassthroughOverviewProjection(
                     entryId = EntryId(row.entry_id),
                     coordinates = Coordinates(lat = row.lat, lng = row.lng),
                     collectionColor = row.appearance_color,
-                    visited = row.visited != 0L,
+                    reviewed = row.reviewed != 0L,
                 )
             }.toImmutableList(),
             collectionFilter = collectionIds.map { CollectionId(it) }.toImmutableSet(),
@@ -51,7 +51,7 @@ class PassthroughOverviewProjection(
                     entryId = EntryId(row.entry_id),
                     coordinates = Coordinates(lat = row.lat, lng = row.lng),
                     collectionColor = row.appearance_color,
-                    visited = row.visited != 0L,
+                    reviewed = row.reviewed != 0L,
                 )
             }.toImmutableList(),
             collectionFilter = collectionIdRows.map { CollectionId(it) }.toImmutableSet(),

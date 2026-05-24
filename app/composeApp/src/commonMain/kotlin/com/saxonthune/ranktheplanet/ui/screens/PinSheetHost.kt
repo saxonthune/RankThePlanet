@@ -1,5 +1,6 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -25,6 +26,9 @@ internal fun PinSheetHost(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
+        // Sheet's containerColor extends through the bottom safe area; sheet content
+        // applies its own navigationBarsPadding to clear the system gesture inset.
+        contentWindowInsets = { WindowInsets(0) },
     ) {
         when (sheet) {
             is PinSheet.Peek -> LocationDetailPeek(

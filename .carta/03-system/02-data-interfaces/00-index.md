@@ -30,7 +30,9 @@ Writes go through **concept-shaped, typed repository methods** — not a generic
 ```
 CollectionRepository
     observeAll(): Flow<List<Collection>>
-    create(name, appearance): Result<Collection>
+    observe(id): Flow<Collection?>
+    create(name, description, appearance): Result<Collection>
+    editMetadata(id, name, description, appearance): Result<Collection>
     addEntry(collectionId, location, review): Result<Entry>
     removeEntry(entryId): Result<Unit>
 
@@ -69,6 +71,15 @@ Method names track concept actions so the future `coverage.mjs` (doc02.02.01) ke
 The `Op` sealed type is internal to the data layer — repositories construct ops; nothing above the repository sees them. Repository implementations expose a `SharedFlow` of applied mutations that `ProjectionMaintainer` and `SyncEngine` subscribe to; that flow is the only coupling between writing and its downstream consumers.
 
 External pluggable backends — `ImportSource`, `ExportFormat`, `TileSource`, `FieldType` — sit below the repository line and are composed in by the repository that needs them, the way `LocationRepository` composes `LocationProvider` ([[02-location-providers]]). Each unfolds into its own sibling when a work item demands it.
+
+## Static catalogs
+
+Some inputs the UI offers are **shipped content**, not state — fixed, pure-Kotlin values with no I/O, no platform variance, no failure mode. They live as `object`s in the domain layer, not behind a repository:
+
+- `BuiltInTemplates` — the catalog of starter `ReviewTemplate`s (Coffee Ranking, Wishlist, Geo Diary, doc01.03 §3) the `CollectionEditor` ([[/02-design/02-interaction/02-screens/08-collection-editor]], doc02.02.02.08) offers via *Adopt a built-in template*.
+- `AppearancePalette` — the swatch list (`Appearance` values, doc01.03 §1) the same editor offers when the user picks a Collection's color and pin style.
+
+A `TemplateRepository.builtIns()` would be ceremony — a pure constant pretending to be I/O. If a future *save-as-built-in* feature lands, that introduces the seam; until then, the static catalog is the contract.
 
 ## What UI-mockup sessions consume
 

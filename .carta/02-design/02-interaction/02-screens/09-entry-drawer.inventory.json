@@ -3,15 +3,15 @@
   "regions": [
     {
       "id": "collectionRow",
-      "purpose": "Top of the sheet — a tall, full-width tap target identifying the owning Collection. Shows the Collection's appearance color (swatch or leading accent) and its name. Pressing the row opens the Collection. Sized to a comfortable touch target (a Material 3 list-item row, ~56dp tall) with the whole row pressable, not just the text."
+      "purpose": "Top of the sheet — a small, secondary breadcrumb identifying the owning Collection. A 10dp appearance-color dot followed by the Collection name in a label-weight type set in onSurfaceVariant; reads as contextual chrome, not as content of equal weight to the subject below. The whole row is a tap target that opens the Collection."
     },
     {
       "id": "locationBlock",
-      "purpose": "Middle of the sheet — a tall, full-width tap target identifying the Location. Shows the Location's display name on its own line at a heading-sized type. Pressing the block opens the LocationSheet peek of the Location and every Collection Entry that references it, plus the add-another-Entry-at-this-Location affordance; the peek renders for any Entry count, including the sole referencing Entry. Sized for an easy tap (at least 48dp tall) with generous vertical padding."
+      "purpose": "Middle of the sheet — the subject. The Location's display name is rendered in a display-weight type (Material 3 headlineMedium) with generous vertical padding so it visually dominates the sheet. The whole region is a tap target that opens the LocationSheet peek of every Collection Entry that references this Location, plus the add-another-Entry-at-this-Location affordance."
     },
     {
       "id": "reviewBlock",
-      "purpose": "Bottom of the sheet — a tall, full-width tap target reflecting the Review. First line shows the reviewed status: 'Unreviewed' when the Entry has no Review instance, or 'Reviewed {date}' using the Review instance's created date when it does. Second line shows the Review's summary field (Review.template.summaryField, doc01.03 §3) rendered to a single line — a score renders in its configured style (stars, number, icon), text shows a truncated first line, an enum shows the picked option, a power-ranking shows its position; omitted when the template declares no summary field or the Entry is unreviewed. Pressing the block opens the Review form for editing. Sized for an easy tap (at least 56dp tall) with generous vertical padding between the two lines."
+      "purpose": "Bottom of the sheet — a tertiary affordance reflecting the Review. Two stacked lines on the left: first line is the status — 'Unreviewed' when the Entry has no Review instance, or 'Reviewed {date}' using the Review instance's created date when it does; second line is the Review's summary field (Review.template.summaryField, doc01.03 §3) rendered to a single line — a score in its configured style (stars, number, icon), text truncated to a first line, an enum's picked option, a power-ranking's position; the second line is omitted when the template declares no summary field or the Entry is unreviewed. On the right, a trailing outlined edit (pencil) icon in onSurfaceVariant signifies that pressing the row opens the Review form for editing; the whole row is the tap target, not just the icon."
     }
   ],
   "affordances": [
@@ -35,7 +35,8 @@
       "region": "reviewBlock",
       "event": "TAP_EDIT_REVIEW",
       "target": "ReviewForm",
-      "action": "Review.edit"
+      "action": "Review.edit",
+      "rendering": "Whole-row tap target with a trailing outlined edit (pencil) icon in onSurfaceVariant as the affordance signifier."
     },
     {
       "id": "dismiss",

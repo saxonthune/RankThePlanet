@@ -43,10 +43,11 @@ data class EntrySummaryUi(
     val collectionName: String,
     val collectionColor: Color,
     val locationName: String,
-    val reviewed: Boolean,
     val reviewedDate: String?,
     val summaryPreview: String?,
-)
+) {
+    val reviewed: Boolean get() = reviewedDate != null
+}
 
 sealed interface PinSheet {
     data object None : PinSheet
@@ -98,7 +99,6 @@ data class PinUi(
     val lng: Double,
     val color: Color,
     val colorHex: String,
-    val reviewed: Boolean,
     val kind: PinKind,
 )
 
@@ -266,7 +266,6 @@ class MapOverviewViewModel(
                     lng = entry.location.coordinates.lng,
                     color = parseAppearanceColor(col.appearance.color),
                     colorHex = col.appearance.color,
-                    reviewed = reviewed,
                     kind = kind,
                 )
             }.toImmutableList()
@@ -371,7 +370,6 @@ class MapOverviewViewModel(
                 collectionName = col.name,
                 collectionColor = parseAppearanceColor(col.appearance.color),
                 locationName = e.location.displayName,
-                reviewed = e.review != null,
                 reviewedDate = reviewedDate,
                 summaryPreview = summaryPreview,
             )

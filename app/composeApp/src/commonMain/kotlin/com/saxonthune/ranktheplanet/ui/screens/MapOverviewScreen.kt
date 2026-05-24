@@ -130,10 +130,6 @@ fun MapOverviewScreen(
                 "cam/${if (moving) "start" else "stop"}",
                 "zoom" to cameraState.position.zoom.toFixed2(),
             )
-            // Experiment: re-push the source on pan start. If maplibre-native's
-            // iOS GeoJsonSource invalidates cached tiles on setData, this should
-            // heal pins stuck missing at a zoom level mid-session.
-            if (moving) vm.pinController.forceRedraw()
             cameraState.projection?.let { probePinCoverage(it, vm.pinController.currentPins) }
         }
     }
@@ -364,10 +360,7 @@ private fun probePinCoverage(projection: CameraProjection, pins: List<PinUi>) {
     }
     val missing = mutableListOf<String>()
     var rendered = 0
-    // Pin body icon is SymbolAnchor.Bottom, so the geometry point sits at the
-    // icon's bottom edge. A point-offset query at that location is fragile —
-    // it hits sub-pixel boundaries of the rendered icon and can false-negative.
-    // Query a small rect covering the icon's screen footprint instead.
+    val details = mutableListOf<String>()
     inView.forEach { pin ->
         val anchor = projection.screenLocationFromPosition(Position(longitude = pin.lng, latitude = pin.lat))
         val rect = DpRect(
@@ -376,14 +369,25 @@ private fun probePinCoverage(projection: CameraProjection, pins: List<PinUi>) {
             right = anchor.x + 8.dp,
             bottom = anchor.y + 2.dp,
         )
-        val hits = projection.queryRenderedFeatures(rect, setOf("pins-body"))
-        if (hits.isEmpty()) missing += pin.locationName else rendered++
+        val hitsBody = projection.queryRenderedFeatures(rect, setOf("pins-body"))
+        val hitsAny = if (hitsBody.isEmpty()) projection.queryRenderedFeatures(rect) else hitsBody
+        if (hitsBody.isEmpty()) {
+            missing += pin.locationName
+            // Screen offset of the missing pin and whether any layer renders at that rect.
+            // x/y in dp from top-left of map composable; anyHits names layers other than pins-body
+            // that did intersect the rect.
+            val anyLayerNames = hitsAny.mapNotNull { it.properties?.get("name")?.toString() }.distinct()
+            details += "${pin.locationName}@(${anchor.x.value.toInt()},${anchor.y.value.toInt()}) anyHits=${anyLayerNames.size}"
+        } else {
+            rendered++
+        }
     }
     PinTrace.log(
         "probe",
         "expected" to inView.size,
         "rendered" to rendered,
         "missing" to (if (missing.isEmpty()) "-" else missing.joinToString(",")),
+        "details" to (if (details.isEmpty()) "-" else details.joinToString("|")),
     )
 }
 

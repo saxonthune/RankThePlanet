@@ -43,11 +43,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
@@ -58,10 +60,12 @@ import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.ui.RtpErrorState
+import com.saxonthune.ranktheplanet.util.PinTrace
 import com.saxonthune.ranktheplanet.util.tuneMapForFastTaps
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraPosition
+import org.maplibre.compose.camera.CameraProjection
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.MapOptions
@@ -115,6 +119,30 @@ fun MapOverviewScreen(
         repeat(40) {
             if (tuneMapForFastTaps()) return@LaunchedEffect
             delay(50)
+        }
+    }
+
+    // PinTrace: log camera-motion transitions and sample render coverage during pan.
+    // Goal is to confirm or rule out stale tile-cache theory — see doc03.04 / doc03.05.
+    LaunchedEffect(cameraState) {
+        snapshotFlow { cameraState.isCameraMoving }.collect { moving ->
+            PinTrace.log(
+                "cam/${if (moving) "start" else "stop"}",
+                "zoom" to cameraState.position.zoom.toFixed2(),
+            )
+            // Experiment: re-push the source on pan start. If maplibre-native's
+            // iOS GeoJsonSource invalidates cached tiles on setData, this should
+            // heal pins stuck missing at a zoom level mid-session.
+            if (moving) vm.pinController.forceRedraw()
+            cameraState.projection?.let { probePinCoverage(it, vm.pinController.currentPins) }
+        }
+    }
+    LaunchedEffect(cameraState, vm) {
+        while (true) {
+            if (cameraState.isCameraMoving) {
+                cameraState.projection?.let { probePinCoverage(it, vm.pinController.currentPins) }
+            }
+            delay(150)
         }
     }
 
@@ -232,7 +260,10 @@ fun MapOverviewScreen(
                     cameraState = cameraState,
                     baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/bright"),
                     options = MapOptions(ornamentOptions = OrnamentOptions.OnlyLogo),
-                    onMapLoadFinished = { vm.pinController.forceRedraw() },
+                    onMapLoadFinished = {
+                        PinTrace.log("map/loadFinished")
+                        vm.pinController.forceRedraw()
+                    },
                     onMapLongClick = { position, _ ->
                         vm.startDraft(lat = position.latitude, lng = position.longitude)
                         ClickResult.Consume
@@ -315,4 +346,50 @@ fun MapOverviewScreen(
             onPickCollection = { vm.pickCollectionForDraft(it) },
         )
     }
+}
+
+/**
+ * For each in-memory pin whose lat/lng falls inside the visible bbox, probe
+ * `queryRenderedFeatures` at the pin's screen position against the `pins-body`
+ * layer. A pin that is geometrically in view but produces zero rendered features
+ * is the smoking gun for the stale-tile-cache theory (doc03.04 / doc03.05).
+ *
+ * Cheap — O(visible pins) per call. queryRenderedFeatures is a sync delegate to
+ * the native render thread; safe from a coroutine on the main dispatcher.
+ */
+private fun probePinCoverage(projection: CameraProjection, pins: List<PinUi>) {
+    val bbox = projection.queryVisibleBoundingBox()
+    val inView = pins.filter {
+        it.lat in bbox.south..bbox.north && it.lng in bbox.west..bbox.east
+    }
+    val missing = mutableListOf<String>()
+    var rendered = 0
+    // Pin body icon is SymbolAnchor.Bottom, so the geometry point sits at the
+    // icon's bottom edge. A point-offset query at that location is fragile —
+    // it hits sub-pixel boundaries of the rendered icon and can false-negative.
+    // Query a small rect covering the icon's screen footprint instead.
+    inView.forEach { pin ->
+        val anchor = projection.screenLocationFromPosition(Position(longitude = pin.lng, latitude = pin.lat))
+        val rect = DpRect(
+            left = anchor.x - 8.dp,
+            top = anchor.y - 36.dp,
+            right = anchor.x + 8.dp,
+            bottom = anchor.y + 2.dp,
+        )
+        val hits = projection.queryRenderedFeatures(rect, setOf("pins-body"))
+        if (hits.isEmpty()) missing += pin.locationName else rendered++
+    }
+    PinTrace.log(
+        "probe",
+        "expected" to inView.size,
+        "rendered" to rendered,
+        "missing" to (if (missing.isEmpty()) "-" else missing.joinToString(",")),
+    )
+}
+
+private fun Double.toFixed2(): String {
+    val scaled = (this * 100).toLong()
+    val whole = scaled / 100
+    val frac = (if (scaled < 0) -scaled else scaled) % 100
+    return "$whole.${frac.toString().padStart(2, '0')}"
 }

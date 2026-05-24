@@ -1,9 +1,12 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import com.saxonthune.ranktheplanet.util.PinTrace
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -31,6 +34,7 @@ import org.maplibre.compose.expressions.dsl.switch
 import org.maplibre.compose.expressions.value.SymbolAnchor
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.sources.GeoJsonData
+import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.util.ClickResult
 import org.maplibre.compose.util.MaplibreComposable
@@ -57,9 +61,22 @@ internal fun PinLayers(
     // NoSuchElementException). JsonString hands the raw GeoJSON to MapLibre's native parser
     // and skips the Kotlin-side polymorphic dispatch entirely.
     val data = remember(frame) { GeoJsonData.JsonString(frame.toGeoJsonString()) }
-    val source = rememberGeoJsonSource(data = data)
+    LaunchedEffect(frame) {
+        PinTrace.log("layer/push", "revision" to frame.revision, "count" to frame.pins.size)
+    }
+    // Key the source (and downstream layers) on the controller's revision so
+    // that forceRedraw causes a *new native source* rather than a setData on
+    // the existing one. iOS maplibre-native caches rendered tiles per source;
+    // setData does not invalidate already-rendered tiles, which strands pins
+    // missing once a tile has been rendered empty. A fresh source has a fresh
+    // tile cache. setPins alone does not bump the revision, so the common
+    // path (pin set updates) still goes through cheap setData via the
+    // source's `update` lambda inside rememberGeoJsonSource. See trace in
+    // doc01.06.
+    key(frame.revision) {
+        val source = rememberGeoJsonSource(data = data, options = GeoJsonOptions(buffer = 512))
 
-    val bodyImage = image(painterResource(Res.drawable.pin_body), drawAsSdf = true)
+        val bodyImage = image(painterResource(Res.drawable.pin_body), drawAsSdf = true)
     val dotImage = image(painterResource(Res.drawable.pin_mark_dot), drawAsSdf = true)
     val plusImage = image(painterResource(Res.drawable.pin_mark_plus), drawAsSdf = true)
     val grey = Color(0xFF9AA0A6)
@@ -132,6 +149,7 @@ internal fun PinLayers(
         textHaloColor = const(labelHaloColor),
         textHaloWidth = const(1.dp),
     )
+    }
 }
 
 private fun PinFrame.toGeoJsonString(): String =

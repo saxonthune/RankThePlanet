@@ -43,6 +43,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -54,12 +55,16 @@ import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
+import com.saxonthune.ranktheplanet.data.projection.OverviewProjection
+import com.saxonthune.ranktheplanet.data.session.SessionStateStore
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
+import com.saxonthune.ranktheplanet.domain.Viewport
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.ui.RtpErrorState
 import com.saxonthune.ranktheplanet.util.tuneMapForFastTaps
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
@@ -78,6 +83,8 @@ fun MapOverviewScreen(
     entries: EntryRepository,
     templates: TemplateRepository,
     providerRegistry: LocationProviderRegistry,
+    projection: OverviewProjection,
+    session: SessionStateStore,
     onCancelAdd: () -> Unit,
     onOpenCollections: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -88,7 +95,7 @@ fun MapOverviewScreen(
     onGoToReview: (EntryId) -> Unit,
     onPendingReviewDismissed: () -> Unit,
 ) {
-    val vm = viewModel { MapOverviewViewModel(collections, entries, providerRegistry, templates) }
+    val vm = viewModel { MapOverviewViewModel(collections, entries, providerRegistry, templates, projection, session) }
     val state by vm.uiState.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -113,6 +120,36 @@ fun MapOverviewScreen(
             if (tuneMapForFastTaps()) return@LaunchedEffect
             delay(50)
         }
+    }
+
+    // Restore the saved viewport once on cold start.
+    var viewportApplied by remember { mutableStateOf(false) }
+    LaunchedEffect(state.viewport) {
+        val vp = state.viewport
+        if (!viewportApplied && vp != null) {
+            viewportApplied = true
+            cameraState.position = CameraPosition(
+                target = Position(longitude = vp.centerLng, latitude = vp.centerLat),
+                zoom = vp.zoom,
+                bearing = vp.bearing,
+            )
+        }
+    }
+
+    // Save viewport whenever the camera moves (debounce handled inside the store).
+    LaunchedEffect(cameraState) {
+        snapshotFlow { cameraState.position }
+            .distinctUntilChanged()
+            .collect { pos ->
+                vm.onViewportChange(
+                    Viewport(
+                        centerLat = pos.target.latitude,
+                        centerLng = pos.target.longitude,
+                        zoom = pos.zoom,
+                        bearing = pos.bearing,
+                    )
+                )
+            }
     }
 
     val pending = state.pendingReview

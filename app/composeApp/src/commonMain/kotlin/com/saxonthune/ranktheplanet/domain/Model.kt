@@ -4,6 +4,7 @@ import kotlin.jvm.JvmInline
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.serialization.Serializable
 
 sealed interface TemplateFieldConfig {
     data class Score(
@@ -88,6 +89,7 @@ data class Collection(
     val lastModified: String
 )
 
+@Serializable
 data class Viewport(
     val centerLat: Double,
     val centerLng: Double,

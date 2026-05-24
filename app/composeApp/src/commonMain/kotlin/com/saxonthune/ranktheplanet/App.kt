@@ -17,8 +17,10 @@ import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.fake.FakeRepositories
 import com.saxonthune.ranktheplanet.data.location.DefaultLocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
+import com.saxonthune.ranktheplanet.data.projection.OverviewProjection
 import com.saxonthune.ranktheplanet.data.secure.SecureStore
 import com.saxonthune.ranktheplanet.data.secure.createSecureStore
+import com.saxonthune.ranktheplanet.data.session.SessionStateStore
 import com.saxonthune.ranktheplanet.data.sql.SqlRepositories
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
@@ -51,13 +53,15 @@ import com.saxonthune.ranktheplanet.ui.screens.SettingsScreen
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
 
 @Composable
-fun App(repos: SqlRepositories? = null) {
+fun App(graph: RtpAppGraph? = null) {
     RtpTheme {
         val navController = rememberNavController()
-        val fake = if (repos == null) remember { FakeRepositories() } else null
-        val collections: CollectionRepository = repos?.collections ?: fake!!.collections
-        val entries: EntryRepository = repos?.entries ?: fake!!.entries
-        val templates: TemplateRepository = repos?.templates ?: fake!!.templates
+        val fake = if (graph == null) remember { FakeRepositories() } else null
+        val collections: CollectionRepository = graph?.repos?.collections ?: fake!!.collections
+        val entries: EntryRepository = graph?.repos?.entries ?: fake!!.entries
+        val templates: TemplateRepository = graph?.repos?.templates ?: fake!!.templates
+        val projection: OverviewProjection = graph?.projection ?: fake!!.overviewProjection
+        val session: SessionStateStore = graph?.session ?: fake!!.sessionStateStore
 
         val secureStore = remember { createSecureStore() }
         val registry by produceState<LocationProviderRegistry?>(initialValue = null, secureStore) {
@@ -89,6 +93,8 @@ fun App(repos: SqlRepositories? = null) {
                     entries = entries,
                     templates = templates,
                     providerRegistry = r,
+                    projection = projection,
+                    session = session,
                     onCancelAdd = { navController.popBackStack() },
                     onOpenCollections = { navController.navigate(CollectionList) },
                     onOpenSettings = { navController.navigate(Settings) },

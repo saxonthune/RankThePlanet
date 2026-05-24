@@ -4,6 +4,10 @@ import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.LocationRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
+import com.saxonthune.ranktheplanet.data.projection.OverviewProjection
+import com.saxonthune.ranktheplanet.data.session.DEFAULT_VIEWPORT
+import com.saxonthune.ranktheplanet.data.session.SessionState
+import com.saxonthune.ranktheplanet.data.session.SessionStateStore
 import com.saxonthune.ranktheplanet.domain.Appearance
 import com.saxonthune.ranktheplanet.domain.Collection
 import com.saxonthune.ranktheplanet.domain.CollectionId
@@ -26,8 +30,10 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlin.random.Random
@@ -507,10 +513,36 @@ class FakeTemplateRepository(private val store: InMemoryStore) : TemplateReposit
     }
 }
 
+class FakeOverviewProjection : OverviewProjection {
+    private val empty = MapOverviewState(
+        viewport = DEFAULT_VIEWPORT,
+        visiblePins = persistentListOf(),
+        collectionFilter = emptySet<com.saxonthune.ranktheplanet.domain.CollectionId>().toImmutableSet(),
+    )
+
+    override suspend fun loadOverview(): MapOverviewState = empty
+    override fun observeOverview(): Flow<MapOverviewState> = flowOf(empty)
+}
+
+class FakeSessionStateStore : SessionStateStore {
+    private val _state = MutableStateFlow(SessionState())
+
+    override suspend fun load(): SessionState = _state.value
+    override fun observeViewport(): Flow<Viewport> = _state.map { it.viewport }
+    override suspend fun saveViewport(viewport: Viewport) {
+        _state.value = _state.value.copy(viewport = viewport)
+    }
+    override suspend fun saveSelectedPin(entryId: EntryId?) {
+        _state.value = _state.value.copy(selectedPinEntryId = entryId?.value)
+    }
+}
+
 class FakeRepositories {
     private val store = InMemoryStore()
     val collections: CollectionRepository = FakeCollectionRepository(store)
     val entries: EntryRepository = FakeEntryRepository(store)
     val locations: LocationRepository = FakeLocationRepository(store)
     val templates: TemplateRepository = FakeTemplateRepository(store)
+    val overviewProjection: OverviewProjection = FakeOverviewProjection()
+    val sessionStateStore: SessionStateStore = FakeSessionStateStore()
 }

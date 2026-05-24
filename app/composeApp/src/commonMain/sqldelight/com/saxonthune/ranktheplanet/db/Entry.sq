@@ -1,0 +1,15 @@
+-- Mirrors .carta/03-system/01-store-model.schema.sql (table: entry). Source of truth is the carta sidecar; keep in sync.
+
+CREATE TABLE entry (
+    id                        TEXT PRIMARY KEY,
+    collection_id             TEXT NOT NULL REFERENCES collection(id),
+    location_id               TEXT NOT NULL REFERENCES location(id),
+    data                      TEXT,
+    recorded_template_version INTEGER,
+    created                   TEXT NOT NULL,
+    last_modified             TEXT NOT NULL,
+    UNIQUE (collection_id, location_id)
+);
+
+selectAll:
+SELECT * FROM entry;

@@ -1,0 +1,12 @@
+-- Mirrors .carta/03-system/01-store-model.schema.sql (table: op_log). Source of truth is the carta sidecar; keep in sync.
+
+CREATE TABLE op_log (
+    op_id      TEXT PRIMARY KEY,
+    ts         TEXT NOT NULL,
+    device_id  TEXT NOT NULL,
+    kind       TEXT NOT NULL,
+    payload    TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM op_log;

@@ -74,7 +74,7 @@ class CollectionDetailViewModel(
                     _sortMode,
                 ) { collection, entryList, template, sortMode ->
                     val scoreFieldName = template?.fields
-                        ?.firstOrNull { it.type == FieldType.Score || it.type == FieldType.PowerRanking }
+                        ?.firstOrNull { it.type == FieldType.Score }
                         ?.name
 
                     val rows = entryList.map { entry ->

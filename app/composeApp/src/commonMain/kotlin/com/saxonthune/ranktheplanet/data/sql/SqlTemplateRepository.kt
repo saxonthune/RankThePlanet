@@ -80,7 +80,6 @@ internal class SqlTemplateRepository(
                         label = field.label,
                         type = field.type.name.lowercase(),
                         config = field.config.toJson(),
-                        required = if (field.required) 1L else 0L,
                     )
                 }
                 database.collectionQueries.bumpLastModifiedAndTemplateVersion(now, 1L, collectionId.value)
@@ -116,7 +115,6 @@ internal class SqlTemplateRepository(
                         label = field.label,
                         type = field.type.name.lowercase(),
                         config = field.config.toJson(),
-                        required = if (field.required) 1L else 0L,
                     )
                 }
                 database.collectionQueries.bumpLastModifiedAndTemplateVersion(now, newVersion, collectionId.value)
@@ -137,7 +135,6 @@ private fun com.saxonthune.ranktheplanet.db.Template_field.toDomain(): TemplateF
     label = label,
     type = fieldTypeFromString(type),
     config = parseTemplateFieldConfig(config),
-    required = required == 1L,
     ordinal = ordinal.toInt(),
 )
 
@@ -147,18 +144,16 @@ private fun fieldTypeFromString(s: String): FieldType = when (s.lowercase()) {
     "enum" -> FieldType.Enum
     "boolean" -> FieldType.Boolean
     "date" -> FieldType.Date
-    "powerranking" -> FieldType.PowerRanking
     else -> FieldType.Text
 }
 
 private fun TemplateFieldConfig?.toJson(): String? = when (this) {
     null -> null
     is TemplateFieldConfig.Score -> """{"kind":"score","min":$min,"max":$max,"step":$step,"render":"$render"}"""
-    is TemplateFieldConfig.Text -> """{"kind":"text","multiline":$multiline}"""
+    TemplateFieldConfig.TextField -> """{"kind":"text"}"""
     is TemplateFieldConfig.Enum -> """{"kind":"enum","options":${options.joinToString(",", "[", "]") { "\"$it\"" }}}"""
     TemplateFieldConfig.BooleanField -> """{"kind":"boolean"}"""
     TemplateFieldConfig.Date -> """{"kind":"date"}"""
-    TemplateFieldConfig.PowerRanking -> """{"kind":"power_ranking"}"""
 }
 
 private fun parseTemplateFieldConfig(json: String?): TemplateFieldConfig? {
@@ -171,16 +166,13 @@ private fun parseTemplateFieldConfig(json: String?): TemplateFieldConfig? {
             step = obj["step"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.5,
             render = obj["render"]?.jsonPrimitive?.content ?: "stars",
         )
-        "text" -> TemplateFieldConfig.Text(
-            multiline = obj["multiline"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false,
-        )
+        "text" -> TemplateFieldConfig.TextField
         "enum" -> TemplateFieldConfig.Enum(
             options = obj["options"]?.jsonArray?.map { it.jsonPrimitive.content }?.toImmutableList()
                 ?: persistentListOf(),
         )
         "boolean" -> TemplateFieldConfig.BooleanField
         "date" -> TemplateFieldConfig.Date
-        "power_ranking" -> TemplateFieldConfig.PowerRanking
         else -> null
     }
 }

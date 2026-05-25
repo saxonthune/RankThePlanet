@@ -80,7 +80,7 @@ fun ProviderConfigScreen(
                 }
                 ProviderMode.Osm -> {
                     Text(
-                        text = "Endpoints: photon.komoot.io, nominatim.openstreetmap.org",
+                        text = "Endpoints: photon.komoot.io",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

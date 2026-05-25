@@ -23,6 +23,7 @@ CREATE TABLE collection (
     appearance_pin_style TEXT NOT NULL,
     template_version     INTEGER NOT NULL DEFAULT 1,
     is_visible           INTEGER NOT NULL DEFAULT 1,  -- Map Overview collectionFilter
+    power_ranking        INTEGER NOT NULL DEFAULT 0,  -- 1 when entries are user-ordered (doc01.03 §1)
     created              TEXT NOT NULL,
     last_modified        TEXT NOT NULL
 );
@@ -33,11 +34,10 @@ CREATE TABLE template_field (
     collection_id   TEXT NOT NULL REFERENCES collection(id),
     version         INTEGER NOT NULL,
     ordinal         INTEGER NOT NULL,             -- template is an ordered list
-    name            TEXT NOT NULL,                -- stable machine key; immutable once defined
-    label           TEXT NOT NULL,                -- user-facing display string; freely renamable
-    type            TEXT NOT NULL,                -- score|text|enum|boolean|date|power-ranking
+    name            TEXT NOT NULL,                -- stable machine key, derived from label at create time; immutable thereafter
+    label           TEXT NOT NULL,                -- user-facing display string (the "section" in the editor); freely renamable
+    type            TEXT NOT NULL,                -- score|text|enum|boolean|date
     config          TEXT,                         -- per-type JSON or NULL; shapes per doc01.03 §3
-    required        INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (collection_id, version, name)
 );
 

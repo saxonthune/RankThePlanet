@@ -291,12 +291,12 @@ object Fixtures {
             version = 1,
             fields = persistentListOf(
                 TemplateField(
-                    name = "overall", label = "Overall", type = FieldType.Score, required = true,
+                    name = "overall", label = "Overall", type = FieldType.Score,
                     config = TemplateFieldConfig.Score(max = 5.0, render = "stars"), ordinal = 0,
                 ),
                 TemplateField(
                     name = "notes", label = "Notes", type = FieldType.Text,
-                    config = TemplateFieldConfig.Text(multiline = true), ordinal = 1,
+                    config = TemplateFieldConfig.TextField, ordinal = 1,
                 ),
             )
         ),
@@ -305,12 +305,12 @@ object Fixtures {
             version = 1,
             fields = persistentListOf(
                 TemplateField(
-                    name = "rating", label = "Rating", type = FieldType.Score, required = true,
+                    name = "rating", label = "Rating", type = FieldType.Score,
                     config = TemplateFieldConfig.Score(max = 5.0, render = "stars"), ordinal = 0,
                 ),
                 TemplateField(
                     name = "notes", label = "Notes", type = FieldType.Text,
-                    config = TemplateFieldConfig.Text(multiline = true), ordinal = 1,
+                    config = TemplateFieldConfig.TextField, ordinal = 1,
                 ),
             )
         ),
@@ -319,12 +319,8 @@ object Fixtures {
             version = 1,
             fields = persistentListOf(
                 TemplateField(
-                    name = "description", label = "Description", type = FieldType.Text, required = true,
-                    config = TemplateFieldConfig.Text(multiline = true), ordinal = 0,
-                ),
-                TemplateField(
-                    name = "visitedOn", label = "Visited on", type = FieldType.Date,
-                    config = TemplateFieldConfig.Date, ordinal = 1,
+                    name = "description", label = "Description", type = FieldType.Text,
+                    config = TemplateFieldConfig.TextField, ordinal = 0,
                 ),
             )
         )
@@ -345,7 +341,7 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
     override fun observe(id: CollectionId): Flow<Collection?> =
         store.collections.map { list -> list.find { it.id == id } }
 
-    override suspend fun create(name: String, description: String?, appearance: Appearance): Result<Collection> {
+    override suspend fun create(name: String, description: String?, appearance: Appearance, powerRanking: Boolean): Result<Collection> {
         val collection = Collection(
             id = CollectionId(newId()),
             name = name,
@@ -353,6 +349,7 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
             appearance = appearance,
             templateVersion = 0,
             isVisible = true,
+            powerRanking = powerRanking,
             created = FAKE_NOW,
             lastModified = FAKE_NOW
         )
@@ -365,6 +362,7 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
         name: String,
         description: String?,
         appearance: Appearance,
+        powerRanking: Boolean,
     ): Result<Collection> {
         val current = store.collections.value.find { it.id == id }
             ?: return Result.failure(IllegalArgumentException("Collection not found: ${id.value}"))
@@ -372,6 +370,7 @@ class FakeCollectionRepository(private val store: InMemoryStore) : CollectionRep
             name = name,
             description = description,
             appearance = appearance,
+            powerRanking = powerRanking,
             lastModified = FAKE_NOW,
         )
         store.collections.update { list -> list.map { if (it.id == id) updated else it } }

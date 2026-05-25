@@ -21,10 +21,12 @@ fun RtpDrillDownScaffold(
     actions: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
+        snackbarHost = snackbarHost,
         topBar = {
             TopAppBar(
                 title = { Text(title) },

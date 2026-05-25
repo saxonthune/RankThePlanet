@@ -100,13 +100,6 @@ private fun FieldRow(
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.weight(1f),
             )
-            if (field.required) {
-                Text(
-                    text = "Required",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
             if (value != null) {
                 TextButton(onClick = onClear) { Text("Clear") }
             }
@@ -141,16 +134,14 @@ private fun FieldRow(
                 }
             }
             FieldType.Text -> {
-                val config = field.config as? TemplateFieldConfig.Text
                 val focusManager = LocalFocusManager.current
-                val multiline = config?.multiline == true
                 OutlinedTextField(
                     value = value.orEmpty(),
                     onValueChange = onEdit,
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("Add a note") },
-                    maxLines = if (multiline) Int.MAX_VALUE else 1,
-                    singleLine = !multiline,
+                    maxLines = Int.MAX_VALUE,
+                    singleLine = false,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 )
@@ -172,13 +163,6 @@ private fun FieldRow(
                         Text("Pick a date")
                     }
                 }
-            }
-            FieldType.PowerRanking -> {
-                Text(
-                    text = value?.let { "Ranked #$it" } ?: "Unranked",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                )
             }
         }
     }

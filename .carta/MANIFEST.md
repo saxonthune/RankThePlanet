@@ -35,7 +35,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.00 | `00-index.md` | Product specs — what we're building and why | product, index | — | — | — |
 | doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
 | doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | doc01.03 | — |
-| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04.01, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02 | — |
+| doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04.01, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02 | — |
 | doc01.05 | `05-cmp-composition-research.md` | Research session: how to design shared CMP surfaces that bend to context (mode parameter, sheet-not-route), with a Tier-1..4 audit of reference apps to compare against | product, research, cmp, patterns, references | doc02.01, doc02.02.01 | doc02.04 | — |
 
 ### Development Philosophy
@@ -72,7 +72,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.02.00 | `02-interaction/00-index.md` | Platform-agnostic UI design — surfaces, navigation graph, action coverage | design, interaction, index | doc01.03 | — | — |
-| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.04.02, doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.03, doc02.04, doc03.03 | statechart.json |
+| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.04.02, doc01.05, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.03, doc02.04, doc03.03 | statechart.json |
 | doc02.02.02.00 | `02-interaction/02-screens/00-index.md` | Per-surface affordance inventories — regions, affordances, lists | design, interaction, screens, index | doc02.02.01 | doc01.04.02 | — |
 | doc02.02.02.01 | `02-interaction/02-screens/01-collection-list.md` | Affordance inventory for the CollectionList surface — regions, affordances, lists | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.02 | `02-interaction/02-screens/02-collection-detail.md` | Affordance inventory for the CollectionDetail surface — Details section, sortable entry list | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
@@ -87,6 +87,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc02.02.02.11 | `02-interaction/02-screens/11-add-location-to-collection.md` | Affordance inventory for the AddLocationToCollection sheet — pick a Collection (pre-selected in add mode) or create a new one, hosted over MapOverview | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.12 | `02-interaction/02-screens/12-manage-providers.md` | Affordance inventory for the ManageProviders surface — current default header, list of provider rows that route to per-provider config | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.13 | `02-interaction/02-screens/13-provider-config.md` | Affordance inventory for the ProviderConfig surface — per-provider setup parameterized by provider-context, key entry for BYOK providers | design, interaction, screens | doc02.02.01, doc01.03, doc03.02.02 | — | inventory.json |
+| doc02.02.02.14 | `02-interaction/02-screens/14-debug-settings.md` | Affordance inventory for the DebugSettings surface — developer-only tools reachable from Settings, outside the production product spec | design, interaction, screens, debug | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.03 | `02-interaction/03-navigation-journeys.md` | User-intent navigation paths declared as event/target pairs; diffed against the statechart to surface chart-missing transitions, target mismatches, and undeclared screens | design, interaction, navigation, journeys, verification | doc02.02.01 | — | navigation.journeys.json |
 
 ### Visual Language
@@ -115,7 +116,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 
 | doc03.02.00 | `02-data-interfaces/00-index.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | — | — |
 | doc03.02.01 | `02-data-interfaces/01-location-repository.md` | The LocationRepository interface: identity lookup, upsert, merge — the persistence-shaped contract screens consume for Locations | system, interfaces, repository, data, contract, location | doc01.03, doc03.01, doc03.02 | — | — |
-| doc03.02.02 | `02-data-interfaces/02-location-providers.md` | The LocationProvider seam: osm default backed by Photon + Nominatim endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | doc02.02.02.13 | — |
+| doc03.02.02 | `02-data-interfaces/02-location-providers.md` | The LocationProvider seam: osm default backed by Photon (forward + reverse) endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | doc02.02.02.13 | — |
 
 ## Tag Index
 
@@ -135,13 +136,14 @@ Quick lookup for file-path→doc mapping:
 | `conventions` | doc00.03 |
 | `coverage` | doc01.04.02 |
 | `data` | doc03.02.00, doc03.02.01 |
+| `debug` | doc02.02.02.14 |
 | `debugging` | doc01.06.00, doc01.06.01 |
-| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.03, doc02.03, doc02.04, doc02.05.00, doc02.05.01 |
+| `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.03, doc02.03, doc02.04, doc02.05.00, doc02.05.01 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
 | `gesture` | doc01.06.01 |
 | `grievances` | doc02.05.01 |
 | `index` | doc00.00, doc01.00, doc01.06.00, doc02.02.00, doc02.02.02.00, doc02.05.00, doc03.00 |
-| `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.03, doc02.04 |
+| `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.03, doc02.04 |
 | `interfaces` | doc03.02.00, doc03.02.01 |
 | `ios` | doc01.06.01 |
 | `journeys` | doc02.02.03 |
@@ -171,7 +173,7 @@ Quick lookup for file-path→doc mapping:
 | `retrieval` | doc00.04 |
 | `rules` | doc02.04 |
 | `schema` | doc03.01 |
-| `screens` | doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13 |
+| `screens` | doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14 |
 | `source` | doc03.04 |
 | `sqlcipher` | doc03.01 |
 | `stack` | doc02.01 |

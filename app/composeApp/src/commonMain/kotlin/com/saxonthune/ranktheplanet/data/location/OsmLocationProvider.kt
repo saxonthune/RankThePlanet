@@ -12,13 +12,18 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.math.PI
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.roundToInt
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 
 class OsmLocationProvider(
     private val client: HttpClient,
     private val photonBase: String = "https://photon.komoot.io",
-    private val nominatimBase: String = "https://nominatim.openstreetmap.org"
 ) : LocationProvider {
 
     override val type: SourceType = SourceType.Osm
@@ -67,19 +72,29 @@ class OsmLocationProvider(
     override suspend fun resolveNearby(coordinates: Coordinates): ProviderResult<List<LocationCandidate>> {
         throttle()
         return try {
-            val response = client.get("$nominatimBase/reverse") {
+            val response = client.get("$photonBase/reverse") {
                 parameter("lat", coordinates.lat.toString())
                 parameter("lon", coordinates.lng.toString())
-                parameter("format", "jsonv2")
+                parameter("limit", "10")
             }
             if (!response.status.isSuccess()) {
                 return ProviderResult.Failed(ProviderError.PROVIDER_ERROR)
             }
-            val place = response.body<NominatimPlace>()
-            ProviderResult.Ok(listOf(place.toCandidate()))
+            val collection = response.body<PhotonFeatureCollection>()
+            val candidates = collection.features
+                .map { it.toCandidate() }
+                .map { it.withDistanceDetail(coordinates) }
+                .sortedBy { distanceMeters(coordinates, it.coordinates) }
+            ProviderResult.Ok(candidates)
         } catch (e: Exception) {
             ProviderResult.Failed(ProviderError.NETWORK)
         }
+    }
+
+    private fun LocationCandidate.withDistanceDetail(from: Coordinates): LocationCandidate {
+        val formatted = formatDistance(distanceMeters(from, coordinates))
+        val combined = listOfNotNull(formatted, detail).joinToString(" · ").takeIf { it.isNotBlank() }
+        return copy(detail = combined)
     }
 
     override suspend fun healthCheck(): ProviderResult<Unit> {
@@ -124,24 +139,29 @@ class OsmLocationProvider(
         )
     }
 
-    private fun NominatimPlace.toCandidate(): LocationCandidate {
-        val parts = displayName.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-        val primary = parts.firstOrNull() ?: displayName
-        val detail = parts.drop(1).joinToString(", ").takeIf { it.isNotBlank() }
-        val sourceId = buildSourceId(osm_type, osm_id)
-        return LocationCandidate(
-            coordinates = Coordinates(lat = lat.toDouble(), lng = lon.toDouble()),
-            displayName = primary,
-            sourceType = SourceType.Osm,
-            sourceId = sourceId,
-            cachedMetadata = json.encodeToString(this),
-            detail = detail,
-        )
-    }
-
     private fun buildSourceId(osmType: String?, osmId: Long?): String? {
         if (osmId == null) return null
         val initial = osmType?.firstOrNull()?.uppercaseChar() ?: return null
         return "$initial$osmId"
     }
 }
+
+private const val EARTH_RADIUS_M = 6_371_000.0
+
+private fun distanceMeters(a: Coordinates, b: Coordinates): Double {
+    val toRad = PI / 180.0
+    val dLat = (b.lat - a.lat) * toRad
+    val dLng = (b.lng - a.lng) * toRad
+    val lat1 = a.lat * toRad
+    val lat2 = b.lat * toRad
+    val h = sin(dLat / 2).let { it * it } +
+        cos(lat1) * cos(lat2) * sin(dLng / 2).let { it * it }
+    return 2 * EARTH_RADIUS_M * asin(sqrt(h))
+}
+
+private fun formatDistance(meters: Double): String =
+    if (meters < 1000.0) "${meters.roundToInt()} m"
+    else {
+        val km = (meters / 100.0).roundToInt() / 10.0
+        "$km km"
+    }

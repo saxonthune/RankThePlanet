@@ -44,6 +44,7 @@ internal class SqlCollectionRepository(
         name: String,
         description: String?,
         appearance: Appearance,
+        powerRanking: Boolean,
     ): Result<Collection> = withContext(Dispatchers.Default) {
         runCatching {
             database.transactionWithResult {
@@ -57,6 +58,7 @@ internal class SqlCollectionRepository(
                     appearance_pin_style = appearance.pinStyle,
                     template_version = 0L,
                     is_visible = 1L,
+                    power_ranking = if (powerRanking) 1L else 0L,
                     created = now,
                     last_modified = now,
                 )
@@ -66,6 +68,7 @@ internal class SqlCollectionRepository(
                     description = description,
                     appearanceColor = appearance.color,
                     appearancePinStyle = appearance.pinStyle,
+                    powerRanking = powerRanking,
                 ))
                 Collection(
                     id = CollectionId(id),
@@ -74,6 +77,7 @@ internal class SqlCollectionRepository(
                     appearance = appearance,
                     templateVersion = 0,
                     isVisible = true,
+                    powerRanking = powerRanking,
                     created = now,
                     lastModified = now,
                 )
@@ -86,6 +90,7 @@ internal class SqlCollectionRepository(
         name: String,
         description: String?,
         appearance: Appearance,
+        powerRanking: Boolean,
     ): Result<Collection> = withContext(Dispatchers.Default) {
         runCatching {
             database.transactionWithResult {
@@ -98,6 +103,7 @@ internal class SqlCollectionRepository(
                     description = description,
                     appearance_color = appearance.color,
                     appearance_pin_style = appearance.pinStyle,
+                    power_ranking = if (powerRanking) 1L else 0L,
                     last_modified = now,
                     id = id.value,
                 )
@@ -107,6 +113,7 @@ internal class SqlCollectionRepository(
                     description = description,
                     appearanceColor = appearance.color,
                     appearancePinStyle = appearance.pinStyle,
+                    powerRanking = powerRanking,
                 ))
                 Collection(
                     id = id,
@@ -115,6 +122,7 @@ internal class SqlCollectionRepository(
                     appearance = appearance,
                     templateVersion = current.template_version.toInt(),
                     isVisible = current.is_visible == 1L,
+                    powerRanking = powerRanking,
                     created = current.created,
                     lastModified = now,
                 )
@@ -212,6 +220,7 @@ private fun com.saxonthune.ranktheplanet.db.Collection.toDomain() = Collection(
     appearance = Appearance(color = appearance_color, pinStyle = appearance_pin_style),
     templateVersion = template_version.toInt(),
     isVisible = is_visible == 1L,
+    powerRanking = power_ranking == 1L,
     created = created,
     lastModified = last_modified,
 )

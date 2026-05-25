@@ -8,7 +8,7 @@
     },
     {
       "id": "metadata",
-      "purpose": "The Collection's own identity — name, description, and appearance (color, pin style). The only place this metadata is editable."
+      "purpose": "The Collection's own identity — name, description, appearance (color, pin style), and the powerRanking toggle. The only place this metadata is editable."
     },
     {
       "id": "template",
@@ -41,7 +41,7 @@
     },
     {
       "id": "edit-metadata",
-      "label": "Edit the Collection's name, description, and appearance",
+      "label": "Edit the Collection's name, description, appearance, and powerRanking toggle",
       "region": "metadata",
       "action": "Collection.edit"
     },
@@ -56,6 +56,24 @@
       "label": "Add a template field",
       "region": "template",
       "action": "Review.editTemplate"
+    },
+    {
+      "id": "field-editor-cancel",
+      "label": "Cancel (in per-field editor sheet) — discard the in-flight edit",
+      "region": "template",
+      "action": "Review.editTemplate"
+    },
+    {
+      "id": "field-editor-done",
+      "label": "Done (in per-field editor sheet) — commit the edit and close the sheet",
+      "region": "template",
+      "action": "Review.editTemplate"
+    },
+    {
+      "id": "field-editor-add-another",
+      "label": "Add another (in per-field editor sheet) — commit the current edit and re-open the sheet on a fresh blank field",
+      "region": "template",
+      "action": "Review.editTemplate"
     }
   ],
   "lists": [
@@ -66,10 +84,9 @@
       "reads": "template",
       "item": {
         "shows": [
-          "the field's name",
-          "the field's type — score, text, enum, boolean, date, power-ranking",
-          "the field's per-type configuration — for a score field, its range, step, and render style (number, stars, icon, slider, bar); for an enum, its option list",
-          "the field's required marker"
+          "the field's name (its user-facing section label)",
+          "the field's type — score, text, enum, boolean",
+          "the field's per-type configuration — for a score field, its range, step, and Display As style (number, stars, icon, slider, bar); for an enum, its option list"
         ],
         "affordance": {
           "id": "edit-field",
@@ -77,7 +94,12 @@
           "action": "Review.editTemplate"
         }
       },
-      "emptyState": "A template with no fields — the region prompts the user to add a field or adopt a built-in template. An empty template is a valid (if unusual) end state; a Collection with one leaves ReviewForm nothing to fill."
+      "lockedHeadRow": {
+        "id": "date-field",
+        "shows": "The implicit date field that every Review captures at the head of the form.",
+        "affordance": "none — the date row cannot be edited, reordered, or removed from the editor."
+      },
+      "emptyState": "A template with no user-authored fields — the region prompts the user to add a field or adopt a built-in template. The implicit date row remains. An empty template is a valid (if unusual) end state; a Collection with one leaves ReviewForm with only the date to fill."
     }
   ]
 }

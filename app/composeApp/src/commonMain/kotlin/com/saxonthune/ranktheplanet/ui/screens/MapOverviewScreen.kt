@@ -382,6 +382,7 @@ fun MapOverviewScreen(
             onFindNearby = { vm.findNearby() },
             onAdoptCandidate = { vm.adoptCandidate(it) },
             onKeepCoordinates = { vm.keepCoordinates() },
+            onManualNameChange = { vm.setManualName(it) },
             onBackToDraft = { vm.backToDraft() },
             onNewCollection = { onNewCollectionForDraft() },
             onPickCollection = { vm.pickCollectionForDraft(it) },

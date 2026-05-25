@@ -76,6 +76,7 @@ sealed interface LocationDraftSheet {
         val lng: Double,
         val displayName: String? = null,
         val adoptedCandidate: String? = null,
+        val manualName: String = "",
         val phase: DraftPhase = DraftPhase.Draft,
         val existingLocation: Location? = null,
     ) : LocationDraftSheet
@@ -650,7 +651,7 @@ class MapOverviewViewModel(
                         displayName = c.displayName,
                         lat = c.coordinates.lat,
                         lng = c.coordinates.lng,
-                        detail = c.sourceType.name,
+                        detail = c.detail,
                     )
                 }
                 is ProviderResult.Failed -> emptyList()
@@ -667,6 +668,11 @@ class MapOverviewViewModel(
     fun keepCoordinates() {
         val current = _draft.value as? LocationDraftSheet.Open ?: return
         _draft.value = current.copy(adoptedCandidate = null)
+    }
+
+    fun setManualName(name: String) {
+        val current = _draft.value as? LocationDraftSheet.Open ?: return
+        _draft.value = current.copy(manualName = name)
     }
 
     fun openAddToCollection() {
@@ -698,7 +704,10 @@ class MapOverviewViewModel(
         val location = draft.existingLocation ?: Location(
             id = LocationId(Random.nextInt(0x1000000, 0x7fffffff).toString(16)),
             coordinates = Coordinates(draft.lat, draft.lng),
-            displayName = draft.adoptedCandidate ?: draft.displayName ?: "Unknown location",
+            displayName = draft.adoptedCandidate
+                ?: draft.manualName.takeIf { it.isNotBlank() }
+                ?: draft.displayName
+                ?: "Unknown location",
             sourceType = SourceType.Manual,
             sourceId = "",
             cachedMetadata = null,

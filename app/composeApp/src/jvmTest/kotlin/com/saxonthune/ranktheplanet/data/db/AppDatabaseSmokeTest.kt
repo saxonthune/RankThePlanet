@@ -23,8 +23,8 @@ class AppDatabaseSmokeTest {
         """.trimIndent(), 0)
 
         driver.execute(null, """
-            INSERT INTO template_field (collection_id, version, ordinal, name, label, type, required)
-            VALUES ('col-1', 1, 0, 'rating', 'Rating', 'score', 0)
+            INSERT INTO template_field (collection_id, version, ordinal, name, label, type)
+            VALUES ('col-1', 1, 0, 'rating', 'Rating', 'score')
         """.trimIndent(), 0)
 
         driver.execute(null, """

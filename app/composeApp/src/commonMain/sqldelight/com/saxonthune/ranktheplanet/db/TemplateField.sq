@@ -8,7 +8,6 @@ CREATE TABLE template_field (
     label           TEXT NOT NULL,
     type            TEXT NOT NULL,
     config          TEXT,
-    required        INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (collection_id, version, name)
 );
 
@@ -19,8 +18,8 @@ selectByCollectionAndVersion:
 SELECT * FROM template_field WHERE collection_id = ? AND version = ? ORDER BY ordinal;
 
 insertField:
-INSERT INTO template_field (collection_id, version, ordinal, name, label, type, config, required)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO template_field (collection_id, version, ordinal, name, label, type, config)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 deleteByCollectionAndVersion:
 DELETE FROM template_field WHERE collection_id = ? AND version = ?;

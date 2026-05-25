@@ -36,6 +36,7 @@ Use cases that exercise these concepts: doc01.02.
 - `entries` — set of `(Location, Review)` pairs. The same Location may appear in many Collections; each appearance is a distinct Collection Entry with its own Review.
 - `created`, `last_modified` — for sorting and sync.
 - `appearance` — visual identity used on the map (color, pin style).
+- `powerRanking` — whether the Collection's entries are ordered by the user. When on, the Collection's entries carry a user-controlled rank position; when off, no ranking is captured. Toggled on the Collection itself, not as a Review field.
 
 The Collection's review template lives in the Review concept (§3), not here. The Collection knows that *its* Collection Entries' Reviews share a template, but does not own the template's structure.
 
@@ -110,18 +111,21 @@ A Review has two faces, kept inside one concept because they share a single purp
 
 Per Collection (template):
 
-- `template` — an ordered list of fields. Each field has a `name` (stable machine key, immutable once defined), a `label` (user-facing string the form shows), a `type`, per-type `config`, and a `required` flag. `name` is what's stored as the key in an instance's `data` map; `label` is presentation only and may be renamed freely.
+- `template` — an ordered list of fields. Each field has a `name` (stable machine key, derived from `label` at create time and immutable thereafter), a `label` (user-facing string the form shows — the editor surfaces this as the field's **section**), a `type`, and per-type `config`. `name` is what's stored as the key in an instance's `data` map; `label` is presentation only and may be renamed freely. Fields are never required — `required` is not part of the template; a sparse Review is always valid (see Operational principle).
 - `template_version` — bumped when the template changes; used to reconcile instances.
-- `summaryField` — optional name of one field in `template`. The field whose value stands in for the Review in compact surfaces (notably `EntrySheet`, doc02.02.02.09). Any field type is eligible: a `score` renders in its configured style (stars, number, icon), a `text` field shows a truncated first line, an `enum` shows the picked option, a `power-ranking` shows its position. When absent, compact surfaces show only the reviewed/unreviewed state and the instance's `created` date.
+- `summaryField` — optional name of one field in `template`. The field whose value stands in for the Review in compact surfaces (notably `EntrySheet`, doc02.02.02.09). Any field type is eligible: a `score` renders in its configured style (stars, number, icon), a `text` field shows a truncated first line, an `enum` shows the picked option. When absent, compact surfaces show only the reviewed/unreviewed state and the instance's `created` date.
+
+Every template carries an implicit `date` field at the head of the form, populated with today's date when the Review is started. The user cannot remove it, reorder it, or change its label or type from the Collection editor; the editor renders it as a locked row above the user-authored fields.
 
 The field types and their per-type `config` (stored as JSON on the field, parsed at the data boundary into a typed `TemplateFieldConfig`):
 
 - `score` — a number within a user-chosen range. Config: `{"min": 0, "max": 5, "step": 0.5, "render": "stars"}`. `step` granularity goes down to one decimal place (e.g. 0–5 by 0.5, 0–10 by 0.1). `render` governs presentation without changing the stored number — `number`, `stars`, `icon` (config carries the chosen glyph name), `slider`, or `bar`. A 4.5-of-5 star rating and an 8.3-of-10 numeric rating are the same `score` type with different config.
-- `text` — freeform text, single- or multi-line. Config: `{"multiline": true}` (defaults to single-line when absent).
+- `text` — freeform multi-line text. Config: `null`.
 - `enum` — one choice from an ordered option list. Config: `{"options": ["light", "medium", "dark"]}`. The stored value is the chosen option string.
 - `boolean` — a yes/no value. Config: `null`.
-- `date` — a calendar date. Stored as ISO-8601 `YYYY-MM-DD`. Config: `null`.
-- `power-ranking` — a relative ordering of the Collection's entries; its value is positional, not absolute. Config: `null`.
+- `date` — a calendar date. Stored as ISO-8601 `YYYY-MM-DD`. Config: `null`. Only the implicit head-of-form date field uses this type; the user does not add `date` fields from the editor.
+
+Power ranking is not a field type. It lives on the Collection as a `powerRanking` toggle (§1); when on, the Collection's entries carry a user-controlled rank position and the entry list surfaces a reorder affordance.
 
 Per Collection Entry (instance) — a Review instance exists only once the user submits one:
 
@@ -146,7 +150,7 @@ Instance:
 - `edit(review, data)` — change values within the template.
 - `clear(field)` — unset a field where "not set" is meaningful (distinct from "false" for booleans, etc.).
 
-**Operational principle.** A user creating "Drip Coffee" authors the template: a 0–5 `score` field shown as stars, a `light|medium|dark` style enum, a power-ranking field, and a freeform notes field. Later, sitting at a café, they `start(DripCoffee, BlueBottleMintPlaza)`. The app shows the template's form; they fill in score=4, style=light, notes="excellent", and `submit`. The Collection Entry now carries this Review — and reads as reviewed on the map. Browsing the Collection, they see Collection Entries shaped exactly by their template.
+**Operational principle.** A user creating "Drip Coffee" turns on the Collection's power-ranking toggle and authors the template: a 0–5 `score` field shown as stars, a `light|medium|dark` style enum, and a freeform notes field. Later, sitting at a café, they `start(DripCoffee, BlueBottleMintPlaza)`. The app shows the template's form; they fill in score=4, style=light, notes="excellent", and `submit`. The Collection Entry now carries this Review — and reads as reviewed on the map. Browsing the Collection, they see Collection Entries ordered by their power-ranking position and shaped by their template.
 
 **Notes.**
 
@@ -154,7 +158,7 @@ Instance:
 - Built-in templates (Coffee Ranking, Wishlist, Geo Diary) are starting points users can adopt and customize. The field types above are shared affordances across all templates.
 - One concept covers both template and instance for now. If sharing makes the template-author and reviewer different people, this may split into a separate **ReviewTemplate** concept — flagged but not pre-built.
 - A Review exists only as part of a Collection Entry, and only once submitted — there are no orphan Reviews, and no empty ones. An entry with no Review instance is unreviewed (§4).
-- A Review is valid with any subset of its template's fields filled — like a Letterboxd review, it need not be complete to count. A field's `required` flag marks what the template author considers core; it is used to nudge the user, never to block saving a sparse Review.
+- A Review is valid with any subset of its template's fields filled — like a Letterboxd review, it need not be complete to count. The template author cannot mark a field required; the form never blocks save on missing values.
 - **Edit against a newer template version.** RTP is pre-alpha (CLAUDE.md "Project status"): when `Review.edit` runs against an instance whose `recorded_template_version` does not match the Collection's current `template_version`, the data layer throws. There is no migration UI, no implicit re-targeting. The schema versioning machinery (template_version bumps, archived old fields) exists so the eventual migration design has the data it needs; it is not yet wired to an edit path. A migration strategy is a future concern, surfacing once user data exists.
 
 ---

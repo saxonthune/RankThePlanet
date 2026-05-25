@@ -24,6 +24,13 @@
       "region": "content",
       "event": "TAP_MANAGE_PROVIDERS",
       "target": "ManageProviders"
+    },
+    {
+      "id": "debug",
+      "label": "Debug",
+      "region": "content",
+      "event": "TAP_DEBUG",
+      "target": "DebugSettings"
     }
   ],
   "lists": []

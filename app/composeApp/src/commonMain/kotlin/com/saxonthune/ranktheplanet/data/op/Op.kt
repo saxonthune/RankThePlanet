@@ -18,6 +18,7 @@ internal sealed interface Op {
         val description: String?,
         val appearanceColor: String,
         val appearancePinStyle: String,
+        val powerRanking: Boolean = false,
     ) : Op { override val kind = "collection.created" }
 
     @Serializable
@@ -27,6 +28,7 @@ internal sealed interface Op {
         val description: String?,
         val appearanceColor: String,
         val appearancePinStyle: String,
+        val powerRanking: Boolean = false,
     ) : Op { override val kind = "collection.metadata.edited" }
 
     @Serializable

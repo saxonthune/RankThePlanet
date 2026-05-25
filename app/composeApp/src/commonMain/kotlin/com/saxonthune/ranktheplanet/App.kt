@@ -38,6 +38,7 @@ import com.saxonthune.ranktheplanet.nav.MapOverview
 import com.saxonthune.ranktheplanet.nav.ProviderConfig
 import com.saxonthune.ranktheplanet.nav.ReviewForm
 import com.saxonthune.ranktheplanet.nav.CollectionEditor
+import com.saxonthune.ranktheplanet.nav.DebugSettings
 import com.saxonthune.ranktheplanet.nav.Settings
 import com.saxonthune.ranktheplanet.ui.screens.CollectionDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEntryDetailScreen
@@ -54,6 +55,7 @@ import com.saxonthune.ranktheplanet.ui.screens.EditorMode
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormEvent
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormScreen
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormViewModel
+import com.saxonthune.ranktheplanet.ui.screens.DebugSettingsScreen
 import com.saxonthune.ranktheplanet.ui.screens.SettingsScreen
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
 
@@ -209,6 +211,15 @@ fun App(graph: RtpAppGraph? = null) {
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
                     onManageProviders = { navController.navigate(ManageProviders) },
+                    onOpenDebug = { navController.navigate(DebugSettings) },
+                )
+            }
+            composable<DebugSettings> {
+                DebugSettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    collections = collections,
+                    templates = templates,
+                    locations = locations,
                 )
             }
             composable<ManageProviders> {

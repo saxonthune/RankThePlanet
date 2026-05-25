@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,6 +29,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -49,6 +53,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -131,9 +136,11 @@ fun CollectionEditorScreen(
                 name = uiState.name,
                 description = uiState.description,
                 appearance = uiState.appearance,
+                powerRanking = uiState.powerRanking,
                 onNameChange = viewModel::onNameChange,
                 onDescriptionChange = viewModel::onDescriptionChange,
                 onAppearanceChange = viewModel::onAppearanceChange,
+                onPowerRankingChange = viewModel::onPowerRankingChange,
             )
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
@@ -164,9 +171,11 @@ private fun MetadataSection(
     name: String,
     description: String,
     appearance: Appearance,
+    powerRanking: Boolean,
     onNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onAppearanceChange: (Appearance) -> Unit,
+    onPowerRankingChange: (Boolean) -> Unit,
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Details", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
@@ -190,6 +199,18 @@ private fun MetadataSection(
             maxLines = 4,
             modifier = Modifier.fillMaxWidth(),
         )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Power ranking", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "Order entries by hand",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(checked = powerRanking, onCheckedChange = onPowerRankingChange)
+        }
 
         Text("Color", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         var showCustomPicker by remember { mutableStateOf(false) }
@@ -381,7 +402,7 @@ private fun ReviewTemplate.displayName(): String = when (collectionId.value) {
 @Composable
 private fun FieldListSection(
     fields: ImmutableList<FieldDraft>,
-    onAddField: () -> Unit,
+    onAddField: () -> Int,
     onEditField: (Int, FieldDraft) -> Unit,
     onRemoveField: (Int) -> Unit,
     onMoveUp: (Int) -> Unit,
@@ -390,57 +411,81 @@ private fun FieldListSection(
     var editingIndex by remember { mutableStateOf<Int?>(null) }
 
     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Template fields", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+        Text("Sections", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+
+        LockedDateRow()
+        HorizontalDivider()
+
+        fields.forEachIndexed { index, draft ->
+            TemplateFieldRow(
+                draft = draft,
+                index = index,
+                total = fields.size,
+                onEdit = { editingIndex = index },
+                onRemove = { onRemoveField(index) },
+                onMoveUp = { onMoveUp(index) },
+                onMoveDown = { onMoveDown(index) },
+            )
+            HorizontalDivider()
+        }
 
         if (fields.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        "No fields yet. Add a field or adopt a built-in template above.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Button(onClick = onAddField) {
-                        Icon(Icons.Default.Add, contentDescription = null)
-                        Text("Add field")
-                    }
-                }
-            }
-        } else {
-            fields.forEachIndexed { index, draft ->
-                TemplateFieldRow(
-                    draft = draft,
-                    index = index,
-                    total = fields.size,
-                    onEdit = { editingIndex = index },
-                    onRemove = { onRemoveField(index) },
-                    onMoveUp = { onMoveUp(index) },
-                    onMoveDown = { onMoveDown(index) },
-                )
-                HorizontalDivider()
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = onAddField) {
-                Icon(Icons.Default.Add, contentDescription = null)
-                Text("Add field")
-            }
+            Text(
+                "Add a section, or adopt a built-in template above.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = { editingIndex = onAddField() }) {
+            Icon(Icons.Default.Add, contentDescription = null)
+            Text("Add section")
         }
     }
 
     editingIndex?.let { idx ->
         if (idx < fields.size) {
-            TemplateFieldEditorSheet(
-                draft = fields[idx],
-                onConfirm = { updated ->
-                    onEditField(idx, updated)
-                    editingIndex = null
-                },
-                onDismiss = { editingIndex = null },
+            key(idx) {
+                TemplateFieldEditorSheet(
+                    draft = fields[idx],
+                    onConfirm = { updated ->
+                        onEditField(idx, updated)
+                        editingIndex = null
+                    },
+                    onAddAnother = { updated ->
+                        onEditField(idx, updated)
+                        editingIndex = onAddField()
+                    },
+                    onDismiss = { editingIndex = null },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LockedDateRow() {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Date",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "Date · always present",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        Icon(
+            Icons.Default.Lock,
+            contentDescription = "Locked",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -459,20 +504,15 @@ private fun TemplateFieldRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            val nameDisplay = when (draft) {
-                is FieldDraft.New -> draft.name
-                is FieldDraft.Existing -> draft.name
-            }
             Text(
-                text = draft.label.ifBlank { nameDisplay },
+                text = draft.label.ifBlank { "Untitled section" },
                 style = MaterialTheme.typography.bodyMedium,
             )
             Text(
                 text = buildString {
-                    append(draft.type.name)
+                    append(draft.type.displayName())
                     val summary = configSummary(draft.config)
                     if (summary.isNotEmpty()) append(" · $summary")
-                    if (draft.required) append(" · required")
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -489,10 +529,10 @@ private fun TemplateFieldRow(
             }
         }
         IconButton(onClick = onEdit) {
-            Icon(Icons.Default.Edit, contentDescription = "Edit field")
+            Icon(Icons.Default.Edit, contentDescription = "Edit section")
         }
         IconButton(onClick = onRemove) {
-            Icon(Icons.Default.Delete, contentDescription = "Remove field")
+            Icon(Icons.Default.Delete, contentDescription = "Remove section")
         }
     }
 }
@@ -500,14 +540,13 @@ private fun TemplateFieldRow(
 private fun configSummary(config: TemplateFieldConfig?): String = when (config) {
     null -> ""
     is TemplateFieldConfig.Score -> "0–${config.max.toInt()} ${config.render}, step ${config.step}"
-    is TemplateFieldConfig.Text -> if (config.multiline) "multiline" else "single-line"
+    TemplateFieldConfig.TextField -> ""
     is TemplateFieldConfig.Enum -> {
         val preview = config.options.take(3).joinToString()
         if (config.options.size > 3) "$preview…" else preview
     }
-    TemplateFieldConfig.BooleanField -> "boolean"
-    TemplateFieldConfig.Date -> "date"
-    TemplateFieldConfig.PowerRanking -> "power ranking"
+    TemplateFieldConfig.BooleanField -> ""
+    TemplateFieldConfig.Date -> ""
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -515,6 +554,7 @@ private fun configSummary(config: TemplateFieldConfig?): String = when (config) 
 fun TemplateFieldEditorSheet(
     draft: FieldDraft,
     onConfirm: (FieldDraft) -> Unit,
+    onAddAnother: (FieldDraft) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -522,58 +562,42 @@ fun TemplateFieldEditorSheet(
     var label by remember(draft) { mutableStateOf(draft.label) }
     var type by remember(draft) { mutableStateOf(draft.type) }
     var config by remember(draft) { mutableStateOf(draft.config) }
-    var required by remember(draft) { mutableStateOf(draft.required) }
 
-    // for New drafts only — name is editable
-    var newName by remember(draft) {
-        mutableStateOf(if (draft is FieldDraft.New) draft.name else "")
+    fun toResult(): FieldDraft = when (draft) {
+        is FieldDraft.New -> FieldDraft.New(
+            label = label,
+            type = type,
+            config = config,
+        )
+        is FieldDraft.Existing -> FieldDraft.Existing(
+            name = draft.name,
+            label = label,
+            type = type,
+            config = config,
+        )
     }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        contentWindowInsets = { WindowInsets(0) },
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .dismissKeyboardOnTap()
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 32.dp)
+                .imePadding()
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("Edit field", style = MaterialTheme.typography.titleMedium)
-
-            // Name row — exhaustive when
-            when (draft) {
-                is FieldDraft.New -> {
-                    OutlinedTextField(
-                        value = newName,
-                        onValueChange = { newName = it },
-                        label = { Text("Machine key (snake_case)") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                is FieldDraft.Existing -> {
-                    Column {
-                        Text(
-                            text = draft.name,
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                        Text(
-                            text = "machine key — cannot change",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-            }
+            Text("Edit section", style = MaterialTheme.typography.titleMedium)
 
             OutlinedTextField(
                 value = label,
                 onValueChange = { label = it },
-                label = { Text("Label") },
+                label = { Text("Section name") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -592,38 +616,15 @@ fun TemplateFieldEditorSheet(
                 onConfigChange = { config = it },
             )
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Required", modifier = Modifier.weight(1f))
-                Switch(checked = required, onCheckedChange = { required = it })
-            }
-
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
                     Text("Cancel")
                 }
-                Button(
-                    onClick = {
-                        val result = when (draft) {
-                            is FieldDraft.New -> FieldDraft.New(
-                                name = newName.trim().replace(" ", "_").lowercase().ifBlank { draft.name },
-                                label = label,
-                                type = type,
-                                config = config,
-                                required = required,
-                            )
-                            is FieldDraft.Existing -> FieldDraft.Existing(
-                                name = draft.name,
-                                label = label,
-                                type = type,
-                                config = config,
-                                required = required,
-                            )
-                        }
-                        onConfirm(result)
-                    },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("Confirm")
+                TextButton(onClick = { onAddAnother(toResult()) }, modifier = Modifier.weight(1f)) {
+                    Text("Add another")
+                }
+                Button(onClick = { onConfirm(toResult()) }, modifier = Modifier.weight(1f)) {
+                    Text("Done")
                 }
             }
         }
@@ -632,11 +633,26 @@ fun TemplateFieldEditorSheet(
 
 private fun defaultConfigFor(type: FieldType): TemplateFieldConfig? = when (type) {
     FieldType.Score -> TemplateFieldConfig.Score()
-    FieldType.Text -> TemplateFieldConfig.Text(multiline = false)
+    FieldType.Text -> TemplateFieldConfig.TextField
     FieldType.Enum -> TemplateFieldConfig.Enum(options = persistentListOf())
     FieldType.Boolean -> TemplateFieldConfig.BooleanField
     FieldType.Date -> TemplateFieldConfig.Date
-    FieldType.PowerRanking -> TemplateFieldConfig.PowerRanking
+}
+
+private fun FieldType.displayName(): String = when (this) {
+    FieldType.Score -> "Score"
+    FieldType.Text -> "Freeform Text"
+    FieldType.Enum -> "Category"
+    FieldType.Boolean -> "Yes / No"
+    FieldType.Date -> "Date"
+}
+
+private fun FieldType.example(): String = when (this) {
+    FieldType.Score -> "e.g. 0–5 stars"
+    FieldType.Text -> "e.g. tasting notes"
+    FieldType.Enum -> "e.g. good, ok, bad"
+    FieldType.Boolean -> "e.g. would revisit?"
+    FieldType.Date -> ""
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -646,15 +662,20 @@ private fun FieldTypeDropdown(
     onSelect: (FieldType) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val choices = FieldType.entries.filter { it != FieldType.Date }
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded },
     ) {
         OutlinedTextField(
-            value = selected.name,
+            value = selected.displayName(),
             onValueChange = {},
             readOnly = true,
             label = { Text("Type") },
+            supportingText = {
+                val ex = selected.example()
+                if (ex.isNotEmpty()) Text(ex)
+            },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -664,9 +685,21 @@ private fun FieldTypeDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
-            FieldType.entries.forEach { ft ->
+            choices.forEach { ft ->
                 DropdownMenuItem(
-                    text = { Text(ft.name) },
+                    text = {
+                        Column {
+                            Text(ft.displayName(), style = MaterialTheme.typography.bodyLarge)
+                            val ex = ft.example()
+                            if (ex.isNotEmpty()) {
+                                Text(
+                                    ex,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    },
                     onClick = {
                         onSelect(ft)
                         expanded = false
@@ -731,7 +764,7 @@ private fun FieldConfigEditor(
                     value = scoreConfig.render,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Render") },
+                    label = { Text("Display as") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = renderExpanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -751,16 +784,6 @@ private fun FieldConfigEditor(
                         )
                     }
                 }
-            }
-        }
-        FieldType.Text -> {
-            val textConfig = config as? TemplateFieldConfig.Text ?: TemplateFieldConfig.Text()
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Multiline", modifier = Modifier.weight(1f))
-                Switch(
-                    checked = textConfig.multiline,
-                    onCheckedChange = { onConfigChange(textConfig.copy(multiline = it)) },
-                )
             }
         }
         FieldType.Enum -> {
@@ -805,7 +828,7 @@ private fun FieldConfigEditor(
                 }
             }
         }
-        FieldType.Boolean, FieldType.Date, FieldType.PowerRanking -> {
+        FieldType.Text, FieldType.Boolean, FieldType.Date -> {
             // no config UI needed
         }
     }

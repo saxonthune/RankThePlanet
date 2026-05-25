@@ -13,11 +13,10 @@ sealed interface TemplateFieldConfig {
         val step: Double = 0.5,
         val render: String = "stars",
     ) : TemplateFieldConfig
-    data class Text(val multiline: Boolean = false) : TemplateFieldConfig
+    data object TextField : TemplateFieldConfig
     data class Enum(val options: ImmutableList<String>) : TemplateFieldConfig
     data object BooleanField : TemplateFieldConfig
     data object Date : TemplateFieldConfig
-    data object PowerRanking : TemplateFieldConfig
 }
 
 @JvmInline value class CollectionId(val value: String)
@@ -40,14 +39,13 @@ data class Location(
 
 data class Appearance(val color: String, val pinStyle: String)
 
-enum class FieldType { Score, Text, Enum, Boolean, Date, PowerRanking }
+enum class FieldType { Score, Text, Enum, Boolean, Date }
 
 data class TemplateField(
     val name: String,
     val label: String = name,
     val type: FieldType,
     val config: TemplateFieldConfig? = null,
-    val required: Boolean = false,
     val ordinal: Int = 0,
 )
 
@@ -85,6 +83,7 @@ data class Collection(
     val appearance: Appearance,
     val templateVersion: Int,
     val isVisible: Boolean,
+    val powerRanking: Boolean = false,
     val created: String,
     val lastModified: String
 )

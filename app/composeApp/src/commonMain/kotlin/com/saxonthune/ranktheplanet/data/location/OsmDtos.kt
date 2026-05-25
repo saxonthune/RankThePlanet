@@ -1,6 +1,5 @@
 package com.saxonthune.ranktheplanet.data.location
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -33,11 +32,3 @@ internal data class PhotonProperties(
     val county: String? = null
 )
 
-@Serializable
-internal data class NominatimPlace(
-    val lat: String,
-    val lon: String,
-    @SerialName("display_name") val displayName: String,
-    val osm_id: Long? = null,
-    val osm_type: String? = null
-)

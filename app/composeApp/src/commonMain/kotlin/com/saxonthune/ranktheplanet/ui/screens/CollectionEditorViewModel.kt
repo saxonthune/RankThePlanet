@@ -35,14 +35,11 @@ sealed interface FieldDraft {
     val label: String
     val type: FieldType
     val config: TemplateFieldConfig?
-    val required: Boolean
 
     data class New(
-        val name: String,
         override val label: String,
         override val type: FieldType,
         override val config: TemplateFieldConfig?,
-        override val required: Boolean,
     ) : FieldDraft
 
     data class Existing(
@@ -50,27 +47,30 @@ sealed interface FieldDraft {
         override val label: String,
         override val type: FieldType,
         override val config: TemplateFieldConfig?,
-        override val required: Boolean,
     ) : FieldDraft
 }
 
-fun FieldDraft.toTemplateField(ordinal: Int): TemplateField = when (this) {
-    is FieldDraft.New -> TemplateField(
-        name = name,
-        label = label,
-        type = type,
-        config = config,
-        required = required,
-        ordinal = ordinal,
-    )
-    is FieldDraft.Existing -> TemplateField(
-        name = name,
-        label = label,
-        type = type,
-        config = config,
-        required = required,
-        ordinal = ordinal,
-    )
+const val DATE_FIELD_NAME = "date"
+val DATE_FIELD: TemplateField = TemplateField(
+    name = DATE_FIELD_NAME,
+    label = "Date",
+    type = FieldType.Date,
+    config = TemplateFieldConfig.Date,
+    ordinal = 0,
+)
+
+internal fun sluggify(label: String, taken: Set<String>): String {
+    val base = label.trim().lowercase()
+        .replace(Regex("[^a-z0-9]+"), "_")
+        .trim('_')
+        .ifBlank { "field" }
+    if (base !in taken && base != DATE_FIELD_NAME) return base
+    var i = 2
+    while (true) {
+        val candidate = "${base}_$i"
+        if (candidate !in taken && candidate != DATE_FIELD_NAME) return candidate
+        i++
+    }
 }
 
 data class CollectionEditorUiState(
@@ -78,6 +78,7 @@ data class CollectionEditorUiState(
     val name: String = "",
     val description: String = "",
     val appearance: Appearance = AppearancePalette.default,
+    val powerRanking: Boolean = false,
     val fields: ImmutableList<FieldDraft> = persistentListOf(),
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
@@ -120,13 +121,13 @@ class CollectionEditorViewModel(
                     return@collect
                 }
                 val drafts: PersistentList<FieldDraft> = template?.fields
+                    ?.filter { it.name != DATE_FIELD_NAME }
                     ?.map { field ->
                         FieldDraft.Existing(
                             name = field.name,
                             label = field.label,
                             type = field.type,
                             config = field.config,
-                            required = field.required,
                         )
                     }
                     ?.toPersistentList()
@@ -136,6 +137,7 @@ class CollectionEditorViewModel(
                         name = collection.name,
                         description = collection.description ?: "",
                         appearance = collection.appearance,
+                        powerRanking = collection.powerRanking,
                         fields = drafts,
                         isLoading = false,
                         error = null,
@@ -150,18 +152,21 @@ class CollectionEditorViewModel(
 
     fun onAppearanceChange(appearance: Appearance) = _uiState.update { it.copy(appearance = appearance) }
 
-    fun onAddField() {
+    fun onPowerRankingChange(enabled: Boolean) = _uiState.update { it.copy(powerRanking = enabled) }
+
+    fun onAddField(): Int {
+        var newIndex = 0
         _uiState.update { state ->
-            val newName = "field_${state.fields.size + 1}"
             val newDraft = FieldDraft.New(
-                name = newName,
                 label = "",
                 type = FieldType.Text,
-                config = TemplateFieldConfig.Text(multiline = false),
-                required = false,
+                config = TemplateFieldConfig.TextField,
             )
-            state.copy(fields = state.fields.toPersistentList().add(newDraft))
+            val updated = state.fields.toPersistentList().add(newDraft)
+            newIndex = updated.size - 1
+            state.copy(fields = updated)
         }
+        return newIndex
     }
 
     fun onEditField(index: Int, draft: FieldDraft) {
@@ -188,16 +193,45 @@ class CollectionEditorViewModel(
     }
 
     fun onAdoptBuiltIn(template: ReviewTemplate) {
-        val drafts = template.fields.map { field ->
-            FieldDraft.New(
-                name = field.name,
-                label = field.label,
-                type = field.type,
-                config = field.config,
-                required = field.required,
-            )
-        }.toPersistentList()
+        val drafts = template.fields
+            .filter { it.name != DATE_FIELD_NAME }
+            .map { field ->
+                FieldDraft.New(
+                    label = field.label,
+                    type = field.type,
+                    config = field.config,
+                )
+            }
+            .toPersistentList()
         _uiState.update { it.copy(fields = drafts) }
+    }
+
+    private fun buildFieldList(drafts: List<FieldDraft>): List<TemplateField> {
+        val taken = mutableSetOf<String>()
+        drafts.filterIsInstance<FieldDraft.Existing>().forEach { taken += it.name }
+        val userFields = drafts.mapIndexed { idx, draft ->
+            when (draft) {
+                is FieldDraft.Existing -> TemplateField(
+                    name = draft.name,
+                    label = draft.label,
+                    type = draft.type,
+                    config = draft.config,
+                    ordinal = idx + 1,
+                )
+                is FieldDraft.New -> {
+                    val name = sluggify(draft.label, taken)
+                    taken += name
+                    TemplateField(
+                        name = name,
+                        label = draft.label.ifBlank { name },
+                        type = draft.type,
+                        config = draft.config,
+                        ordinal = idx + 1,
+                    )
+                }
+            }
+        }
+        return listOf(DATE_FIELD) + userFields
     }
 
     fun save() {
@@ -205,22 +239,21 @@ class CollectionEditorViewModel(
         if (!state.canSave) return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, error = null) }
-            val fieldList = state.fields.mapIndexed { idx, draft -> draft.toTemplateField(idx) }
+            val fieldList = buildFieldList(state.fields)
             when (mode) {
                 EditorMode.Create -> {
                     collections.create(
                         name = state.name,
                         description = state.description.ifBlank { null },
                         appearance = state.appearance,
+                        powerRanking = state.powerRanking,
                     ).onFailure { e ->
                         _uiState.update { it.copy(isSaving = false, error = e.message ?: "Save failed") }
                         return@launch
                     }.onSuccess { collection ->
-                        if (fieldList.isNotEmpty()) {
-                            templates.define(collection.id, fieldList).onFailure { e ->
-                                _uiState.update { it.copy(isSaving = false, error = e.message ?: "Failed to save template") }
-                                return@launch
-                            }
+                        templates.define(collection.id, fieldList).onFailure { e ->
+                            _uiState.update { it.copy(isSaving = false, error = e.message ?: "Failed to save template") }
+                            return@launch
                         }
                         _events.send(CollectionEditorEvent.Saved(collection.id))
                     }
@@ -231,6 +264,7 @@ class CollectionEditorViewModel(
                         name = state.name,
                         description = state.description.ifBlank { null },
                         appearance = state.appearance,
+                        powerRanking = state.powerRanking,
                     ).onFailure { e ->
                         _uiState.update { it.copy(isSaving = false, error = e.message ?: "Save failed") }
                         return@launch

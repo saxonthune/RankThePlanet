@@ -23,6 +23,7 @@ internal fun LocationDraftSheetHost(
     onFindNearby: () -> Unit,
     onAdoptCandidate: (String) -> Unit,
     onKeepCoordinates: () -> Unit,
+    onManualNameChange: (String) -> Unit,
     onBackToDraft: () -> Unit,
     onNewCollection: () -> Unit,
     onPickCollection: (CollectionId) -> Unit,
@@ -45,6 +46,7 @@ internal fun LocationDraftSheetHost(
                 onFindNearby = onFindNearby,
                 onAdoptCandidate = onAdoptCandidate,
                 onKeepCoordinates = onKeepCoordinates,
+                onManualNameChange = onManualNameChange,
             )
             DraftPhase.AddToCollection -> AddLocationToCollectionSheet(
                 draft = draft,

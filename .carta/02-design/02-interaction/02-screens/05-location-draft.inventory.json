@@ -3,15 +3,15 @@
   "regions": [
     {
       "id": "topBar",
-      "purpose": "Marks the surface as an uncommitted draft and holds the dismiss affordances. In add-to-collection mode it carries both Go back (dismiss this sheet, return to MapOverview-in-add-mode) and Cancel adding (kill the whole flow); in browse mode it carries only Close."
+      "purpose": "Carries dismiss on the left and the primary forward action (Add to a Collection) on the right. In add-to-collection mode it additionally carries Cancel adding."
     },
     {
-      "id": "coordinates",
-      "purpose": "Shows the candidate's raw coordinates and holds the keep-as-is and add-to-collection affordances."
+      "id": "preview",
+      "purpose": "Shows the draft Location as it would be committed: displayName (or (untitled location) when nothing is resolved or named yet), an address line when the adopted candidate provides one, and the raw coordinates as tertiary detail."
     },
     {
       "id": "candidates",
-      "purpose": "The nearby real places resolution offered for the dropped point, browsable as a list."
+      "purpose": "The selection list that resolves the draft. The first row is Use coordinates (the bare-coords outcome, with an inline name field when selected); the remaining rows are the nearby real places offered by the provider."
     }
   ],
   "affordances": [
@@ -31,23 +31,29 @@
       "appearsInModes": ["addToCollection"]
     },
     {
+      "id": "add-to-collection",
+      "label": "Add to a Collection",
+      "region": "topBar",
+      "event": "ADD_TO_COLLECTION",
+      "target": "AddLocationToCollection"
+    },
+    {
       "id": "find-nearby",
       "label": "Find nearby places",
       "region": "candidates",
       "action": "Location.resolveNearby"
     },
     {
-      "id": "keep-coordinates",
-      "label": "Keep coordinates only",
-      "region": "coordinates",
+      "id": "use-coordinates",
+      "label": "Use coordinates",
+      "region": "candidates",
       "action": "Location.dropPin"
     },
     {
-      "id": "add-to-collection",
-      "label": "Add to a Collection",
-      "region": "coordinates",
-      "event": "ADD_TO_COLLECTION",
-      "target": "AddLocationToCollection"
+      "id": "name-coordinates",
+      "label": "Name this place",
+      "region": "candidates",
+      "appearsWhen": "use-coordinates is the selected candidate"
     }
   ],
   "lists": [
@@ -67,7 +73,7 @@
           "label": "Adopt this candidate"
         }
       },
-      "emptyState": "When resolution returns no nearby places — or has not run yet — the region says so; the coordinates can still be kept as-is via Keep coordinates only."
+      "emptyState": "When the provider returns no nearby places — or has not run yet — only the Use coordinates row appears; the draft remains committable through it."
     }
   ]
 }

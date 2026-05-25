@@ -422,9 +422,29 @@
           "target": "ManageProviders",
           "description": "User opens the provider catalogue to inspect what is configured, switch the default, or step into a single provider's setup (LocationProvider.addProvider, LocationProvider.switchProvider)."
         },
+        "TAP_DEBUG": {
+          "target": "DebugSettings",
+          "description": "Developer opens the debug submenu. Outside the production product spec; the affordance exists in code as a developer convenience."
+        },
         "BACK": {
           "target": "MapOverview",
           "description": "Return to the everything view."
+        }
+      }
+    },
+
+    "DebugSettings": {
+      "description": "Developer pocket reached from Settings. Hosts actions that exercise the data layer without dragging the user through the real surfaces — seeding fixtures, dumping state, resetting stores. The first inhabitant is `Debug.generateSampleCollection`, which fabricates a fresh Collection populated with stock NYC Location and Entry data and exercises Collection.create, Collection.template.define, Location.upsert, and Collection.addEntry end to end. Rows fire concept actions in place; only BACK moves the user. See doc02.02.02.14.",
+      "tags": ["modal", "debug"],
+      "meta": {
+        "surface": "DebugSettings",
+        "modality": "fullScreen",
+        "actions": ["Debug.generateSampleCollection"]
+      },
+      "on": {
+        "BACK": {
+          "target": "Settings",
+          "description": "Return to Settings."
         }
       }
     },

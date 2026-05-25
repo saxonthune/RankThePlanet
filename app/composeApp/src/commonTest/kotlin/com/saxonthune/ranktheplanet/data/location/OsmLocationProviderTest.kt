@@ -68,35 +68,75 @@ class OsmLocationProviderTest {
         assertEquals(13.405, c.coordinates.lng)
         assertEquals(SourceType.Osm, c.sourceType)
         assertEquals("N240109189", c.sourceId)
-        assertEquals("Berlin, Germany", c.displayName)
+        assertEquals("Berlin", c.displayName)
+        assertEquals("Germany", c.detail)
     }
 
     @Test
-    fun `resolveNearby maps nominatim reverse response to LocationCandidate`() = runBlocking {
-        val nominatimJson = """
+    fun `resolveNearby maps photon reverse to candidates sorted by distance`() = runBlocking {
+        // The far feature is listed first in the response; expect the near one first after sorting.
+        val photonJson = """
             {
-              "lat": "52.5200",
-              "lon": "13.4050",
-              "display_name": "Berlin, Deutschland",
-              "osm_id": 62422,
-              "osm_type": "relation"
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "geometry": {"type": "Point", "coordinates": [13.410, 52.524]},
+                  "properties": {"osm_id": 2, "osm_type": "N", "name": "Far Cafe"}
+                },
+                {
+                  "type": "Feature",
+                  "geometry": {"type": "Point", "coordinates": [13.4051, 52.5201]},
+                  "properties": {"osm_id": 1, "osm_type": "N", "name": "Near Cafe"}
+                }
+              ]
             }
         """.trimIndent()
 
-        val provider = OsmLocationProvider(mockClient(nominatimJson))
+        val provider = OsmLocationProvider(mockClient(photonJson))
         val result = provider.resolveNearby(
             com.saxonthune.ranktheplanet.domain.Coordinates(lat = 52.52, lng = 13.405)
         )
 
         assertIs<ProviderResult.Ok<List<LocationCandidate>>>(result)
         val candidates = result.value
-        assertEquals(1, candidates.size)
-        val c = candidates[0]
-        assertEquals(52.52, c.coordinates.lat)
-        assertEquals(13.405, c.coordinates.lng)
-        assertEquals(SourceType.Osm, c.sourceType)
-        assertEquals("R62422", c.sourceId)
-        assertEquals("Berlin, Deutschland", c.displayName)
+        assertEquals(2, candidates.size)
+        assertEquals("Near Cafe", candidates[0].displayName)
+        assertEquals("Far Cafe", candidates[1].displayName)
+        assertEquals(SourceType.Osm, candidates[0].sourceType)
+        assertEquals("N1", candidates[0].sourceId)
+        // Distance is prepended to detail (e.g. "12 m" or "0.4 km").
+        assertNotNull(candidates[0].detail)
+        assert(candidates[0].detail!!.endsWith(" m") || candidates[0].detail!!.contains(" m ·")) {
+            "Expected leading metres-distance in detail: ${candidates[0].detail}"
+        }
+    }
+
+    @Test
+    fun `resolveNearby hits the photon reverse endpoint with limit`() = runBlocking {
+        val photonJson = """{"type":"FeatureCollection","features":[]}"""
+        var capturedUrl: String? = null
+        val engine = MockEngine { request ->
+            capturedUrl = request.url.toString()
+            respond(
+                content = photonJson,
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; isLenient = true })
+            }
+        }
+        val provider = OsmLocationProvider(client)
+        provider.resolveNearby(com.saxonthune.ranktheplanet.domain.Coordinates(lat = 52.52, lng = 13.405))
+
+        assertNotNull(capturedUrl)
+        assert(capturedUrl!!.contains("/reverse")) { "Expected /reverse path in URL: $capturedUrl" }
+        assert(capturedUrl!!.contains("lat=52.52")) { "Expected lat=52.52 in URL: $capturedUrl" }
+        assert(capturedUrl!!.contains("lon=13.405")) { "Expected lon=13.405 in URL: $capturedUrl" }
+        assert(capturedUrl!!.contains("limit=10")) { "Expected limit=10 in URL: $capturedUrl" }
     }
 
     @Test

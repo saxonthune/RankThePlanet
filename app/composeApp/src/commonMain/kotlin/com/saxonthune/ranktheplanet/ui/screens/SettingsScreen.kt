@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.saxonthune.ranktheplanet.ui.RtpDrillDownScaffold
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit, onManageProviders: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onManageProviders: () -> Unit, onOpenDebug: () -> Unit) {
     RtpDrillDownScaffold(
         title = "Settings",
         onBack = onBack,
@@ -43,6 +43,12 @@ fun SettingsScreen(onBack: () -> Unit, onManageProviders: () -> Unit) {
                 label = "BYOK keys",
                 subtitle = "Coming soon",
                 enabled = false,
+            )
+            SettingsRow(
+                label = "Debug",
+                subtitle = "Developer tools",
+                enabled = true,
+                onClick = onOpenDebug,
             )
         }
     }

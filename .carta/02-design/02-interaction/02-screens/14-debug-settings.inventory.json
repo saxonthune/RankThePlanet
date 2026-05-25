@@ -1,0 +1,29 @@
+{
+  "surface": "DebugSettings",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Identifies the surface and holds the affordance back to Settings."
+    },
+    {
+      "id": "tools",
+      "purpose": "List of debug actions. Each row fires a concept action in place and surfaces the result inline; no row navigates away from the surface."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "topBar",
+      "event": "BACK",
+      "target": "Settings"
+    },
+    {
+      "id": "generate-sample-collection",
+      "label": "Generate sample collection",
+      "region": "tools",
+      "action": "Debug.generateSampleCollection"
+    }
+  ],
+  "lists": []
+}

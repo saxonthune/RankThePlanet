@@ -1,6 +1,6 @@
 ---
 title: Location Providers
-summary: The LocationProvider seam: osm default backed by Photon + Nominatim endpoints, BYOK providers, per-provider caching rules, ODbL export obligations
+summary: The LocationProvider seam: osm default backed by Photon (forward + reverse) endpoints, BYOK providers, per-provider caching rules, ODbL export obligations
 tags: [system, providers, location, osm, odbl, licensing]
 deps: [doc01.03, doc03.02]
 ---
@@ -98,27 +98,22 @@ interface LocationProviderRegistry {
 
 `osm` is the default and the always-available keyless fallback, so RTP resolves Locations with zero configuration. Every other provider type is opt-in and BYOK.
 
-`osm` is one provider in the user-facing sense — one entry in the concept's `configured` set, identified by `type`, not by endpoint. Its implementation is backed by **two services**, both interfaces to the same OpenStreetMap database:
+`osm` is one provider in the user-facing sense — one entry in the concept's `configured` set, identified by `type`, not by endpoint. Its implementation is backed by **Photon**, an interface to the OpenStreetMap database that serves both forward search (`/api`) and reverse geocoding (`/reverse`):
 
-- **Photon** backs `resolve` — built for forward search and typeahead.
-- **Nominatim** backs `resolveNearby` — reverse geocoding from a coordinate.
+- Photon's forward `/api` endpoint backs `resolve` — built for forward search and typeahead.
+- Photon's `/reverse` endpoint backs `resolveNearby` — proximity geocoding, returning a list of nearby OSM features ordered by distance from the query point. The provider attaches a client-computed distance to each candidate's `detail` so the LocationDraftSheet surface (doc02.02.02.05) can show "how close" alongside the address.
 
-Because both services speak OSM object identity (`osm_type` + `osm_id`, e.g. `N240109189`), a place found through either resolves to the **same `(sourceType, sourceId)`**. The two services are sub-configuration of one provider, not two providers. The Location concept therefore needs no multi-resolution model: a single resolution per Location holds regardless of which endpoint answered. (The multi-identity model flagged in doc01.03 §2 is for genuinely distinct providers — a Google `place_id` *and* an OSM node for one real place — which is `merge` territory, not this.)
+Because every candidate carries OSM object identity (`osm_type` + `osm_id`, e.g. `N240109189`), a place found through either endpoint resolves to a stable `(sourceType, sourceId)`. (The multi-identity model flagged in doc01.03 §2 is for genuinely distinct providers — a Google `place_id` *and* an OSM node for one real place — which is `merge` territory, not this.)
 
-`OsmLocationProvider.supportsTypeahead` is `true` — `resolve` runs against Photon, which is built for per-keystroke autocomplete. The Nominatim constraint applies only to reverse geocoding (`resolveNearby`), which the search field does not invoke.
+`OsmLocationProvider.supportsTypeahead` is `true` — Photon is built for per-keystroke autocomplete.
 
 A Photon result that carries no `osm_id` (an interpolated address) yields a candidate with no stable `sourceId`. Adopting it produces a `manual`-style Location — the same coordinates-only outcome as a dropped pin (doc01.03 §2), not a special case.
 
 ### Endpoint constraints
 
-The public Nominatim instance enforces a [usage policy](https://operations.osmfoundation.org/policies/nominatim/) that shapes the `osm` implementation:
+Photon's hosted instance has lighter usage constraints than Nominatim, but the `osm` provider still throttles client-side to one request per second to stay a polite citizen of the shared service. Per-keystroke autocomplete is the explicit use case Photon exists for. A request should send an identifying `User-Agent` naming RTP with a contact. Bulk geocoding (e.g. `Collection.import` ingesting a large KML/GeoJSON) is not addressed here.
 
-- One request per second, single-threaded — the `osm` provider throttles and debounces client-side.
-- Per-keystroke autocomplete against public Nominatim is disallowed. Photon carries forward search precisely so typeahead stays inside policy.
-- A request must send an identifying `User-Agent` naming RTP with a contact.
-- Bulk geocoding is disallowed — relevant when `Collection.import` ingests a large KML/GeoJSON.
-
-The endpoint is overridable: a self-hoster can point the `osm` provider at their own Photon and Nominatim instances. The override is endpoint configuration, never a second provider slot.
+The endpoint is overridable: a self-hoster can point the `osm` provider at their own Photon instance. The override is endpoint configuration, never a second provider slot.
 
 ## BYOK provider: `google`
 

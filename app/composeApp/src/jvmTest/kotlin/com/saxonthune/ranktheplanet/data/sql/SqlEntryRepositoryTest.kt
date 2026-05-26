@@ -38,6 +38,7 @@ class SqlEntryRepositoryTest {
         displayName = "Place",
         sourceType = SourceType.Manual,
         sourceId = sourceId,
+        address = null,
         cachedMetadata = null,
         refreshable = false,
     )

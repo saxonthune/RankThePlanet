@@ -55,6 +55,7 @@ class SqlCollectionRepositoryTest {
             displayName = "Place",
             sourceType = SourceType.Manual,
             sourceId = "manual-1",
+            address = null,
             cachedMetadata = null,
             refreshable = false,
         )

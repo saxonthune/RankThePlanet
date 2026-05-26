@@ -3,7 +3,7 @@
   "regions": [
     {
       "id": "collectionRow",
-      "purpose": "Top of the sheet — a small, secondary breadcrumb identifying the owning Collection. A 10dp appearance-color dot followed by the Collection name in a label-weight type set in onSurfaceVariant; reads as contextual chrome, not as content of equal weight to the subject below. The whole row is a tap target that opens the Collection."
+      "purpose": "Top of the sheet — a small, secondary breadcrumb identifying the owning Collection. A 10dp appearance-color dot followed by the Collection name in a label-weight type set in onSurfaceVariant; reads as contextual chrome, not as content of equal weight to the subject below. The row carries two affordances: the leading area (dot + name) is a tap target that opens the Collection, and a trailing icon button on the right edge — a map-pin glyph in onSurfaceVariant labeled 'See on Map' — dismisses the drawer and refocuses MapOverview on that Collection."
     },
     {
       "id": "locationBlock",
@@ -20,7 +20,17 @@
       "label": "View the Collection",
       "region": "collectionRow",
       "event": "VIEW_COLLECTION",
-      "target": "CollectionDetail"
+      "target": "CollectionDetail",
+      "rendering": "Tap target spans the leading area of the row (dot + Collection name); the trailing 'See on Map' icon button is excluded from this hit area."
+    },
+    {
+      "id": "see-on-map",
+      "label": "See on Map",
+      "region": "collectionRow",
+      "event": "JUMP_TO_COLLECTION",
+      "target": "MapOverview",
+      "action": "MapOverview.jumpToCollection",
+      "rendering": "Trailing icon button on the right edge of collectionRow — a map-pin glyph in onSurfaceVariant. Tapping dismisses the EntrySheet and re-enters MapOverview with its menuDrawer filter set to show only this Collection's pins and its viewport fit to that Collection's Entries."
     },
     {
       "id": "tap-location",

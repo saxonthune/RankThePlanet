@@ -27,7 +27,6 @@
           "MapOverview.zoom",
           "MapOverview.selectPin",
           "MapOverview.toggleCollection",
-          "MapOverview.jumpToCollection",
           "Location.resolve"
         ]
       },
@@ -133,7 +132,7 @@
         "modality": "sheet",
         "host": "MapOverview",
         "reads": ["entry", "location", "review", "collection"],
-        "actions": ["Review.edit"]
+        "actions": ["Review.edit", "MapOverview.jumpToCollection"]
       },
       "on": {
         "TAP_LOCATION": {
@@ -143,6 +142,10 @@
         "VIEW_COLLECTION": {
           "target": "CollectionDetail",
           "description": "User opens the Collection that owns this Entry."
+        },
+        "JUMP_TO_COLLECTION": {
+          "target": "MapOverview",
+          "description": "User taps the trailing *See on Map* icon button on the collectionRow. Dismisses the drawer and re-enters MapOverview with its menuDrawer filter set to show only this Collection's pins and its viewport fit to that Collection's Entries. Invokes MapOverview.jumpToCollection on entry."
         },
         "TAP_EDIT_REVIEW": {
           "target": "ReviewForm",

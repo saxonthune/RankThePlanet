@@ -85,12 +85,16 @@ Signature of an arbitration delay: a flat ~300ms gap that does not scale with ma
 
 ## Fix
 
-`util/MapTapTuner.kt` exposes `expect fun tuneMapForFastTaps(): Boolean`. The iOS actual walks the window tree, finds every `MLNMapView`, and on each one disables:
+`util/MapTapTuner.kt` exposes `expect fun tuneMapForFastTaps(): Boolean`. The iOS actual walks the window tree, finds every `MLNMapView`, and on each one **removes** (via `removeGestureRecognizer:`):
 
 - every `UITapGestureRecognizer` except the last 1-tap-1-finger one — kills double-tap-zoom, two-finger tap-zoom-out, and the MLN annotation-select tap, while preserving the maplibre-compose tap (added last);
 - every `UILongPressGestureRecognizer` except the last — kills MLN's quick-zoom hold while preserving maplibre-compose's `onMapLongClick` (added last).
 
 Android and JVM actuals are no-ops. `MapOverviewScreen` invokes the tuner from a `LaunchedEffect(Unit)` that retries until the lazily-created `MLNMapView` appears in the view tree.
+
+### Why removal, not `setEnabled(false)`
+
+The natural-looking move — disable each unwanted recognizer — does not survive past the tuner's call. MLN re-enables its own recognizers later (style-load callback, options reconciliation), so a tap that comes after the first frame finds the cascade restored and pays the full arbitration delay again. `removeGestureRecognizer:` detaches the recognizer from the view entirely; the maplibre-compose tap's `requireGestureRecognizerToFail:` relationship still references it, but a detached recognizer never participates in arbitration, so the requirement resolves immediately.
 
 The "last recognizer of each kind is maplibre-compose's" heuristic depends on the library's `addGestures` order. A maplibre-compose version bump that reorders recognizer attachment would silently break the tuner — re-run technique 4 to confirm the assumption still holds.
 

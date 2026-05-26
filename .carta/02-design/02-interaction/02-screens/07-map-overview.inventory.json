@@ -209,5 +209,5 @@
       "emptyState": "With no Collections the drawer's Filter section is empty; the user has nothing to toggle yet."
     }
   ],
-  "deferred": ["MapOverview.open", "MapOverview.jumpToCollection"]
+  "deferred": ["MapOverview.open"]
 }

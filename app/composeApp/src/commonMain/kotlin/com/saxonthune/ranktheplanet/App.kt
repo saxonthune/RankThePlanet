@@ -13,7 +13,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.saxonthune.ranktheplanet.data.CollectionPortIoService
 import com.saxonthune.ranktheplanet.data.CollectionRepository
+import com.saxonthune.ranktheplanet.data.DefaultCollectionPortIoService
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.LocationRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
@@ -28,6 +30,8 @@ import com.saxonthune.ranktheplanet.data.sql.SqlRepositories
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.domain.SourceType
+import com.saxonthune.ranktheplanet.io.FilePicker
+import com.saxonthune.ranktheplanet.io.NoOpFilePicker
 import com.saxonthune.ranktheplanet.nav.About
 import com.saxonthune.ranktheplanet.nav.Attributions
 import com.saxonthune.ranktheplanet.nav.CollectionDetail
@@ -45,6 +49,8 @@ import com.saxonthune.ranktheplanet.nav.DebugSettings
 import com.saxonthune.ranktheplanet.nav.Settings
 import com.saxonthune.ranktheplanet.ui.screens.CollectionDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEntryDetailScreen
+import com.saxonthune.ranktheplanet.ui.screens.ImportFlowEvent
+import com.saxonthune.ranktheplanet.ui.screens.ImportFlowViewModel
 import com.saxonthune.ranktheplanet.ui.screens.CollectionListScreen
 import com.saxonthune.ranktheplanet.ui.screens.ImportFlowScreen
 import com.saxonthune.ranktheplanet.ui.screens.ManageProvidersScreen
@@ -79,6 +85,9 @@ fun App(graph: RtpAppGraph? = null) {
         val locations: LocationRepository = graph?.repos?.locations ?: fake!!.locations
         val projection: OverviewProjection = graph?.projection ?: fake!!.overviewProjection
         val session: SessionStateStore = graph?.session ?: fake!!.sessionStateStore
+        val portIo: CollectionPortIoService = graph?.portIo
+            ?: remember { DefaultCollectionPortIoService(collections, entries, templates, locations) }
+        val filePicker: FilePicker = graph?.filePicker ?: remember { NoOpFilePicker() }
 
         val secureStore = remember { createSecureStore() }
         val registry by produceState<LocationProviderRegistry?>(initialValue = null, secureStore) {
@@ -146,6 +155,8 @@ fun App(graph: RtpAppGraph? = null) {
                     collections = collections,
                     entries = entries,
                     templates = templates,
+                    portIo = portIo,
+                    filePicker = filePicker,
                     onAddEntry = { navController.navigate(MapOverview(route.collectionId)) },
                     onEditCollection = { navController.navigate(CollectionEditor(route.collectionId)) },
                     onBack = { navController.popBackStack() },
@@ -211,10 +222,21 @@ fun App(graph: RtpAppGraph? = null) {
                 )
             }
             composable<ImportFlow> {
-                ImportFlowScreen(
-                    onFinish = { navController.popBackStack() },
-                    onCancel = { navController.popBackStack() },
-                )
+                val vm: ImportFlowViewModel = viewModel { ImportFlowViewModel(portIo, filePicker) }
+                val state by vm.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(vm) {
+                    vm.events.collect { e ->
+                        when (e) {
+                            is ImportFlowEvent.Imported -> {
+                                navController.navigate(CollectionDetail(e.collectionId.value)) {
+                                    popUpTo<ImportFlow> { inclusive = true }
+                                }
+                            }
+                            ImportFlowEvent.Cancelled -> navController.popBackStack()
+                        }
+                    }
+                }
+                ImportFlowScreen(state = state, onPick = vm::onPickFile, onCancel = vm::onCancel)
             }
             composable<Settings> {
                 SettingsScreen(

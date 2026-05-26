@@ -2,6 +2,7 @@ package com.saxonthune.ranktheplanet.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.saxonthune.ranktheplanet.data.CollectionPortIoService
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
@@ -9,13 +10,17 @@ import com.saxonthune.ranktheplanet.domain.Collection
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.domain.FieldType
+import com.saxonthune.ranktheplanet.domain.io.PortFormat
+import com.saxonthune.ranktheplanet.io.FilePicker
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,17 +49,26 @@ data class CollectionDetailUiState(
     val error: String? = null,
 )
 
+sealed interface CollectionDetailEvent {
+    data class ToastError(val message: String) : CollectionDetailEvent
+}
+
 class CollectionDetailViewModel(
     private val collectionId: CollectionId,
     private val collections: CollectionRepository,
     private val entries: EntryRepository,
     private val templates: TemplateRepository,
+    private val portIo: CollectionPortIoService,
+    private val filePicker: FilePicker,
 ) : ViewModel() {
 
     private val _sortMode = MutableStateFlow(SortMode.DateAdded)
     private val _sortDirection = MutableStateFlow(SortDirection.Descending)
     private val _state = MutableStateFlow(CollectionDetailUiState())
     val uiState: StateFlow<CollectionDetailUiState> = _state
+
+    private val _events = Channel<CollectionDetailEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow()
 
     init {
         load()
@@ -67,6 +81,22 @@ class CollectionDetailViewModel(
 
     fun setSort(mode: SortMode) {
         _sortMode.value = mode
+    }
+
+    fun exportAs(format: PortFormat) {
+        viewModelScope.launch {
+            portIo.export(collectionId, format).fold(
+                onSuccess = { bundle ->
+                    filePicker.share(bundle.suggestedFilename, bundle.format, bundle.text)
+                        .onFailure { t ->
+                            _events.send(CollectionDetailEvent.ToastError(t.message ?: "Share failed"))
+                        }
+                },
+                onFailure = { t ->
+                    _events.send(CollectionDetailEvent.ToastError(t.message ?: "Export failed"))
+                },
+            )
+        }
     }
 
     fun setSortDirection(direction: SortDirection) {

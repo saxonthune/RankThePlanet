@@ -1,8 +1,13 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
+import com.saxonthune.ranktheplanet.data.CollectionPortIoService
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
+import com.saxonthune.ranktheplanet.data.ExportedBundle
 import com.saxonthune.ranktheplanet.data.TemplateRepository
+import com.saxonthune.ranktheplanet.data.db.createDatabase
+import com.saxonthune.ranktheplanet.data.db.createDriver
+import com.saxonthune.ranktheplanet.data.sql.SqlRepositories
 import com.saxonthune.ranktheplanet.domain.Appearance
 import com.saxonthune.ranktheplanet.domain.Collection
 import com.saxonthune.ranktheplanet.domain.CollectionId
@@ -17,6 +22,9 @@ import com.saxonthune.ranktheplanet.domain.ReviewInstance
 import com.saxonthune.ranktheplanet.domain.ReviewTemplate
 import com.saxonthune.ranktheplanet.domain.SourceType
 import com.saxonthune.ranktheplanet.domain.TemplateField
+import com.saxonthune.ranktheplanet.domain.io.PortFormat
+import com.saxonthune.ranktheplanet.io.FilePicker
+import com.saxonthune.ranktheplanet.io.PickedFile
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
@@ -26,6 +34,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -34,6 +43,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,6 +61,8 @@ class CollectionDetailViewModelTest {
     fun tearDown() {
         Dispatchers.resetMain()
     }
+
+    // ── helpers for sort tests ────────────────────────────────────────────────
 
     private fun makeCollection(powerRanking: Boolean = false) = Collection(
         id = collectionId,
@@ -97,6 +109,8 @@ class CollectionDetailViewModelTest {
         collection: Collection,
         entries: List<Entry> = emptyList(),
         template: ReviewTemplate? = null,
+        portIo: CollectionPortIoService = CdvFakePortIoService(),
+        filePicker: FilePicker = CdvFakeFilePicker(),
     ): CollectionDetailViewModel {
         val collectionFlow = MutableStateFlow<Collection?>(collection)
         val entriesFlow = MutableStateFlow(entries)
@@ -122,8 +136,57 @@ class CollectionDetailViewModelTest {
             override suspend fun edit(collectionId: CollectionId, fields: List<TemplateField>) = Result.failure<ReviewTemplate>(UnsupportedOperationException())
         }
 
-        return CollectionDetailViewModel(collectionId, collectionRepo, entryRepo, templateRepo)
+        return CollectionDetailViewModel(collectionId, collectionRepo, entryRepo, templateRepo, portIo, filePicker)
     }
+
+    // ── helpers for export tests ──────────────────────────────────────────────
+
+    private fun makeRepos(): SqlRepositories {
+        val db = createDatabase(createDriver("ignored"))
+        return SqlRepositories(db, "test-device")
+    }
+
+    // ── export tests ──────────────────────────────────────────────────────────
+
+    @Test
+    fun exportAs_callsServiceThenFilePicker() = runTest {
+        val repos = makeRepos()
+        val bundle = ExportedBundle("kml content", "test.kml", PortFormat.Kml)
+        val fakeService = CdvFakePortIoService(exportResult = Result.success(bundle))
+        val fakePicker = CdvFakeFilePicker()
+
+        val vm = CollectionDetailViewModel(
+            collectionId,
+            repos.collections, repos.entries, repos.templates,
+            fakeService, fakePicker,
+        )
+
+        vm.exportAs(PortFormat.Kml)
+        advanceUntilIdle()
+
+        assertEquals(collectionId to PortFormat.Kml, fakeService.exportCalledWith)
+        assertEquals(Triple("test.kml", PortFormat.Kml, "kml content"), fakePicker.shareCalledWith)
+    }
+
+    @Test
+    fun exportAs_serviceFailure_filePickerNotCalled() = runTest {
+        val repos = makeRepos()
+        val fakeService = CdvFakePortIoService(exportResult = Result.failure(Exception("not found")))
+        val fakePicker = CdvFakeFilePicker()
+
+        val vm = CollectionDetailViewModel(
+            collectionId,
+            repos.collections, repos.entries, repos.templates,
+            fakeService, fakePicker,
+        )
+
+        vm.exportAs(PortFormat.Kml)
+        advanceUntilIdle()
+
+        assertNull(fakePicker.shareCalledWith)
+    }
+
+    // ── sort tests ────────────────────────────────────────────────────────────
 
     @Test
     fun `availableSortModes always includes DateAdded and ReviewTime`() = runTest {
@@ -193,4 +256,35 @@ class CollectionDetailViewModelTest {
         assertEquals(SortMode.PowerRank, stateToggled.sortMode)
         assertEquals(listOf("a", "b", "c"), stateToggled.entries.map { it.id.value })
     }
+}
+
+// ── test doubles ──────────────────────────────────────────────────────────────
+
+private class CdvFakeFilePicker : FilePicker {
+    var shareCalledWith: Triple<String, PortFormat, String>? = null
+
+    override suspend fun openForRead(formats: List<PortFormat>): Result<PickedFile> =
+        Result.failure(NotImplementedError())
+
+    override suspend fun saveAs(suggestedName: String, format: PortFormat, text: String): Result<Unit> =
+        Result.success(Unit)
+
+    override suspend fun share(suggestedName: String, format: PortFormat, text: String): Result<Unit> {
+        shareCalledWith = Triple(suggestedName, format, text)
+        return Result.success(Unit)
+    }
+}
+
+private class CdvFakePortIoService(
+    private val exportResult: Result<ExportedBundle>? = null,
+) : CollectionPortIoService {
+    var exportCalledWith: Pair<CollectionId, PortFormat>? = null
+
+    override suspend fun export(collectionId: CollectionId, format: PortFormat): Result<ExportedBundle> {
+        exportCalledWith = collectionId to format
+        return exportResult ?: Result.failure(NotImplementedError())
+    }
+
+    override suspend fun import(text: String, format: PortFormat): Result<CollectionId> =
+        Result.failure(NotImplementedError())
 }

@@ -14,7 +14,10 @@ import com.saxonthune.ranktheplanet.data.projection.PassthroughOverviewProjectio
 import com.saxonthune.ranktheplanet.data.secure.SecureStoreAndroidContext
 import com.saxonthune.ranktheplanet.data.secure.createSecureStore
 import com.saxonthune.ranktheplanet.data.session.FileSessionStateStore
+import com.saxonthune.ranktheplanet.data.CollectionPortIoService
+import com.saxonthune.ranktheplanet.data.DefaultCollectionPortIoService
 import com.saxonthune.ranktheplanet.data.sql.SqlRepositories
+import com.saxonthune.ranktheplanet.io.AndroidFilePicker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -34,7 +37,11 @@ class MainActivity : ComponentActivity() {
                 val repos = SqlRepositories(db, deviceId)
                 val session = FileSessionStateStore(CoroutineScope(Dispatchers.IO + SupervisorJob()))
                 val projection = PassthroughOverviewProjection(db, session)
-                value = RtpAppGraph(repos, projection, session)
+                value = RtpAppGraph(
+                    repos, projection, session,
+                    DefaultCollectionPortIoService(repos.collections, repos.entries, repos.templates, repos.locations),
+                    AndroidFilePicker { this@MainActivity },
+                )
             }
             App(graph = graph)
         }

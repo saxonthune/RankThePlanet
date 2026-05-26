@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
@@ -25,28 +26,36 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.saxonthune.ranktheplanet.data.CollectionPortIoService
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
+import com.saxonthune.ranktheplanet.domain.io.PortFormat
+import com.saxonthune.ranktheplanet.io.FilePicker
 import com.saxonthune.ranktheplanet.ui.RtpDrillDownScaffold
 import com.saxonthune.ranktheplanet.ui.RtpEmptyState
 import com.saxonthune.ranktheplanet.ui.RtpErrorState
 import com.saxonthune.ranktheplanet.ui.RtpSkeletonRow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun CollectionDetailScreen(
@@ -54,17 +63,31 @@ fun CollectionDetailScreen(
     collections: CollectionRepository,
     entries: EntryRepository,
     templates: TemplateRepository,
+    portIo: CollectionPortIoService,
+    filePicker: FilePicker,
     onAddEntry: () -> Unit,
     onEditCollection: () -> Unit,
     onBack: () -> Unit,
     onOpenEntry: (EntryId) -> Unit,
 ) {
     val vm = viewModel {
-        CollectionDetailViewModel(collectionId, collections, entries, templates)
+        CollectionDetailViewModel(collectionId, collections, entries, templates, portIo, filePicker)
     }
     val state by vm.uiState.collectAsState()
     var detailsExpanded by remember { mutableStateOf(false) }
+    var menuExpanded by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     var sortMenuExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(vm) {
+        vm.events.collect { event ->
+            when (event) {
+                is CollectionDetailEvent.ToastError ->
+                    snackbarHostState.showSnackbar(event.message)
+            }
+        }
+    }
 
     val showSkeletons by produceState(false, state.isLoading) {
         if (state.isLoading) {
@@ -78,9 +101,32 @@ fun CollectionDetailScreen(
     RtpDrillDownScaffold(
         title = state.collection?.name ?: "Collection",
         onBack = onBack,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         actions = {
             IconButton(onClick = onEditCollection) {
                 Icon(Icons.Default.Edit, contentDescription = "Edit collection")
+            }
+            IconButton(onClick = { menuExpanded = true }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "More options")
+            }
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false },
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Export as KML") },
+                    onClick = {
+                        menuExpanded = false
+                        vm.exportAs(PortFormat.Kml)
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text("Export as GeoJSON") },
+                    onClick = {
+                        menuExpanded = false
+                        vm.exportAs(PortFormat.GeoJson)
+                    },
+                )
             }
         },
         floatingActionButton = {

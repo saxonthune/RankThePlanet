@@ -2,6 +2,7 @@ package com.saxonthune.ranktheplanet.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,11 +11,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,6 +64,7 @@ fun CollectionDetailScreen(
     }
     val state by vm.uiState.collectAsState()
     var detailsExpanded by remember { mutableStateOf(false) }
+    var sortMenuExpanded by remember { mutableStateOf(false) }
 
     val showSkeletons by produceState(false, state.isLoading) {
         if (state.isLoading) {
@@ -129,29 +136,49 @@ fun CollectionDetailScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                FilterChip(
-                    selected = false,
-                    onClick = {},
-                    label = { Text("Near Me") },
-                    enabled = false,
-                )
-                FilterChip(
-                    selected = state.sortMode == SortMode.DateAdded,
-                    onClick = { vm.setSort(SortMode.DateAdded) },
-                    label = { Text("Date Added") },
-                )
-                FilterChip(
-                    selected = state.sortMode == SortMode.ReviewTime,
-                    onClick = { vm.setSort(SortMode.ReviewTime) },
-                    label = { Text("Review Time") },
-                )
-                if (state.scoreFieldName != null) {
-                    FilterChip(
-                        selected = state.sortMode == SortMode.Score,
-                        onClick = { vm.setSort(SortMode.Score) },
-                        label = { Text("Score") },
+                Box {
+                    AssistChip(
+                        onClick = { sortMenuExpanded = true },
+                        label = { Text("Sort: ${sortModeLabel(state.sortMode)}") },
+                        leadingIcon = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = null,
+                            )
+                        },
+                        trailingIcon = if (state.sortMode != SortMode.PowerRank) {
+                            {
+                                IconButton(onClick = { vm.toggleSortDirection() }) {
+                                    Icon(
+                                        imageVector = if (state.sortDirection == SortDirection.Ascending)
+                                            Icons.Default.ArrowUpward
+                                        else
+                                            Icons.Default.ArrowDownward,
+                                        contentDescription = if (state.sortDirection == SortDirection.Ascending)
+                                            "Sort ascending"
+                                        else
+                                            "Sort descending",
+                                    )
+                                }
+                            }
+                        } else null,
                     )
+                    DropdownMenu(
+                        expanded = sortMenuExpanded,
+                        onDismissRequest = { sortMenuExpanded = false },
+                    ) {
+                        state.availableSortModes.forEach { mode ->
+                            DropdownMenuItem(
+                                text = { Text(sortModeLabel(mode)) },
+                                onClick = {
+                                    vm.setSort(mode)
+                                    sortMenuExpanded = false
+                                },
+                            )
+                        }
+                    }
                 }
             }
 
@@ -179,6 +206,13 @@ fun CollectionDetailScreen(
             }
         }
     }
+}
+
+private fun sortModeLabel(mode: SortMode): String = when (mode) {
+    SortMode.DateAdded -> "Date Added"
+    SortMode.ReviewTime -> "Review Time"
+    SortMode.Score -> "Score"
+    SortMode.PowerRank -> "Power Rank"
 }
 
 @Composable

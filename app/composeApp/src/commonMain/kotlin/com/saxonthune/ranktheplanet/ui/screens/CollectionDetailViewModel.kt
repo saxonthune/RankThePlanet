@@ -20,7 +20,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class SortMode { DateAdded, ReviewTime, Score }
+enum class SortMode { DateAdded, ReviewTime, Score, PowerRank }
+
+enum class SortDirection { Ascending, Descending }
 
 data class EntryRowUi(
     val id: EntryId,
@@ -36,6 +38,8 @@ data class CollectionDetailUiState(
     val entries: ImmutableList<EntryRowUi> = persistentListOf(),
     val scoreFieldName: String? = null,
     val sortMode: SortMode = SortMode.DateAdded,
+    val sortDirection: SortDirection = SortDirection.Descending,
+    val availableSortModes: ImmutableList<SortMode> = persistentListOf(SortMode.DateAdded, SortMode.ReviewTime),
     val isLoading: Boolean = true,
     val error: String? = null,
 )
@@ -48,6 +52,7 @@ class CollectionDetailViewModel(
 ) : ViewModel() {
 
     private val _sortMode = MutableStateFlow(SortMode.DateAdded)
+    private val _sortDirection = MutableStateFlow(SortDirection.Descending)
     private val _state = MutableStateFlow(CollectionDetailUiState())
     val uiState: StateFlow<CollectionDetailUiState> = _state
 
@@ -64,6 +69,14 @@ class CollectionDetailViewModel(
         _sortMode.value = mode
     }
 
+    fun setSortDirection(direction: SortDirection) {
+        _sortDirection.value = direction
+    }
+
+    fun toggleSortDirection() {
+        _sortDirection.update { if (it == SortDirection.Descending) SortDirection.Ascending else SortDirection.Descending }
+    }
+
     private fun load() {
         viewModelScope.launch {
             try {
@@ -72,10 +85,20 @@ class CollectionDetailViewModel(
                     entries.observeByCollection(collectionId),
                     templates.observe(collectionId),
                     _sortMode,
-                ) { collection, entryList, template, sortMode ->
+                    _sortDirection,
+                ) { collection, entryList, template, sortMode, sortDirection ->
                     val scoreFieldName = template?.fields
                         ?.firstOrNull { it.type == FieldType.Score }
                         ?.name
+
+                    val availableSortModes = buildList {
+                        add(SortMode.DateAdded)
+                        add(SortMode.ReviewTime)
+                        if (scoreFieldName != null) add(SortMode.Score)
+                        if (collection?.powerRanking == true) add(SortMode.PowerRank)
+                    }.toImmutableList()
+
+                    val effectiveSortMode = if (sortMode in availableSortModes) sortMode else SortMode.DateAdded
 
                     val rows = entryList.map { entry ->
                         val score = scoreFieldName
@@ -97,20 +120,32 @@ class CollectionDetailViewModel(
                         )
                     }
 
-                    val sorted = when (sortMode) {
-                        SortMode.DateAdded -> rows.sortedByDescending { it.added }
-                        SortMode.ReviewTime -> rows.sortedByDescending { it.reviewLastModified }
-                        SortMode.Score -> rows.sortedWith(
-                            compareByDescending<EntryRowUi> { it.score != null }
-                                .thenByDescending { it.score ?: 0.0 }
-                        )
+                    val sorted = when (effectiveSortMode) {
+                        SortMode.PowerRank -> rows.sortedBy { it.added }
+                        SortMode.DateAdded -> {
+                            val base = rows.sortedByDescending { it.added }
+                            if (sortDirection == SortDirection.Ascending) base.reversed() else base
+                        }
+                        SortMode.ReviewTime -> {
+                            val base = rows.sortedByDescending { it.reviewLastModified }
+                            if (sortDirection == SortDirection.Ascending) base.reversed() else base
+                        }
+                        SortMode.Score -> {
+                            val base = rows.sortedWith(
+                                compareByDescending<EntryRowUi> { it.score != null }
+                                    .thenByDescending { it.score ?: 0.0 }
+                            )
+                            if (sortDirection == SortDirection.Ascending) base.reversed() else base
+                        }
                     }
 
                     CollectionDetailUiState(
                         collection = collection,
                         entries = sorted.toImmutableList(),
                         scoreFieldName = scoreFieldName,
-                        sortMode = sortMode,
+                        sortMode = effectiveSortMode,
+                        sortDirection = sortDirection,
+                        availableSortModes = availableSortModes,
                         isLoading = false,
                     )
                 }.collect { next ->

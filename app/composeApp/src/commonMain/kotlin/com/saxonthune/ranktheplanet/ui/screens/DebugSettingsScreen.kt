@@ -143,6 +143,7 @@ private suspend fun generateSampleNycCollection(
             displayName = s.displayName,
             sourceType = SourceType.Osm,
             sourceId = s.sourceId,
+            address = null,
             cachedMetadata = null,
             refreshable = true,
         )

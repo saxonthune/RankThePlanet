@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
@@ -118,6 +119,7 @@ fun MapOverviewScreen(
 
     var searchExpanded by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var sheetHeightDp by remember { mutableStateOf(0.dp) }
 
     val closeSearch = {
         searchExpanded = false
@@ -191,6 +193,24 @@ fun MapOverviewScreen(
         }
     }
 
+    // Center the camera on a search-picked provider candidate, offsetting the target
+    // upward by the sheet height so the marker sits in the visible map area above the
+    // peek. Bottom padding shifts where the camera's "center" lands on screen.
+    val pinSheet = state.pinSheet
+    LaunchedEffect(pinSheet, sheetHeightDp) {
+        val peek = pinSheet as? PinSheet.Peek ?: return@LaunchedEffect
+        val candidate = peek.candidateLocation ?: return@LaunchedEffect
+        cameraState.animateTo(
+            finalPosition = cameraState.position.copy(
+                target = Position(
+                    longitude = candidate.coordinates.lng,
+                    latitude = candidate.coordinates.lat,
+                ),
+                padding = PaddingValues(bottom = sheetHeightDp),
+            ),
+        )
+    }
+
     BackHandler(enabled = searchExpanded) {
         closeSearch()
     }
@@ -253,6 +273,7 @@ fun MapOverviewScreen(
                                     SearchHitRow(
                                         hit = hit,
                                         onClick = {
+                                            closeSearch()
                                             when (hit) {
                                                 is SearchHitUi.ExistingEntry -> vm.pickExistingHit(hit.locationId)
                                                 is SearchHitUi.Candidate -> vm.pickSearchCandidate(
@@ -317,6 +338,7 @@ fun MapOverviewScreen(
                         controller = vm.pinController,
                         onPinClick = { vm.selectPin(it) },
                     )
+                    CandidateMarkerLayer(sheet = state.pinSheet)
                 }
                 if (state.error != null) {
                     Surface(modifier = Modifier.fillMaxSize()) {
@@ -363,6 +385,7 @@ fun MapOverviewScreen(
             vm.dismissSheet()
             onEditReview(entryId)
         },
+        onContentHeightChange = { sheetHeightDp = it },
     )
 
     val currentDraft = state.draft

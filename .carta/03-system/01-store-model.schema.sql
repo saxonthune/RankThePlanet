@@ -9,6 +9,7 @@ CREATE TABLE location (
     lat             REAL NOT NULL,
     lng             REAL NOT NULL,
     display_name    TEXT NOT NULL,
+    address         TEXT,                         -- provider-derived secondary line (e.g. "Brooklyn, NY"); null when no provider context
     cached_metadata TEXT,                         -- opaque JSON snapshot at import time
     refreshable     INTEGER NOT NULL DEFAULT 0,
     UNIQUE (source_type, source_id)

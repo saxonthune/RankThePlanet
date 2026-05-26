@@ -29,6 +29,7 @@ SELECT
     location.lat,
     location.lng,
     location.display_name,
+    location.address,
     location.cached_metadata,
     location.refreshable
 FROM entry JOIN location ON entry.location_id = location.id;
@@ -48,6 +49,7 @@ SELECT
     location.lat,
     location.lng,
     location.display_name,
+    location.address,
     location.cached_metadata,
     location.refreshable
 FROM entry JOIN location ON entry.location_id = location.id
@@ -68,6 +70,7 @@ SELECT
     location.lat,
     location.lng,
     location.display_name,
+    location.address,
     location.cached_metadata,
     location.refreshable
 FROM entry JOIN location ON entry.location_id = location.id

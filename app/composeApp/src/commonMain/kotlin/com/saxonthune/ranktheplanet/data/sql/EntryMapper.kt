@@ -27,6 +27,7 @@ internal fun entryMapper(
     lat: Double,
     lng: Double,
     display_name: String,
+    address: String?,
     cached_metadata: String?,
     refreshable: Long,
 ): Entry = Entry(
@@ -38,6 +39,7 @@ internal fun entryMapper(
         displayName = display_name,
         sourceType = SourceType.valueOf(source_type),
         sourceId = source_id,
+        address = address,
         cachedMetadata = cached_metadata,
         refreshable = refreshable == 1L,
     ),

@@ -33,6 +33,7 @@ data class Location(
     val displayName: String,
     val sourceType: SourceType,
     val sourceId: String,
+    val address: String?,
     val cachedMetadata: String?,
     val refreshable: Boolean
 )

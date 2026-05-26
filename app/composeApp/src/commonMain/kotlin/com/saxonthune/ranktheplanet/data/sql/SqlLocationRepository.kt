@@ -70,6 +70,7 @@ internal class SqlLocationRepository(
                 lat = location.coordinates.lat,
                 lng = location.coordinates.lng,
                 display_name = location.displayName,
+                address = location.address,
                 cached_metadata = location.cachedMetadata,
                 refreshable = if (location.refreshable) 1L else 0L,
                 id = existing.id,
@@ -84,6 +85,7 @@ internal class SqlLocationRepository(
                 lat = location.coordinates.lat,
                 lng = location.coordinates.lng,
                 display_name = location.displayName,
+                address = location.address,
                 cached_metadata = location.cachedMetadata,
                 refreshable = if (location.refreshable) 1L else 0L,
             )
@@ -98,6 +100,7 @@ internal fun com.saxonthune.ranktheplanet.db.Location.toDomain() = Location(
     displayName = display_name,
     sourceType = SourceType.valueOf(source_type),
     sourceId = source_id,
+    address = address,
     cachedMetadata = cached_metadata,
     refreshable = refreshable == 1L,
 )

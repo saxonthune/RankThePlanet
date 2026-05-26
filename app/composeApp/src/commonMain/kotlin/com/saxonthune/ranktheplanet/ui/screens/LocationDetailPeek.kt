@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -50,6 +51,13 @@ internal fun LocationDetailPeek(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(peek.locationName, style = MaterialTheme.typography.titleMedium)
+                if (peek.detail != null) {
+                    Text(
+                        peek.detail,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 Text(
                     formatLatLng(peek.lat, peek.lng),
                     style = MaterialTheme.typography.bodySmall,
@@ -57,71 +65,98 @@ internal fun LocationDetailPeek(
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
-                LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                    items(peek.entries) { entry ->
-                        ListItem(
-                            headlineContent = { Text(entry.collectionName) },
-                            leadingContent = {
-                                Box(
-                                    Modifier
-                                        .size(12.dp)
-                                        .background(entry.collectionColor, CircleShape)
-                                )
-                            },
-                            supportingContent = {
-                                if (entry.reviewed) {
-                                    Text("Reviewed", style = MaterialTheme.typography.bodySmall)
-                                } else {
-                                    AssistChip(
-                                        onClick = {},
-                                        label = { Text("Not yet reviewed") },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Info, contentDescription = null)
-                                        },
-                                    )
-                                }
-                            },
-                            modifier = Modifier.clickable { onPickEntry(entry.entryId) },
-                        )
-                    }
-                }
-                HorizontalDivider()
-                val addToCollection = peek.addToCollection
-                if (addToCollection != null) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onConfirmAdd)
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                if (peek.entries.isEmpty()) {
+                    val addToCollection = peek.addToCollection
+                    Button(
+                        onClick = if (addToCollection != null) onConfirmAdd else onAddEntry,
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null)
-                        Box(
-                            Modifier
-                                .padding(start = 8.dp)
-                                .size(12.dp)
-                                .background(addToCollection.color, CircleShape)
-                        )
-                        Text(
-                            text = "Add to ${addToCollection.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(start = 8.dp),
-                        )
+                        if (addToCollection != null) {
+                            Box(
+                                Modifier
+                                    .padding(start = 8.dp)
+                                    .size(12.dp)
+                                    .background(addToCollection.color, CircleShape)
+                            )
+                            Text(
+                                text = "Add to ${addToCollection.name}",
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        } else {
+                            Text(
+                                text = "Add to collection",
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
                     }
                 } else {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onAddEntry)
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null)
-                        Text(
-                            text = "Add another Entry at this Location",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(start = 12.dp),
-                        )
+                    LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                        items(peek.entries) { entry ->
+                            ListItem(
+                                headlineContent = { Text(entry.collectionName) },
+                                leadingContent = {
+                                    Box(
+                                        Modifier
+                                            .size(12.dp)
+                                            .background(entry.collectionColor, CircleShape)
+                                    )
+                                },
+                                supportingContent = {
+                                    if (entry.reviewed) {
+                                        Text("Reviewed", style = MaterialTheme.typography.bodySmall)
+                                    } else {
+                                        AssistChip(
+                                            onClick = {},
+                                            label = { Text("Not yet reviewed") },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Info, contentDescription = null)
+                                            },
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.clickable { onPickEntry(entry.entryId) },
+                            )
+                        }
+                    }
+                    HorizontalDivider()
+                    val addToCollection = peek.addToCollection
+                    if (addToCollection != null) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onConfirmAdd)
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null)
+                            Box(
+                                Modifier
+                                    .padding(start = 8.dp)
+                                    .size(12.dp)
+                                    .background(addToCollection.color, CircleShape)
+                            )
+                            Text(
+                                text = "Add to ${addToCollection.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onAddEntry)
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null)
+                            Text(
+                                text = "Add another Entry at this Location",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 12.dp),
+                            )
+                        }
                     }
                 }
             }

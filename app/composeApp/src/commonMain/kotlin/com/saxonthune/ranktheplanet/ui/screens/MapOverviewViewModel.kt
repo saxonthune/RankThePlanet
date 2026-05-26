@@ -50,6 +50,7 @@ data class EntrySummaryUi(
     val collectionName: String,
     val collectionColor: Color,
     val locationName: String,
+    val locationAddress: String?,
     val reviewedDate: String?,
     val summaryPreview: String?,
 ) {
@@ -65,6 +66,7 @@ sealed interface PinSheet {
         val entries: ImmutableList<EntrySummaryUi>,
         val candidateLocation: Location? = null,
         val addToCollection: CollectionPickRowUi? = null,
+        val detail: String? = null,
     ) : PinSheet
     data class Entry(val entry: EntrySummaryUi) : PinSheet
 }
@@ -363,10 +365,7 @@ class MapOverviewViewModel(
                     needsConfirmation = c.needsConfirmation,
                 )
             }
-            is ProviderResult.Failed -> {
-                _error.value = result.error.name
-                emptyList()
-            }
+            is ProviderResult.Failed -> emptyList()
         }
     }
 
@@ -496,6 +495,7 @@ class MapOverviewViewModel(
                 collectionName = col.name,
                 collectionColor = parseAppearanceColor(col.appearance.color),
                 locationName = e.location.displayName,
+                locationAddress = e.location.address,
                 reviewedDate = reviewedDate,
                 summaryPreview = summaryPreview,
             )
@@ -607,6 +607,7 @@ class MapOverviewViewModel(
             displayName = hit.displayName,
             sourceType = hit.sourceType,
             sourceId = hit.sourceId ?: "",
+            address = hit.detail,
             cachedMetadata = cachedMetadata,
             refreshable = hit.sourceId != null,
         )
@@ -614,7 +615,6 @@ class MapOverviewViewModel(
             val collectionPick = collectionId?.let { id ->
                 derivedBase.value.collectionPicks.find { it.id == id }
             }
-            // TODO: center camera on resolved.coordinates when Peek opens (no VM-driven camera mechanism exists yet)
             _pinSheet.value = PinSheet.Peek(
                 locationName = resolved.displayName,
                 lat = resolved.coordinates.lat,
@@ -622,6 +622,7 @@ class MapOverviewViewModel(
                 entries = persistentListOf(),
                 candidateLocation = resolved,
                 addToCollection = collectionPick,
+                detail = hit.detail,
             )
         } else {
             _pinSheet.value = PinSheet.Peek(
@@ -630,6 +631,7 @@ class MapOverviewViewModel(
                 lng = resolved.coordinates.lng,
                 entries = persistentListOf(),
                 candidateLocation = resolved,
+                detail = hit.detail,
             )
         }
     }
@@ -710,6 +712,7 @@ class MapOverviewViewModel(
                 ?: "Unknown location",
             sourceType = SourceType.Manual,
             sourceId = "",
+            address = null,
             cachedMetadata = null,
             refreshable = false,
         )

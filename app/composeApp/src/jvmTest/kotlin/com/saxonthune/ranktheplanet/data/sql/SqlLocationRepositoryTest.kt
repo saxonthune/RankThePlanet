@@ -28,6 +28,7 @@ class SqlLocationRepositoryTest {
         displayName = "Test Place",
         sourceType = SourceType.Manual,
         sourceId = "manual-test",
+        address = null,
         cachedMetadata = null,
         refreshable = false,
     )
@@ -67,8 +68,8 @@ class SqlLocationRepositoryTest {
 
         val col = collRepo.create("Col", null, com.saxonthune.ranktheplanet.domain.Appearance("#FF0000", "dot")).getOrThrow()
 
-        val loc1 = Location(LocationId(""), Coordinates(1.0, 2.0), "Place A", SourceType.Manual, "manual-a", null, false)
-        val loc2 = Location(LocationId(""), Coordinates(3.0, 4.0), "Place B", SourceType.Manual, "manual-b", null, false)
+        val loc1 = Location(LocationId(""), Coordinates(1.0, 2.0), "Place A", SourceType.Manual, "manual-a", null, null, false)
+        val loc2 = Location(LocationId(""), Coordinates(3.0, 4.0), "Place B", SourceType.Manual, "manual-b", null, null, false)
 
         val entry = collRepo.addEntry(col.id, loc1, com.saxonthune.ranktheplanet.domain.ReviewDraft(kotlinx.collections.immutable.persistentMapOf())).getOrThrow()
         val inserted1 = locationRepo.findByIdentity(SourceType.Manual, "manual-a")!!

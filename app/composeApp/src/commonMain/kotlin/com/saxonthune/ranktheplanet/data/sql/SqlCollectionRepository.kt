@@ -200,7 +200,7 @@ internal class SqlCollectionRepository(
     override suspend fun removeEntry(entryId: EntryId): Result<Unit> = withContext(Dispatchers.Default) {
         runCatching {
             database.transaction {
-                val collectionId = database.entryQueries.observeById(entryId.value) { _, collection_id, _, _, _, _, _, _, _, _, _, _, _, _, _ ->
+                val collectionId = database.entryQueries.observeById(entryId.value) { _, collection_id, _, _, _, _, _, _, _, _, _, _, _, _, _, _ ->
                     collection_id
                 }.executeAsOneOrNull()
                     ?: throw IllegalArgumentException("Entry not found: ${entryId.value}")

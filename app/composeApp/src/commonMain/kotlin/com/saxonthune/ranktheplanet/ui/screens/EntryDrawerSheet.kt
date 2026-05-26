@@ -38,6 +38,7 @@ internal fun EntryDrawerSheet(
             .fillMaxWidth()
             .navigationBarsPadding(),
     ) {
+        DebugSheetLabel("EntryDrawerSheet")
         CollectionBreadcrumb(
             entry = entry,
             onClick = { onViewCollection(entry.collectionId) },
@@ -85,16 +86,28 @@ private fun LocationTitle(
     entry: EntrySummaryUi,
     onClick: () -> Unit,
 ) {
-    Text(
-        text = entry.locationName,
-        style = MaterialTheme.typography.headlineMedium,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 20.dp),
-    )
+    ) {
+        Text(
+            text = entry.locationName,
+            style = MaterialTheme.typography.headlineMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (entry.locationAddress != null) {
+            Text(
+                text = entry.locationAddress,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
 }
 
 @Composable

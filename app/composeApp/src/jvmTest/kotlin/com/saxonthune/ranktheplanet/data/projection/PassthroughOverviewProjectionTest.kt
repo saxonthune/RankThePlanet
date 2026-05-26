@@ -64,6 +64,7 @@ class PassthroughOverviewProjectionTest {
             displayName = "Place A",
             sourceType = SourceType.Manual,
             sourceId = "manual-1",
+            address = null,
             cachedMetadata = null,
             refreshable = false,
         )
@@ -73,6 +74,7 @@ class PassthroughOverviewProjectionTest {
             displayName = "Place B",
             sourceType = SourceType.Manual,
             sourceId = "manual-2",
+            address = null,
             cachedMetadata = null,
             refreshable = false,
         )

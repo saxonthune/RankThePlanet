@@ -11,6 +11,7 @@ fun RtpTheme(
 ) {
     MaterialTheme(
         colorScheme = if (dark) DarkColors else LightColors,
+        typography = arimoTypography(),
         content = content,
     )
 }

@@ -96,6 +96,7 @@ object Fixtures {
             displayName = "Blue Bottle Coffee — Mint Plaza",
             sourceType = SourceType.Google,
             sourceId = "ChIJDWqt5kqAhYAR_FpDH7Zvs9E",
+            address = null,
             cachedMetadata = null,
             refreshable = true
         ),
@@ -105,6 +106,7 @@ object Fixtures {
             displayName = "Per Sé",
             sourceType = SourceType.Google,
             sourceId = "ChIJN1t_tDeuEmsRUsoyG83frY4",
+            address = null,
             cachedMetadata = null,
             refreshable = true
         ),
@@ -114,6 +116,7 @@ object Fixtures {
             displayName = "Lümon",
             sourceType = SourceType.Manual,
             sourceId = "manual-lumon",
+            address = null,
             cachedMetadata = null,
             refreshable = false
         ),
@@ -123,6 +126,7 @@ object Fixtures {
             displayName = "Golden Gate Bridge",
             sourceType = SourceType.Osm,
             sourceId = "osm-75530416",
+            address = null,
             cachedMetadata = null,
             refreshable = true
         ),
@@ -132,6 +136,7 @@ object Fixtures {
             displayName = "Central Park — The Mall",
             sourceType = SourceType.Osm,
             sourceId = "osm-4453738",
+            address = null,
             cachedMetadata = null,
             refreshable = true
         ),
@@ -141,6 +146,7 @@ object Fixtures {
             displayName = "The High Line",
             sourceType = SourceType.Osm,
             sourceId = "osm-4504115",
+            address = null,
             cachedMetadata = null,
             refreshable = true
         ),
@@ -150,6 +156,7 @@ object Fixtures {
             displayName = "Prospect Park — Long Meadow",
             sourceType = SourceType.Osm,
             sourceId = "osm-7773888",
+            address = null,
             cachedMetadata = null,
             refreshable = true
         ),
@@ -159,6 +166,7 @@ object Fixtures {
             displayName = "Domino Park",
             sourceType = SourceType.Osm,
             sourceId = "osm-558129000",
+            address = null,
             cachedMetadata = null,
             refreshable = true
         )

@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +33,7 @@ internal fun EntryDrawerSheet(
     entry: EntrySummaryUi,
     onTapLocation: () -> Unit,
     onViewCollection: (CollectionId) -> Unit,
+    onJumpToCollection: (CollectionId) -> Unit,
     onEditReview: (EntryId) -> Unit,
 ) {
     Column(
@@ -41,7 +44,8 @@ internal fun EntryDrawerSheet(
         DebugSheetLabel("EntryDrawerSheet")
         CollectionBreadcrumb(
             entry = entry,
-            onClick = { onViewCollection(entry.collectionId) },
+            onViewCollectionClick = { onViewCollection(entry.collectionId) },
+            onJumpClick = { onJumpToCollection(entry.collectionId) },
         )
         LocationTitle(
             entry = entry,
@@ -58,26 +62,40 @@ internal fun EntryDrawerSheet(
 @Composable
 private fun CollectionBreadcrumb(
     entry: EntrySummaryUi,
-    onClick: () -> Unit,
+    onViewCollectionClick: () -> Unit,
+    onJumpClick: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 2.dp),
+            .padding(start = 20.dp, end = 4.dp, top = 12.dp, bottom = 2.dp),
     ) {
-        Box(
-            Modifier
-                .size(10.dp)
-                .background(entry.collectionColor, CircleShape)
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = entry.collectionName,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .weight(1f)
+                .clickable(onClick = onViewCollectionClick),
+        ) {
+            Box(
+                Modifier
+                    .size(10.dp)
+                    .background(entry.collectionColor, CircleShape)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = entry.collectionName,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        IconButton(onClick = onJumpClick) {
+            Icon(
+                imageVector = Icons.Default.Place,
+                contentDescription = "See on Map",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

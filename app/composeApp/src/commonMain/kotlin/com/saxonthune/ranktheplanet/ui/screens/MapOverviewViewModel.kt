@@ -32,10 +32,14 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlin.random.Random
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlin.math.ln
+import kotlin.math.min
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
@@ -196,6 +200,8 @@ class MapOverviewViewModel(
 
     private val _query = MutableStateFlow("")
     private val _submit = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    private val _jumpToViewport = MutableSharedFlow<Viewport>(replay = 0, extraBufferCapacity = 1)
+    val jumpToViewport: SharedFlow<Viewport> = _jumpToViewport.asSharedFlow()
 
     val pinController = PinRenderController()
 
@@ -457,6 +463,28 @@ class MapOverviewViewModel(
         hiddenCollections.value = hiddenCollections.value.let { hidden ->
             if (id in hidden) hidden - id else hidden + id
         }
+    }
+
+    fun jumpToCollection(id: CollectionId) {
+        val allIds = _latestCollections.value.map { it.id }.toSet()
+        hiddenCollections.value = allIds - id
+        _pinSheet.value = PinSheet.None
+        val entries = _latestEntries.value.filter { it.collectionId == id }
+        if (entries.isEmpty()) return
+        val lats = entries.map { it.location.coordinates.lat }
+        val lngs = entries.map { it.location.coordinates.lng }
+        val minLat = lats.min()
+        val maxLat = lats.max()
+        val minLng = lngs.min()
+        val maxLng = lngs.max()
+        val centerLat = (minLat + maxLat) / 2.0
+        val centerLng = (minLng + maxLng) / 2.0
+        val latSpan = (maxLat - minLat).coerceAtLeast(1e-4)
+        val lngSpan = (maxLng - minLng).coerceAtLeast(1e-4)
+        val zoomLng = ln(360.0 / (lngSpan * 1.2)) / ln(2.0)
+        val zoomLat = ln(170.0 / (latSpan * 1.2)) / ln(2.0)
+        val zoom = min(zoomLng, zoomLat).coerceIn(2.0, 17.0)
+        _jumpToViewport.tryEmit(Viewport(centerLat = centerLat, centerLng = centerLng, zoom = zoom, bearing = 0.0))
     }
 
     fun onQueryChange(value: String) {

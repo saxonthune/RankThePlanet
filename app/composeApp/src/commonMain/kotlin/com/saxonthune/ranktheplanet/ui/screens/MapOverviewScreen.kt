@@ -381,12 +381,25 @@ fun MapOverviewScreen(
             vm.dismissSheet()
             onViewCollection(collectionId)
         },
+        onJumpToCollection = { collectionId -> vm.jumpToCollection(collectionId) },
         onEditReview = { entryId ->
             vm.dismissSheet()
             onEditReview(entryId)
         },
         onContentHeightChange = { sheetHeightDp = it },
     )
+
+    LaunchedEffect(Unit) {
+        vm.jumpToViewport.collect { vp ->
+            cameraState.animateTo(
+                finalPosition = cameraState.position.copy(
+                    target = Position(longitude = vp.centerLng, latitude = vp.centerLat),
+                    zoom = vp.zoom,
+                    bearing = vp.bearing,
+                ),
+            )
+        }
+    }
 
     val currentDraft = state.draft
     if (currentDraft is LocationDraftSheet.Open) {

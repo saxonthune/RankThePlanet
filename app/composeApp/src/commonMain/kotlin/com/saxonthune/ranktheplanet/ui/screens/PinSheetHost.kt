@@ -25,6 +25,7 @@ internal fun PinSheetHost(
     onConfirmAddAtPeek: () -> Unit,
     onTapEntryLocation: () -> Unit,
     onViewCollection: (CollectionId) -> Unit,
+    onJumpToCollection: (CollectionId) -> Unit,
     onEditReview: (EntryId) -> Unit,
     onContentHeightChange: (Dp) -> Unit = {},
 ) {
@@ -54,6 +55,7 @@ internal fun PinSheetHost(
                 entry = sheet.entry,
                 onTapLocation = onTapEntryLocation,
                 onViewCollection = onViewCollection,
+                onJumpToCollection = onJumpToCollection,
                 onEditReview = onEditReview,
             )
             is PinSheet.None -> {}

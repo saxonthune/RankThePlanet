@@ -26,6 +26,13 @@
       "target": "ManageProviders"
     },
     {
+      "id": "about",
+      "label": "About",
+      "region": "content",
+      "event": "TAP_ABOUT",
+      "target": "About"
+    },
+    {
       "id": "debug",
       "label": "Debug",
       "region": "content",

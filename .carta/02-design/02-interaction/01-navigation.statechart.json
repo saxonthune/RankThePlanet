@@ -422,6 +422,10 @@
           "target": "ManageProviders",
           "description": "User opens the provider catalogue to inspect what is configured, switch the default, or step into a single provider's setup (LocationProvider.addProvider, LocationProvider.switchProvider)."
         },
+        "TAP_ABOUT": {
+          "target": "About",
+          "description": "User opens the About surface — app blurb, repository link, and entries to the in-app License viewer and open-source attributions. Discharges AGPLv3 §5(d) (Appropriate Legal Notices) and §13 (access to source) plus permissive upstream attribution obligations."
+        },
         "TAP_DEBUG": {
           "target": "DebugSettings",
           "description": "Developer opens the debug submenu. Outside the production product spec; the affordance exists in code as a developer convenience."
@@ -491,6 +495,65 @@
         "BACK": {
           "target": "ManageProviders",
           "description": "Return to the provider catalogue."
+        }
+      }
+    },
+
+    "About": {
+      "description": "App identity and the legal-and-attribution hub. Reached from Settings's TAP_ABOUT. Hosts the static name/version/blurb plus three outbound affordances: TAP_VIEW_LICENSE opens an in-app viewer of the bundled AGPLv3 LICENSE (discharging §5(d)'s 'convenient and prominently visible' standard offline), TAP_ATTRIBUTIONS opens the open-source library list, and the GitHub-repository handoff is an out-of-app concept action (About.openRepository in meta.actions) rather than a transition since it leaves RTP entirely. See doc02.02.02.15.",
+      "tags": ["modal"],
+      "meta": {
+        "surface": "About",
+        "modality": "fullScreen",
+        "reads": ["app-metadata"],
+        "actions": ["About.openRepository"]
+      },
+      "on": {
+        "TAP_VIEW_LICENSE": {
+          "target": "LicenseViewer",
+          "description": "User opens the in-app scrollable view of the bundled LICENSE text — the §5(d) display obligation, kept offline by shipping the License as an app resource."
+        },
+        "TAP_ATTRIBUTIONS": {
+          "target": "Attributions",
+          "description": "User opens the open-source attribution list — one row per resolved upstream dependency, generated at build time from the dependency graph by the aboutlibraries plugin."
+        },
+        "BACK": {
+          "target": "Settings",
+          "description": "Return to Settings."
+        }
+      }
+    },
+
+    "LicenseViewer": {
+      "description": "In-app scrollable view of the bundled LICENSE text. Reached from About's TAP_VIEW_LICENSE. The text is verbatim — same file as the source tree's LICENSE — bundled as an app resource so the §5(d) display obligation works offline. See doc02.02.02.16.",
+      "tags": ["modal"],
+      "meta": {
+        "surface": "LicenseViewer",
+        "modality": "fullScreen",
+        "reads": ["bundled-license"],
+        "actions": []
+      },
+      "on": {
+        "BACK": {
+          "target": "About",
+          "description": "Return to About."
+        }
+      }
+    },
+
+    "Attributions": {
+      "description": "Open-source library list derived from the resolved dependency graph by the aboutlibraries Gradle plugin at build time. Reached from About's TAP_ATTRIBUTIONS. Each row identifies a library and expands in place to reveal its license text — expansion is a display toggle, not a transition. See doc02.02.02.17.",
+      "tags": ["modal"],
+      "meta": {
+        "surface": "Attributions",
+        "modality": "fullScreen",
+        "reads": ["resolved-dependencies"],
+        "actions": []
+      },
+      "on": {
+        "BACK": {
+          "target": "About",
+          "description": "Return to About."
         }
       }
     }

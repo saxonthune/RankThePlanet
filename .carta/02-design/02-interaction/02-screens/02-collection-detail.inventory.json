@@ -46,8 +46,21 @@
     },
     {
       "id": "sort-entries",
-      "label": "Sort the entry list — Near Me, Date Added, Review Time, or Score",
-      "region": "content"
+      "label": "Open the sort menu and pick the active sort key",
+      "region": "content",
+      "notes": "A single sort chip above the list reads `Sort: {active key} {direction-arrow}`. Tap opens a menu whose options are derived from Collection state: `Date Added` and `Review Time` are always present; `Score` appears iff the Collection's Review template defines a rating field; `Power Rank` appears iff `Collection.powerRanking` is on ([[03-concepts]], doc01.03 §1). `Near Me` is named but inert until device location lands."
+    },
+    {
+      "id": "sort-direction",
+      "label": "Toggle the active sort's direction (ascending or descending)",
+      "region": "content",
+      "notes": "Direction arrow on the sort chip; tapping it flips ascending/descending. Suppressed when the active sort is `Power Rank` — the user's authored order has no asc/desc axis."
+    },
+    {
+      "id": "reorder-entry",
+      "label": "Drag an entry to a new position in the Power Rank order",
+      "region": "content",
+      "notes": "Available only when the active sort is `Power Rank`. The list renders leading drag handles; releasing an item writes back the entry's rank position. Switching to any other sort key removes the handles and the list becomes read-only ordering."
     },
     {
       "id": "export-collection",

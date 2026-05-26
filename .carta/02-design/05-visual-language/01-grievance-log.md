@@ -31,6 +31,10 @@ MapOverview (doc02.02.02.07):
 - **G008** — MapOverview, 2026-05-23: the Search pill floats over the map without an anchor system — no shared inset from the safe area, no consistent corner radius / elevation with any other map overlay (none yet exist, but the rule needs to be set before a second overlay arrives). [candidate cluster: overlay-placement]
 - **G009** — MapOverview, 2026-05-23: the scrim applied behind the EntrySheet darkens the map heavily, breaking the glanceability that justifies a peek sheet. A peek-sized sheet should leave its host readable. [candidate cluster: overlay-placement; possibly its own rule about peek-vs-modal scrim]
 
+CollectionDetail (doc02.02.02.02):
+
+- **G011** — CollectionDetail, 2026-05-26: the sort row is a strip of filter chips (*Near Me*, *Date Added*, *Review Time*, *Score*) that overflows horizontally — *Score* rotates to a vertical stack because it does not fit, and a fourth option (*Power Rank*, when `Collection.powerRanking` is on) makes it worse. The row also conflates two distinct things into one control: *Near Me* is a predicate (filter), the others are orderings (sort). Idiomatic fix: a single *Sort: {key} {arrow}* chip that opens a menu, with the option set derived from Collection state, and the direction arrow as a separate tap target ([[02-collection-detail]], doc02.02.02.02). [candidate cluster: control-overflow; possible future principle *sort is a menu, not a strip*]
+
 App-wide:
 
 - **G010** — App-wide, 2026-05-23: the Material 3 default seed color resolves to a brown/olive that competes with the map (the product's primary content). Chrome should defer to the map; the seed needs to be picked deliberately, not inherited. [candidate cluster: surface-intentionality; related rule candidate: *chrome defers to map*]

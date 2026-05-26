@@ -68,6 +68,7 @@ import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.domain.Viewport
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.ui.RtpErrorState
+import com.saxonthune.ranktheplanet.util.installMapTapProbe
 import com.saxonthune.ranktheplanet.util.tuneMapForFastTaps
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -139,8 +140,10 @@ fun MapOverviewScreen(
     // Strip iOS map gesture recognizers that delay single-tap recognition by ~300ms.
     // The MLNMapView is created lazily, so retry briefly until it shows up in the view tree.
     LaunchedEffect(Unit) {
+        var tuned = false
         repeat(40) {
-            if (tuneMapForFastTaps()) return@LaunchedEffect
+            if (!tuned && tuneMapForFastTaps()) tuned = true
+            if (tuned && installMapTapProbe()) return@LaunchedEffect
             delay(50)
         }
     }

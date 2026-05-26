@@ -1,0 +1,47 @@
+{
+  "surface": "About",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Identifies the surface and holds the affordance back to Settings."
+    },
+    {
+      "id": "aboutBlock",
+      "purpose": "Static identity copy — app name, version, blurb — and the AGPLv3 copyright + no-warranty line that satisfies the textual half of §5(d)'s Appropriate Legal Notices."
+    },
+    {
+      "id": "links",
+      "purpose": "The three outbound affordances — view the bundled License, view the open-source attribution list, view the source repository on GitHub."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "topBar",
+      "event": "BACK",
+      "target": "Settings"
+    },
+    {
+      "id": "view-license",
+      "label": "View license",
+      "region": "links",
+      "event": "TAP_VIEW_LICENSE",
+      "target": "LicenseViewer"
+    },
+    {
+      "id": "view-attributions",
+      "label": "Open-source attributions",
+      "region": "links",
+      "event": "TAP_ATTRIBUTIONS",
+      "target": "Attributions"
+    },
+    {
+      "id": "view-source",
+      "label": "View source on GitHub",
+      "region": "links",
+      "action": "About.openRepository"
+    }
+  ],
+  "lists": []
+}

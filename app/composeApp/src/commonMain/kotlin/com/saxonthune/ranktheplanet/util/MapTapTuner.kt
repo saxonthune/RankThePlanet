@@ -10,3 +10,10 @@ package com.saxonthune.ranktheplanet.util
  * Returns true once at least one map view has been tuned. Safe to call repeatedly.
  */
 expect fun tuneMapForFastTaps(): Boolean
+
+/**
+ * Diagnostic probe: attach a passive touch-down listener to the MLNMapView that logs
+ * the gap from finger-down to .Ended, and dumps the recognizer list at tap-time so
+ * post-tune mutations are visible. Returns true once a probe has been installed.
+ */
+expect fun installMapTapProbe(): Boolean

@@ -1,6 +1,6 @@
 {
   "surface": "CollectionDetail",
-  "deferred": ["TAP_TOGGLE_PROJECTION", "Collection.removeEntry", "Collection.export", "Collection.share"],
+  "deferred": ["TAP_TOGGLE_PROJECTION", "Collection.removeEntry", "Collection.share"],
   "regions": [
     {
       "id": "topBar",
@@ -48,6 +48,12 @@
       "id": "sort-entries",
       "label": "Sort the entry list — Near Me, Date Added, Review Time, or Score",
       "region": "content"
+    },
+    {
+      "id": "export-collection",
+      "label": "Export the Collection — KML or GeoJSON",
+      "region": "topBar",
+      "action": "Collection.export"
     }
   ],
   "lists": [

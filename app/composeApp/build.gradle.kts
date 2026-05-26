@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.aboutlibraries)
     // Bundled with the Kotlin Multiplatform plugin; applied without a version.
     id("org.jetbrains.kotlin.native.cocoapods")
 }
@@ -67,6 +68,8 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines.extensions)
+            implementation(libs.aboutlibraries.core)
+            implementation(libs.aboutlibraries.compose.m3)
         }
         androidMain.dependencies {
             implementation(compose.preview)
@@ -92,6 +95,12 @@ kotlin {
         jvmTest.dependencies {
             implementation(libs.kotlinx.coroutines.test)
         }
+    }
+}
+
+afterEvaluate {
+    tasks.named<com.mikepenz.aboutlibraries.plugin.AboutLibrariesTask>("exportLibraryDefinitions") {
+        resultDirectory.set(layout.projectDirectory.dir("src/commonMain/composeResources/files"))
     }
 }
 

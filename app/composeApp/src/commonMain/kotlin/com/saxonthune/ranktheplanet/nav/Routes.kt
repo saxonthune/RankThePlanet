@@ -15,6 +15,9 @@ import kotlinx.serialization.Serializable
 @Serializable object ImportFlow
 @Serializable object Settings
 @Serializable object DebugSettings
+@Serializable object About
+@Serializable object LicenseViewer
+@Serializable object Attributions
 @Serializable object ManageProviders
 @Serializable data class ProviderConfig(val provider: String)
 

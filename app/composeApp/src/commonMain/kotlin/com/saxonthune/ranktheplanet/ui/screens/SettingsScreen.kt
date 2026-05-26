@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.saxonthune.ranktheplanet.ui.RtpDrillDownScaffold
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit, onManageProviders: () -> Unit, onOpenDebug: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onManageProviders: () -> Unit, onOpenAbout: () -> Unit, onOpenDebug: () -> Unit) {
     RtpDrillDownScaffold(
         title = "Settings",
         onBack = onBack,
@@ -33,6 +33,12 @@ fun SettingsScreen(onBack: () -> Unit, onManageProviders: () -> Unit, onOpenDebu
                 subtitle = "Add a provider or change the default",
                 enabled = true,
                 onClick = onManageProviders,
+            )
+            SettingsRow(
+                label = "About",
+                subtitle = "License, attributions, source",
+                enabled = true,
+                onClick = onOpenAbout,
             )
             SettingsRow(
                 label = "Sync target",

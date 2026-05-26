@@ -28,10 +28,13 @@ import com.saxonthune.ranktheplanet.data.sql.SqlRepositories
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.domain.SourceType
+import com.saxonthune.ranktheplanet.nav.About
+import com.saxonthune.ranktheplanet.nav.Attributions
 import com.saxonthune.ranktheplanet.nav.CollectionDetail
 import com.saxonthune.ranktheplanet.nav.CollectionEntryDetail
 import com.saxonthune.ranktheplanet.nav.CollectionList
 import com.saxonthune.ranktheplanet.nav.ImportFlow
+import com.saxonthune.ranktheplanet.nav.LicenseViewer
 import com.saxonthune.ranktheplanet.nav.ManageProviders
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.nav.MapOverview
@@ -55,9 +58,15 @@ import com.saxonthune.ranktheplanet.ui.screens.EditorMode
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormEvent
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormScreen
 import com.saxonthune.ranktheplanet.ui.screens.ReviewFormViewModel
+import com.saxonthune.ranktheplanet.ui.screens.AboutScreen
+import com.saxonthune.ranktheplanet.ui.screens.AttributionsScreen
 import com.saxonthune.ranktheplanet.ui.screens.DebugSettingsScreen
+import com.saxonthune.ranktheplanet.ui.screens.LicenseViewerScreen
 import com.saxonthune.ranktheplanet.ui.screens.SettingsScreen
 import com.saxonthune.ranktheplanet.ui.theme.RtpTheme
+import androidx.compose.ui.platform.LocalUriHandler
+
+private const val GITHUB_URL = "https://github.com/saxonthune/RankThePlanet"
 
 @Composable
 fun App(graph: RtpAppGraph? = null) {
@@ -211,8 +220,24 @@ fun App(graph: RtpAppGraph? = null) {
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
                     onManageProviders = { navController.navigate(ManageProviders) },
+                    onOpenAbout = { navController.navigate(About) },
                     onOpenDebug = { navController.navigate(DebugSettings) },
                 )
+            }
+            composable<About> {
+                val uriHandler = LocalUriHandler.current
+                AboutScreen(
+                    onBack = { navController.popBackStack() },
+                    onViewLicense = { navController.navigate(LicenseViewer) },
+                    onViewAttributions = { navController.navigate(Attributions) },
+                    onViewSource = { uriHandler.openUri(GITHUB_URL) },
+                )
+            }
+            composable<LicenseViewer> {
+                LicenseViewerScreen(onBack = { navController.popBackStack() })
+            }
+            composable<Attributions> {
+                AttributionsScreen(onBack = { navController.popBackStack() })
             }
             composable<DebugSettings> {
                 DebugSettingsScreen(

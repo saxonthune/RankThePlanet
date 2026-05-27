@@ -19,6 +19,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -35,6 +37,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -260,6 +263,16 @@ fun MapOverviewScreen(
                                     searchQuery = it
                                     vm.onQueryChange(it)
                                 },
+                                trailingIcon = if (state.isSearchResultsMode) {
+                                    {
+                                        IconButton(onClick = {
+                                            vm.clearSearch()
+                                            searchQuery = ""
+                                        }) {
+                                            Icon(Icons.Default.Close, contentDescription = "Clear search results")
+                                        }
+                                    }
+                                } else null,
                             )
                         },
                     )
@@ -285,6 +298,25 @@ fun MapOverviewScreen(
                                         },
                                     )
                                     HorizontalDivider()
+                                }
+                                if (state.searchHits.any { it is SearchHitUi.Candidate }) {
+                                    TextButton(
+                                        onClick = {
+                                            vm.commitSearchToMap()
+                                            searchExpanded = false
+                                            searchQuery = ""
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Place,
+                                            contentDescription = null,
+                                            modifier = Modifier.padding(end = 8.dp),
+                                        )
+                                        Text("Search on map")
+                                    }
                                 }
                             }
                         }
@@ -339,6 +371,31 @@ fun MapOverviewScreen(
                         onPinClick = { vm.selectPin(it) },
                     )
                     CandidateMarkerLayer(sheet = state.pinSheet)
+                    SearchCandidatePinLayer(
+                        candidates = state.searchContext?.candidates,
+                        onCandidateTap = { hit ->
+                            vm.pickSearchCandidate(
+                                hit = hit,
+                                inAddMode = mode is MapMode.AddingToCollection,
+                                collectionId = (mode as? MapMode.AddingToCollection)?.collectionId,
+                            )
+                        },
+                    )
+                }
+                if (state.showSearchThisAreaChip) {
+                    AssistChip(
+                        onClick = { vm.searchThisArea() },
+                        label = { Text("Search this area") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                            )
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 72.dp),
+                    )
                 }
                 if (state.error != null) {
                     Surface(modifier = Modifier.fillMaxSize()) {

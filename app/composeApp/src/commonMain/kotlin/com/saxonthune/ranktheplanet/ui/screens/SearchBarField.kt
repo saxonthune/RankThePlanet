@@ -30,6 +30,7 @@ internal fun SearchBarField(
     onFocus: () -> Unit,
     onSearch: (String) -> Unit,
     onQueryChange: (String) -> Unit,
+    trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
@@ -57,6 +58,7 @@ internal fun SearchBarField(
             focusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
         ),
+        trailingIcon = trailingIcon,
         modifier = Modifier
             .fillMaxWidth(widthFraction)
             .focusRequester(focusRequester)

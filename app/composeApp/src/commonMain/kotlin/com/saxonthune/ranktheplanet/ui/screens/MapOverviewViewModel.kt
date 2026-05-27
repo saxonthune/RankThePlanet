@@ -32,8 +32,10 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlin.random.Random
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.min
+import kotlin.math.pow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -156,6 +158,12 @@ data class NearbyCandidateUi(
     val detail: String?,
 )
 
+data class SearchContext(
+    val query: String,
+    val candidates: ImmutableList<SearchHitUi.Candidate>,
+    val viewportAtQuery: Viewport,
+)
+
 data class MapOverviewUiState(
     val pins: ImmutableList<PinUi> = persistentListOf(),
     val collectionRows: ImmutableList<CollectionFilterRowUi> = persistentListOf(),
@@ -170,7 +178,11 @@ data class MapOverviewUiState(
     val error: String? = null,
     val pendingReview: PendingReviewPrompt = PendingReviewPrompt.None,
     val viewport: Viewport? = null,
-)
+    val searchContext: SearchContext? = null,
+    val showSearchThisAreaChip: Boolean = false,
+) {
+    val isSearchResultsMode: Boolean get() = searchContext != null
+}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapOverviewViewModel(
@@ -193,6 +205,7 @@ class MapOverviewViewModel(
     private val _nearbyCandidates = MutableStateFlow<List<NearbyCandidateUi>>(emptyList())
     private val _isResolvingNearby = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
+    private val _searchContext = MutableStateFlow<SearchContext?>(null)
 
     private val _latestCollections = MutableStateFlow<List<Collection>>(emptyList())
     private val _latestEntries = MutableStateFlow<List<Entry>>(emptyList())
@@ -421,6 +434,11 @@ class MapOverviewViewModel(
         }
     }
 
+    private val searchThisAreaChipFlow = combine(_liveViewport, _searchContext) { vp, ctx ->
+        if (ctx == null || vp == null) false
+        else viewportHasDrifted(vp, ctx.viewportAtQuery)
+    }
+
     val uiState: StateFlow<MapOverviewUiState> = combine(
         combine(
             combine(
@@ -445,17 +463,20 @@ class MapOverviewViewModel(
                 Triple(draft, nearby.toImmutableList(), resolving)
             },
             _pendingReview,
-        ) { state, draftBundle, pendingReview ->
+            _searchContext,
+        ) { state, draftBundle, pendingReview, searchCtx ->
             state.copy(
                 draft = draftBundle.first,
                 nearbyCandidates = draftBundle.second,
                 isResolvingNearby = draftBundle.third,
                 pendingReview = pendingReview,
+                searchContext = searchCtx,
             )
         },
         _restoredViewport,
-    ) { state, viewport ->
-        state.copy(viewport = viewport)
+        searchThisAreaChipFlow,
+    ) { state, viewport, showChip ->
+        state.copy(viewport = viewport, showSearchThisAreaChip = showChip)
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapOverviewUiState())
 
@@ -487,7 +508,40 @@ class MapOverviewViewModel(
         _jumpToViewport.tryEmit(Viewport(centerLat = centerLat, centerLng = centerLng, zoom = zoom, bearing = 0.0))
     }
 
+    fun commitSearchToMap() {
+        val query = _query.value
+        val candidates = candidatesFlow.value
+        val viewport = _liveViewport.value ?: return
+        if (query.isBlank() || candidates.isEmpty()) return
+        _searchContext.value = SearchContext(
+            query = query,
+            candidates = candidates.toImmutableList(),
+            viewportAtQuery = viewport,
+        )
+        _query.value = ""
+    }
+
+    fun searchThisArea() {
+        val ctx = _searchContext.value ?: return
+        val viewport = _liveViewport.value ?: return
+        viewModelScope.launch {
+            val newCandidates = runProviderSearch(ctx.query)
+            _searchContext.value = SearchContext(
+                query = ctx.query,
+                candidates = newCandidates.toImmutableList(),
+                viewportAtQuery = viewport,
+            )
+        }
+    }
+
+    fun clearSearch() {
+        _searchContext.value = null
+    }
+
     fun onQueryChange(value: String) {
+        if (_searchContext.value != null && value != "") {
+            clearSearch()
+        }
         _query.value = value
     }
 
@@ -789,5 +843,13 @@ class MapOverviewViewModel(
     fun onViewportChange(viewport: Viewport) {
         _liveViewport.value = viewport
         viewModelScope.launch { session.saveViewport(viewport) }
+    }
+
+    private fun viewportHasDrifted(current: Viewport, atQuery: Viewport): Boolean {
+        if (abs(current.zoom - atQuery.zoom) >= 1.0) return true
+        val lngSpan = 360.0 / 2.0.pow(atQuery.zoom.coerceIn(0.0, 22.0))
+        val threshold = lngSpan * 0.3
+        return abs(current.centerLat - atQuery.centerLat) > threshold ||
+            abs(current.centerLng - atQuery.centerLng) > threshold
     }
 }

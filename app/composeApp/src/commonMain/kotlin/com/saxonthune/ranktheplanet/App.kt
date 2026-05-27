@@ -36,7 +36,6 @@ import com.saxonthune.ranktheplanet.nav.About
 import com.saxonthune.ranktheplanet.nav.Attributions
 import com.saxonthune.ranktheplanet.nav.CollectionDetail
 import com.saxonthune.ranktheplanet.nav.CollectionEntryDetail
-import com.saxonthune.ranktheplanet.nav.CollectionList
 import com.saxonthune.ranktheplanet.nav.ImportFlow
 import com.saxonthune.ranktheplanet.nav.LicenseViewer
 import com.saxonthune.ranktheplanet.nav.ManageProviders
@@ -51,7 +50,6 @@ import com.saxonthune.ranktheplanet.ui.screens.CollectionDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.CollectionEntryDetailScreen
 import com.saxonthune.ranktheplanet.ui.screens.ImportFlowEvent
 import com.saxonthune.ranktheplanet.ui.screens.ImportFlowViewModel
-import com.saxonthune.ranktheplanet.ui.screens.CollectionListScreen
 import com.saxonthune.ranktheplanet.ui.screens.ImportFlowScreen
 import com.saxonthune.ranktheplanet.ui.screens.ManageProvidersScreen
 import com.saxonthune.ranktheplanet.ui.screens.ManageProvidersViewModel
@@ -124,8 +122,9 @@ fun App(graph: RtpAppGraph? = null) {
                     projection = projection,
                     session = session,
                     onCancelAdd = { navController.popBackStack() },
-                    onOpenCollections = { navController.navigate(CollectionList) },
                     onOpenSettings = { navController.navigate(Settings) },
+                    onNewCollection = { navController.navigate(CollectionEditor()) },
+                    onImport = { navController.navigate(ImportFlow) },
                     onViewCollection = { collectionId -> navController.navigate(CollectionDetail(collectionId.value)) },
                     onEditReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onPickCollectionForDraft = { },
@@ -136,16 +135,6 @@ fun App(graph: RtpAppGraph? = null) {
                     onPendingReviewDismissed = { },
                     pendingNewCollectionForDraft = pendingNewCollectionForDraft,
                     onPendingNewCollectionForDraftConsumed = { pendingNewCollectionForDraft = null },
-                )
-            }
-            composable<CollectionList> {
-                CollectionListScreen(
-                    collections = collections,
-                    entries = entries,
-                    onNewCollection = { navController.navigate(CollectionEditor()) },
-                    onImport = { navController.navigate(ImportFlow) },
-                    onBack = { navController.popBackStack() },
-                    onOpenCollection = { id -> navController.navigate(CollectionDetail(id.value)) },
                 )
             }
             composable<CollectionDetail> { backStackEntry ->

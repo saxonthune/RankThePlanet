@@ -27,6 +27,7 @@ import com.saxonthune.ranktheplanet.domain.TemplateField
 import com.saxonthune.ranktheplanet.domain.Viewport
 import com.saxonthune.ranktheplanet.domain.VisiblePin
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,6 +45,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -74,9 +76,31 @@ class MapOverviewViewModelTest {
         detail = "123 Test St",
     )
 
+    private val idA = CollectionId("col-a")
+    private val idB = CollectionId("col-b")
+
+    private fun makeLocation(id: String, lat: Double, lng: Double) = Location(
+        id = LocationId(id),
+        coordinates = Coordinates(lat, lng),
+        displayName = "Loc $id",
+        sourceType = SourceType.Manual,
+        sourceId = "",
+        address = null,
+        cachedMetadata = null,
+        refreshable = false,
+    )
+
+    private fun makeEntry(entryId: String, collectionId: CollectionId, locationId: String, lat: Double = 40.0, lng: Double = -74.0) = Entry(
+        id = EntryId(entryId),
+        collectionId = collectionId,
+        location = makeLocation(locationId, lat, lng),
+        review = null,
+    )
+
     private fun makeVm(
         candidates: List<LocationCandidate> = listOf(coffeeCandidate),
         supportsTypeahead: Boolean = false,
+        entriesList: List<Entry> = emptyList(),
     ): MapOverviewViewModel {
         val provider = object : LocationProvider {
             override val type = SourceType.Fake
@@ -113,8 +137,9 @@ class MapOverviewViewModelTest {
         }
 
         val entryRepo = object : EntryRepository {
-            override fun observeAll(): Flow<List<Entry>> = MutableStateFlow(emptyList())
-            override fun observeByCollection(collectionId: CollectionId): Flow<List<Entry>> = MutableStateFlow(emptyList())
+            override fun observeAll(): Flow<List<Entry>> = MutableStateFlow(entriesList)
+            override fun observeByCollection(collectionId: CollectionId): Flow<List<Entry>> =
+                MutableStateFlow(entriesList.filter { it.collectionId == collectionId })
             override fun observe(entryId: EntryId): Flow<Entry?> = MutableStateFlow(null)
             override suspend fun editReview(entryId: EntryId, data: Map<String, String>, templateVersion: Int) =
                 Result.failure<Entry>(UnsupportedOperationException())
@@ -157,6 +182,109 @@ class MapOverviewViewModelTest {
         }
 
         return MapOverviewViewModel(collectionRepo, entryRepo, registry, templateRepo, projection, session, locationRepo)
+    }
+
+    @Test
+    fun openCollectionList_setsSheetOpen_emptyPreselection() = runTest {
+        val vm = makeVm()
+        val collector = launch { vm.uiState.collect {} }
+        advanceUntilIdle()
+
+        vm.openCollectionList()
+
+        val sheet = vm.uiState.value.collectionListSheet
+        assertIs<CollectionListSheet.Open>(sheet)
+        assertTrue(sheet.preselection.isEmpty())
+
+        collector.cancel()
+    }
+
+    @Test
+    fun openCollectionList_withPreselection_setsOpenWithIds() = runTest {
+        val vm = makeVm()
+        val collector = launch { vm.uiState.collect {} }
+        advanceUntilIdle()
+
+        vm.openCollectionList(setOf(idA, idB))
+
+        val sheet = vm.uiState.value.collectionListSheet
+        assertIs<CollectionListSheet.Open>(sheet)
+        assertEquals(setOf(idA, idB), sheet.preselection)
+
+        collector.cancel()
+    }
+
+    @Test
+    fun applyFilter_setsFilterContext_andClosesSheet() = runTest {
+        val vm = makeVm()
+        val collector = launch { vm.uiState.collect {} }
+        advanceUntilIdle()
+
+        vm.openCollectionList()
+        vm.applyFilter(setOf(idA))
+
+        val state = vm.uiState.value
+        assertEquals(setOf(idA), state.filterContext)
+        assertIs<CollectionListSheet.Closed>(state.collectionListSheet)
+
+        collector.cancel()
+    }
+
+    @Test
+    fun clearFilter_setsFilterContextNull() = runTest {
+        val vm = makeVm()
+        val collector = launch { vm.uiState.collect {} }
+        advanceUntilIdle()
+
+        vm.applyFilter(setOf(idA))
+        assertEquals(setOf(idA), vm.uiState.value.filterContext)
+
+        vm.clearFilter()
+        assertNull(vm.uiState.value.filterContext)
+
+        collector.cancel()
+    }
+
+    @Test
+    fun pinDerivation_filterContext_showsOnlyMatchingEntries() = runTest {
+        val entryA = makeEntry("e1", idA, "loc1", 40.0, -74.0)
+        val entryB = makeEntry("e2", idB, "loc2", 41.0, -75.0)
+        val vm = makeVm(entriesList = listOf(entryA, entryB))
+        val collector = launch { vm.uiState.collect {} }
+        advanceUntilIdle()
+
+        // With no filter, both pins should be present
+        val allPins = vm.uiState.value.pins
+        assertEquals(2, allPins.size)
+
+        // Apply filter to only idA
+        vm.applyFilter(setOf(idA))
+        advanceUntilIdle()
+
+        val filteredPins = vm.uiState.value.pins
+        assertEquals(1, filteredPins.size)
+        assertEquals(idA, filteredPins.first().collectionId)
+
+        collector.cancel()
+    }
+
+    @Test
+    fun pinDerivation_nullFilterContext_showsAllPins() = runTest {
+        val entryA = makeEntry("e1", idA, "loc1", 40.0, -74.0)
+        val entryB = makeEntry("e2", idB, "loc2", 41.0, -75.0)
+        val vm = makeVm(entriesList = listOf(entryA, entryB))
+        val collector = launch { vm.uiState.collect {} }
+        advanceUntilIdle()
+
+        vm.applyFilter(setOf(idA))
+        advanceUntilIdle()
+        assertEquals(1, vm.uiState.value.pins.size)
+
+        vm.clearFilter()
+        advanceUntilIdle()
+        assertEquals(2, vm.uiState.value.pins.size)
+
+        collector.cancel()
     }
 
     @Test

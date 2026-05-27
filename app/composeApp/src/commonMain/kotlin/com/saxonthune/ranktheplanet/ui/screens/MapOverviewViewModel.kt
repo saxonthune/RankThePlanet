@@ -180,8 +180,15 @@ data class MapOverviewUiState(
     val viewport: Viewport? = null,
     val searchContext: SearchContext? = null,
     val showSearchThisAreaChip: Boolean = false,
+    val filterContext: Set<CollectionId>? = null,
+    val collectionListSheet: CollectionListSheet = CollectionListSheet.Closed,
 ) {
     val isSearchResultsMode: Boolean get() = searchContext != null
+}
+
+sealed interface CollectionListSheet {
+    data object Closed : CollectionListSheet
+    data class Open(val preselection: Set<CollectionId> = emptySet()) : CollectionListSheet
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -197,7 +204,8 @@ class MapOverviewViewModel(
 
     private val _restoredViewport = MutableStateFlow<Viewport?>(null)
     private val _liveViewport = MutableStateFlow<Viewport?>(null)
-    private val hiddenCollections = MutableStateFlow<Set<CollectionId>>(emptySet())
+    private val _filterContext = MutableStateFlow<Set<CollectionId>?>(null)
+    private val _collectionListSheet = MutableStateFlow<CollectionListSheet>(CollectionListSheet.Closed)
     private val _isSearching = MutableStateFlow(false)
     private val _pinSheet = MutableStateFlow<PinSheet>(PinSheet.None)
     private val _draft = MutableStateFlow<LocationDraftSheet>(LocationDraftSheet.None)
@@ -270,8 +278,8 @@ class MapOverviewViewModel(
     private val derivedBase: StateFlow<DerivedBase> = combine(
         collectionsRepo.observeAll(),
         entriesRepo.observeAll(),
-        hiddenCollections,
-    ) { collectionList, entryList, hidden ->
+        _filterContext,
+    ) { collectionList, entryList, filterCtx ->
         val collectionMap = collectionList.associateBy { it.id }
         val entryCounts = entryList.groupingBy { it.collectionId }.eachCount()
         val collectionRows = collectionList.map { col ->
@@ -279,7 +287,7 @@ class MapOverviewViewModel(
                 id = col.id,
                 name = col.name,
                 color = parseAppearanceColor(col.appearance.color),
-                shown = col.id !in hidden,
+                shown = true,
             )
         }.toImmutableList()
         val collectionPicks = collectionList.map { col ->
@@ -290,7 +298,7 @@ class MapOverviewViewModel(
                 entryCount = entryCounts[col.id] ?: 0,
             )
         }.toImmutableList()
-        val visibleEntries = entryList.filter { it.collectionId !in hidden }
+        val visibleEntries = if (filterCtx == null) entryList else entryList.filter { it.collectionId in filterCtx }
         val byLocation = visibleEntries.groupBy { it.location.id }
         val pins = visibleEntries
             .mapNotNull { entry ->
@@ -475,22 +483,37 @@ class MapOverviewViewModel(
         },
         _restoredViewport,
         searchThisAreaChipFlow,
-    ) { state, viewport, showChip ->
-        state.copy(viewport = viewport, showSearchThisAreaChip = showChip)
+        combine(_filterContext, _collectionListSheet) { fc, cls -> Pair(fc, cls) },
+    ) { state, viewport, showChip, filterState ->
+        state.copy(
+            viewport = viewport,
+            showSearchThisAreaChip = showChip,
+            filterContext = filterState.first,
+            collectionListSheet = filterState.second,
+        )
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapOverviewUiState())
 
-    fun toggleCollection(id: CollectionId) {
-        hiddenCollections.value = hiddenCollections.value.let { hidden ->
-            if (id in hidden) hidden - id else hidden + id
-        }
+    fun openCollectionList(preselection: Set<CollectionId> = emptySet()) {
+        _collectionListSheet.value = CollectionListSheet.Open(preselection)
     }
 
-    fun jumpToCollection(id: CollectionId) {
-        val allIds = _latestCollections.value.map { it.id }.toSet()
-        hiddenCollections.value = allIds - id
-        _pinSheet.value = PinSheet.None
-        val entries = _latestEntries.value.filter { it.collectionId == id }
+    fun closeCollectionList() {
+        _collectionListSheet.value = CollectionListSheet.Closed
+    }
+
+    fun applyFilter(ids: Set<CollectionId>) {
+        _filterContext.value = ids
+        _collectionListSheet.value = CollectionListSheet.Closed
+        fitViewportToCollections(ids)
+    }
+
+    fun clearFilter() {
+        _filterContext.value = null
+    }
+
+    private fun fitViewportToCollections(ids: Set<CollectionId>) {
+        val entries = _latestEntries.value.filter { it.collectionId in ids }
         if (entries.isEmpty()) return
         val lats = entries.map { it.location.coordinates.lat }
         val lngs = entries.map { it.location.coordinates.lng }

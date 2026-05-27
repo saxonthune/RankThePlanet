@@ -8,7 +8,7 @@
     "code-map": "node .luminous/code-map.pipeline.mjs"
   },
   "dependencies": {
-    "tree-sitter": "^0.21.1",
+    "tree-sitter": "^0.22.4",
     "tree-sitter-kotlin": "^0.3.8"
   }
 }

@@ -17,19 +17,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -40,7 +39,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,7 +46,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -74,7 +71,6 @@ import com.saxonthune.ranktheplanet.ui.RtpErrorState
 import com.saxonthune.ranktheplanet.util.tuneMapForFastTaps
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.map.MaplibreMap
@@ -96,8 +92,9 @@ fun MapOverviewScreen(
     projection: OverviewProjection,
     session: SessionStateStore,
     onCancelAdd: () -> Unit,
-    onOpenCollections: () -> Unit,
     onOpenSettings: () -> Unit,
+    onNewCollection: () -> Unit,
+    onImport: () -> Unit,
     onViewCollection: (CollectionId) -> Unit,
     onEditReview: (EntryId) -> Unit,
     onPickCollectionForDraft: (CollectionId) -> Unit,
@@ -116,8 +113,6 @@ fun MapOverviewScreen(
     }
     val state by vm.uiState.collectAsState()
 
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
 
     var searchExpanded by remember { mutableStateOf(false) }
@@ -244,8 +239,8 @@ fun MapOverviewScreen(
                                         contentDescription = "Close search",
                                     )
                                 }
-                                mode is MapMode.Browse -> IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                    Icon(Icons.Default.Menu, contentDescription = "Open the app menu")
+                                mode is MapMode.Browse -> IconButton(onClick = onOpenSettings) {
+                                    Icon(Icons.Default.Settings, contentDescription = "Settings")
                                 }
                                 mode is MapMode.AddingToCollection -> IconButton(onClick = onCancelAdd) {
                                     Icon(Icons.Default.Close, contentDescription = "Cancel adding")
@@ -345,7 +340,7 @@ fun MapOverviewScreen(
             floatingActionButton = {
                 if (mode is MapMode.Browse) {
                     ExtendedFloatingActionButton(
-                        onClick = onOpenCollections,
+                        onClick = { vm.openCollectionList() },
                         icon = { Icon(Icons.Default.Layers, contentDescription = null) },
                         text = { Text("Collections") },
                     )
@@ -397,6 +392,53 @@ fun MapOverviewScreen(
                             .padding(top = 72.dp),
                     )
                 }
+                if (state.filterContext != null) {
+                    val filterCtx: Set<CollectionId> = state.filterContext!!
+                    val singleRow = filterCtx.takeIf { it.size == 1 }?.first()
+                        ?.let { id -> state.collectionRows.find { it.id == id } }
+                    val chipLabel = singleRow?.name ?: "Filtered: ${filterCtx.size} Collections"
+                    InputChip(
+                        selected = true,
+                        onClick = { vm.openCollectionList(preselection = filterCtx) },
+                        label = { Text(chipLabel) },
+                        leadingIcon = {
+                            if (singleRow != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(singleRow.color, CircleShape),
+                                )
+                            } else {
+                                Box(modifier = Modifier.size(16.dp)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .align(Alignment.CenterStart)
+                                            .background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape),
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .align(Alignment.CenterEnd)
+                                            .background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape),
+                                    )
+                                }
+                            }
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Clear filter",
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .clickable { vm.clearFilter() },
+                            )
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 120.dp),
+                    )
+                }
                 if (state.error != null) {
                     Surface(modifier = Modifier.fillMaxSize()) {
                         RtpErrorState(
@@ -409,21 +451,29 @@ fun MapOverviewScreen(
         }
     }
 
-    if (mode is MapMode.Browse) {
-        ModalNavigationDrawer(
-            drawerState = drawerState,
-            drawerContent = {
-                AppMenuDrawer(
-                    state = state,
-                    onToggleCollection = { vm.toggleCollection(it) },
-                    onOpenSettings = onOpenSettings,
-                )
+    scaffoldContent()
+
+    val sheet = state.collectionListSheet
+    if (sheet is CollectionListSheet.Open) {
+        CollectionListSheet(
+            collections = collections,
+            entries = entries,
+            preselection = sheet.preselection,
+            onDismiss = vm::closeCollectionList,
+            onTapCollection = { id ->
+                vm.closeCollectionList()
+                onViewCollection(id)
             },
-        ) {
-            scaffoldContent()
-        }
-    } else {
-        scaffoldContent()
+            onNewCollection = {
+                vm.closeCollectionList()
+                onNewCollection()
+            },
+            onImport = {
+                vm.closeCollectionList()
+                onImport()
+            },
+            onApplyFilter = vm::applyFilter,
+        )
     }
 
     PinSheetHost(
@@ -438,7 +488,10 @@ fun MapOverviewScreen(
             vm.dismissSheet()
             onViewCollection(collectionId)
         },
-        onJumpToCollection = { collectionId -> vm.jumpToCollection(collectionId) },
+        onJumpToCollection = { collectionId ->
+            vm.dismissSheet()
+            vm.applyFilter(setOf(collectionId))
+        },
         onEditReview = { entryId ->
             vm.dismissSheet()
             onEditReview(entryId)

@@ -4,7 +4,6 @@ import com.saxonthune.ranktheplanet.domain.CollectionId
 import kotlinx.serialization.Serializable
 
 @Serializable data class MapOverview(val addToCollectionId: String? = null)
-@Serializable object CollectionList
 @Serializable data class CollectionDetail(val collectionId: String)
 @Serializable data class CollectionEntryDetail(val entryId: String)
 @Serializable data class ReviewForm(val entryId: String)

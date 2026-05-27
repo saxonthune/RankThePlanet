@@ -127,7 +127,7 @@ fun CollectionListScreen(
 }
 
 @Composable
-private fun CollectionRow(row: CollectionRowUi, onClick: () -> Unit) {
+internal fun CollectionRow(row: CollectionRowUi, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

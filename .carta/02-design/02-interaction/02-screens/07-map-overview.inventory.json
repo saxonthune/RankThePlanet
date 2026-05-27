@@ -17,7 +17,13 @@
     },
     {
       "id": "search",
-      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the navigationIcon. Tapping it widens the field and raises the keyboard. Results are biased near the current map viewport — the visible center is the query's locality anchor — and interleave two sources: Locations the user already has Entries for (rendered with their owning Collection's color dot) and unadopted provider candidates. Whether the field queries per keystroke or only on submit is a per-provider trait declared on LocationProvider (doc03.02.02); the field follows the active provider's setting. Present in both modes — finding a place is part of completing the add flow."
+      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the navigationIcon. Tapping it widens the field and raises the keyboard. Results are biased near the current map viewport — the visible center is the query's locality anchor — and interleave two sources: Locations the user already has Entries for (rendered with their owning Collection's color dot) and unadopted provider candidates. Whether the field queries per keystroke or only on submit is a per-provider trait declared on LocationProvider (doc03.02.02); the field follows the active provider's setting. Present in all modes — finding a place is part of completing the add flow. In searchResults mode the field renders the committed query with a trailing close (X) affordance that fires CLEAR_SEARCH."
+    },
+    {
+      "id": "searchThisAreaChip",
+      "purpose": "A chip overlaid on the upper-center of the map in searchResults mode, holding the *Search this area* affordance. Renders only when the live viewport has drifted past a threshold from `search-context.viewportAtQuery` (the viewport active when the current candidate set was issued). Tapping it fires SEARCH_THIS_AREA, which re-runs the committed query against the now-current viewport and replaces the candidate pins.",
+      "appearsInModes": ["searchResults"],
+      "reactsToContext": ["search-context"]
     },
     {
       "id": "collectionsButton",
@@ -114,6 +120,30 @@
       "event": "DISMISS_REVIEW_BAR",
       "reactsToContext": ["pending-review-context"],
       "rendering": "Snackbar timeout or swipe-dismiss. Drops pending-review-context; the Entry stays saved."
+    },
+    {
+      "id": "commit-search-to-map",
+      "label": "Search on map",
+      "region": "search",
+      "event": "COMMIT_SEARCH_TO_MAP",
+      "rendering": "A trailing button or row affordance on the search dropdown — only renders when the dropdown contains at least one unadopted provider candidate. Existing-entry-only results do not enable it (nothing new to pin). Tapping it dismisses the dropdown and keyboard, sets `search-context` from the current query / candidate set / viewport, and pivots the surface into searchResults mode."
+    },
+    {
+      "id": "search-this-area",
+      "label": "Search this area",
+      "region": "searchThisAreaChip",
+      "event": "SEARCH_THIS_AREA",
+      "appearsInModes": ["searchResults"],
+      "reactsToContext": ["search-context"]
+    },
+    {
+      "id": "clear-search",
+      "label": "Clear search",
+      "region": "search",
+      "event": "CLEAR_SEARCH",
+      "appearsInModes": ["searchResults"],
+      "reactsToContext": ["search-context"],
+      "rendering": "A trailing close (X) icon on the search field when search-context is set, *and* an implicit fire on the first keystroke into the field while search-context is set — editing the query is treated as starting a new search, never as filtering the committed candidate set."
     }
   ],
   "lists": [
@@ -187,6 +217,37 @@
       "composition": "The list is one ranked view over two upstream sources, merged at the surface and never persisted: (a) existing-entry hits derived in-memory from `all-entries` filtered by the query, biased by the live `viewport`; (b) unadopted provider candidates from the active LocationProvider's `resolve(query, near=viewport.center)` (doc03.02.02). The declared `reads: provider-results` names the async/external source; the existing-entry half rides the surface's already-loaded `all-entries` stream and needs no separate read.",
       "ordering": "Hits compete on a single axis — proximity to the viewport center, with displayName match strength as the tiebreaker — not segregated into existing-vs-candidate sections. Duplicate suppression: a provider candidate whose (sourceType, sourceId) matches a saved Location via LocationRepository.findByIdentity is dropped in favor of the existing-entry hit.",
       "emptyState": "An empty search field shows no results; the map stays the focus. Existing-entry matches surface as soon as the query is non-empty. Provider candidates surface per the active provider's `supportsTypeahead` trait (per keystroke when true, on submit otherwise — see doc03.02.02)."
+    },
+    {
+      "id": "searchCandidatePins",
+      "region": "map",
+      "iterates": "LocationCandidate",
+      "reads": "search-context",
+      "appearsInModes": ["searchResults"],
+      "item": {
+        "shows": [
+          "a pin at the candidate's coordinates",
+          "candidate styling distinct from Collection Entry pins so the user can tell *result-to-adopt* from *already-saved*"
+        ],
+        "affordance": {
+          "id": "tap-candidate-pin",
+          "label": "Pick a provider candidate from the map (browse mode)",
+          "event": "PICK_SEARCH_RESULT",
+          "target": "LocationSheet",
+          "appliesWhen": "user is in browse mode (no `collection-context`)"
+        },
+        "altAffordances": [
+          {
+            "id": "tap-candidate-pin-for-add",
+            "label": "Pick a provider candidate from the map (add-to-collection mode)",
+            "event": "PICK_SEARCH_RESULT_FOR_ADD",
+            "target": "AddLocationToCollection",
+            "appliesWhen": "`collection-context` is set — the pin tap funnels straight into the collection picker, skipping LocationSheet"
+          }
+        ]
+      },
+      "composition": "Drawn from `search-context.candidates`, the candidate list committed by COMMIT_SEARCH_TO_MAP and refreshed by SEARCH_THIS_AREA. The list is *only* the unadopted provider candidates from that committed set — existing-entry hits are already drawn by the `pins` list (their owning Entry's pin) and would double-render.",
+      "emptyState": "If a SEARCH_THIS_AREA refresh returns zero candidates, the searchResults mode stays active with an empty candidate set; the chip remains available for further re-queries and CLEAR_SEARCH exits the mode."
     },
     {
       "id": "collections",

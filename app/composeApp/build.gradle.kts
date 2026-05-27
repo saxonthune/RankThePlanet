@@ -98,9 +98,9 @@ kotlin {
     }
 }
 
-afterEvaluate {
-    tasks.named<com.mikepenz.aboutlibraries.plugin.AboutLibrariesTask>("exportLibraryDefinitions") {
-        resultDirectory.set(layout.projectDirectory.dir("src/commonMain/composeResources/files"))
+aboutLibraries {
+    export {
+        outputFile = file("src/commonMain/composeResources/files/aboutlibraries.json")
     }
 }
 

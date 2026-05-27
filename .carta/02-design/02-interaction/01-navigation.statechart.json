@@ -13,14 +13,16 @@
         "hostsSheets": ["LocationDraftSheet", "LocationSheet", "EntrySheet", "AddLocationToCollection"],
         "modes": {
           "browse": "Default; entered as the landing surface or via BACK from any descendant. No carried context.",
-          "addToCollection": "Entered from CollectionDetail's TAP_ADD_ENTRY. `collection-context` is set and propagates to every Location-opening transition."
+          "addToCollection": "Entered from CollectionDetail's TAP_ADD_ENTRY. `collection-context` is set and propagates to every Location-opening transition.",
+          "searchResults": "Entered from any other mode via COMMIT_SEARCH_TO_MAP — the user has committed a query and asked to inspect results on the map. `search-context` is set. Composes with browse or addToCollection (the user can be both in add-to-collection mode and in searchResults mode); orthogonal axis. Exited via CLEAR_SEARCH or by issuing a new query that resets the committed candidate set."
         },
         "context": {
           "collection-context": "Optional Collection carried into add-to-collection mode. Source: CollectionDetail's TAP_ADD_ENTRY. Consumed by: the statusBar region (display) and AddLocationToCollection's pre-selection.",
           "location-context": "Optional already-committed Location carried when LocationSheet's TAP_ADD_ENTRY hands off to AddLocationToCollection. Lives in MapOverview's UiState because both sheets are hosted here; consumed by AddLocationToCollection in place of LocationDraftSheet's candidate.",
-          "pending-review-context": "Optional Entry just created by AddLocationToCollection's PICK_COLLECTION. Transient — the surface renders a Snackbar (\"Review {place}?\" + action) over the bare map; the action fires GO_TO_REVIEW, the dismiss fires DISMISS_REVIEW_BAR, and either drops the context. Not a mode — the chrome is unchanged."
+          "pending-review-context": "Optional Entry just created by AddLocationToCollection's PICK_COLLECTION. Transient — the surface renders a Snackbar (\"Review {place}?\" + action) over the bare map; the action fires GO_TO_REVIEW, the dismiss fires DISMISS_REVIEW_BAR, and either drops the context. Not a mode — the chrome is unchanged.",
+          "search-context": "Optional committed search state: the query string, the candidate list returned by the provider at commit time, and the viewport that was active when the query was issued. Source: COMMIT_SEARCH_TO_MAP (committing the inline dropdown) or SEARCH_THIS_AREA (re-running the same query against the current viewport). Lives in MapOverview's UiState as the host of LocationDraftSheet, LocationSheet, EntrySheet, and AddLocationToCollection, so it survives every sheet round-trip just like collection-context does — landing back on MapOverview after a Draft / AddToCollection flow re-presents the same candidate pins and viewport rather than a cleared map, which is what makes the rapid-add loop possible. Consumed by: the searchCandidatePins list (renders pins for each candidate), the searchThisAreaChip region (compares viewportAtQuery against live viewport to decide when to show), and the CLEAR_SEARCH affordance."
         },
-        "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context", "location-context", "pending-review-context"],
+        "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context", "location-context", "pending-review-context", "search-context"],
         "actions": [
           "MapOverview.open",
           "MapOverview.pan",
@@ -83,6 +85,17 @@
         "DISMISS_REVIEW_BAR": {
           "guard": "hasPendingReview",
           "description": "Live only when `pending-review-context` is set. Self-transition — the Snackbar times out or the user dismisses it; drop `pending-review-context` and leave the map untouched. The Entry stays saved; the user can author the Review later via the Entry's other surfaces."
+        },
+        "COMMIT_SEARCH_TO_MAP": {
+          "description": "User taps *Search on map* on the inline search dropdown to pivot from a textual list of hits to candidate pins on the map. Self-transition — sets `search-context` from the current query, candidate set, and viewport, then dismisses the dropdown and keyboard. Provider candidates from `search-context` render as pins via the searchCandidatePins list; existing-entry hits are *not* rendered as candidate pins because they already appear as Collection Entry pins on the map. Gated on the dropdown containing at least one *unadopted provider candidate* — an existing-entry-only result set does not enable the affordance, because nothing new would render."
+        },
+        "SEARCH_THIS_AREA": {
+          "guard": "inSearchResults",
+          "description": "Live only when `search-context` is set. Self-transition — re-issues the committed query against the current viewport via Location.resolve, replaces `search-context.candidates` and `search-context.viewportAtQuery` with the new result and viewport. The affordance (a chip over the map) only renders when the live viewport has drifted past a threshold from `search-context.viewportAtQuery`; the threshold itself is a UI detail (e.g., center moved beyond ~30% of viewport span, or zoom delta ≥ 1)."
+        },
+        "CLEAR_SEARCH": {
+          "guard": "inSearchResults",
+          "description": "Live only when `search-context` is set. Self-transition — drops `search-context`, removing the candidate pins and the *Search this area* chip. Reached two ways: explicitly via the trailing close (X) affordance on the search field, or implicitly when the user begins editing the query field while search-context is set (any keystroke into the field exits searchResults mode and resumes normal typing — the field then behaves as it does in non-searchResults modes). The implicit-edit path means typing in the field always represents 'starting a new query', never 'filtering the committed candidate set'."
         }
       }
     },

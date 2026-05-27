@@ -22,6 +22,16 @@ The **collectionsButton** region is an extended floating action button anchored 
 
 *Jump the map to a Collection* (`MapOverview.jumpToCollection`) has no affordance on this surface yet; it is in the sidecar's `deferred` array as an acknowledged gap.
 
+## Search-results mode
+
+The surface has a third mode, **searchResults**, orthogonal to browse/addToCollection — the user can be in either of those *and* in searchResults at the same time. It is entered from the **search** region: typing in the field shows the inline dropdown of hits as before, and the dropdown carries an additional *Search on map* affordance (`COMMIT_SEARCH_TO_MAP`) that pivots the candidate set onto the map as pins.
+
+When that affordance fires, the surface sets a `search-context` carrying `{ query, candidates, viewportAtQuery }` and the dropdown dismisses. The candidates render as the **searchCandidatePins** list — pins styled distinctly from Collection Entry pins so the user can tell *result-to-adopt* from *already-saved*. Existing-entry hits are not re-drawn as candidate pins because their owning Entry's pin is already on the map. Tapping a candidate pin fires `PICK_SEARCH_RESULT` (browse mode) or `PICK_SEARCH_RESULT_FOR_ADD` (when also in add-to-collection mode) — the same events the dropdown emits, reused unchanged.
+
+Two further affordances are live only in searchResults mode: a **searchThisAreaChip** region overlaid on the map renders *Search this area* (`SEARCH_THIS_AREA`) when the live viewport has drifted past a threshold from `search-context.viewportAtQuery` — tapping it re-runs the committed query against the now-current viewport and replaces the candidate pins; and the search field grows a trailing close (X) holding *Clear search* (`CLEAR_SEARCH`), which drops `search-context` and exits the mode. `CLEAR_SEARCH` also fires implicitly when the user begins editing the query field — typing into the field always means *start a new search*, never *filter the committed candidate set*, so a single keystroke pops the surface out of searchResults mode and resumes the normal typing flow.
+
+`search-context` lives in MapOverview's UiState as the host of its four sheets, so it survives every sheet round-trip the same way `collection-context` does: a candidate pin → `LocationDraftSheet` → `AddLocationToCollection` → back to MapOverview re-presents the same candidate pins and viewport rather than a cleared map. This is the loop that makes rapid add-to-collection from a single search work — pick a pin, add it, land back among the rest.
+
 ## Add-to-collection mode
 
 `MapOverview` has two entry modes, set by how the user arrived (doc02.02.01). The default is **browse mode** — the landing surface as described above. Entering from `CollectionDetail`'s *Add a Collection Entry* (`TAP_ADD_ENTRY`) instead opens **add-to-collection mode**: a Collection is carried as entry context (`collection-context`), and the chrome shifts to single-task the user on completing the add — competing-flow affordances are suppressed and a cancel-the-flow affordance is added.

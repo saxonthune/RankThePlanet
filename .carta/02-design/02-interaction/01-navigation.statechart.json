@@ -10,7 +10,7 @@
       "meta": {
         "surface": "MapOverview",
         "modality": "fullScreen",
-        "hostsSheets": ["LocationDraftSheet", "LocationSheet", "EntrySheet", "AddLocationToCollection"],
+        "hostsSheets": ["LocationDraftSheet", "LocationSheet", "EntrySheet", "AddLocationToCollection", "CollectionList"],
         "modes": {
           "browse": "Default; entered as the landing surface or via BACK from any descendant. No carried context.",
           "addToCollection": "Entered from CollectionDetail's TAP_ADD_ENTRY. `collection-context` is set and propagates to every Location-opening transition.",
@@ -20,15 +20,16 @@
           "collection-context": "Optional Collection carried into add-to-collection mode. Source: CollectionDetail's TAP_ADD_ENTRY. Consumed by: the statusBar region (display) and AddLocationToCollection's pre-selection.",
           "location-context": "Optional already-committed Location carried when LocationSheet's TAP_ADD_ENTRY hands off to AddLocationToCollection. Lives in MapOverview's UiState because both sheets are hosted here; consumed by AddLocationToCollection in place of LocationDraftSheet's candidate.",
           "pending-review-context": "Optional Entry just created by AddLocationToCollection's PICK_COLLECTION. Transient — the surface renders a Snackbar (\"Review {place}?\" + action) over the bare map; the action fires GO_TO_REVIEW, the dismiss fires DISMISS_REVIEW_BAR, and either drops the context. Not a mode — the chrome is unchanged.",
-          "search-context": "Optional committed search state: the query string, the candidate list returned by the provider at commit time, and the viewport that was active when the query was issued. Source: COMMIT_SEARCH_TO_MAP (committing the inline dropdown) or SEARCH_THIS_AREA (re-running the same query against the current viewport). Lives in MapOverview's UiState as the host of LocationDraftSheet, LocationSheet, EntrySheet, and AddLocationToCollection, so it survives every sheet round-trip just like collection-context does — landing back on MapOverview after a Draft / AddToCollection flow re-presents the same candidate pins and viewport rather than a cleared map, which is what makes the rapid-add loop possible. Consumed by: the searchCandidatePins list (renders pins for each candidate), the searchThisAreaChip region (compares viewportAtQuery against live viewport to decide when to show), and the CLEAR_SEARCH affordance."
+          "search-context": "Optional committed search state: the query string, the candidate list returned by the provider at commit time, and the viewport that was active when the query was issued. Source: COMMIT_SEARCH_TO_MAP (committing the inline dropdown) or SEARCH_THIS_AREA (re-running the same query against the current viewport). Lives in MapOverview's UiState as the host of LocationDraftSheet, LocationSheet, EntrySheet, and AddLocationToCollection, so it survives every sheet round-trip just like collection-context does — landing back on MapOverview after a Draft / AddToCollection flow re-presents the same candidate pins and viewport rather than a cleared map, which is what makes the rapid-add loop possible. Consumed by: the searchCandidatePins list (renders pins for each candidate), the searchThisAreaChip region (compares viewportAtQuery against live viewport to decide when to show), and the CLEAR_SEARCH affordance.",
+          "filter-context": "Optional set of Collection ids whose pins (and their Entries' pins) are the only ones rendered on the map; pins from every other Collection are hidden. Source: CollectionList's APPLY_FILTER (the sheet's selection-mode *See on map* button) or EntrySheet's JUMP_TO_COLLECTION (a single-Collection focus from the Entry surface). Persists across sheet round-trips. Consumed by: the pins list (visibility predicate) and the filterChip region (renders the chip with leading Collection appearance and a trailing close (X) that fires CLEAR_FILTER). Set on entry by APPLY_FILTER also fits the viewport to the union of the filtered Collections' Entries (MapOverview.jumpToCollection); single-Collection set via JUMP_TO_COLLECTION fits to that Collection's Entries. Not a mode — the chrome is unchanged."
         },
-        "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context", "location-context", "pending-review-context", "search-context"],
+        "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context", "location-context", "pending-review-context", "search-context", "filter-context"],
         "actions": [
           "MapOverview.open",
           "MapOverview.pan",
           "MapOverview.zoom",
           "MapOverview.selectPin",
-          "MapOverview.toggleCollection",
+          "MapOverview.jumpToCollection",
           "Location.resolve"
         ]
       },
@@ -45,7 +46,18 @@
         },
         "TAP_COLLECTIONS_BUTTON": {
           "target": "CollectionList",
-          "description": "User opens the list of Collections to manage them."
+          "description": "User opens CollectionList as a tall bottom-sheet drawer over the map. The map stays mounted behind the sheet — CollectionList is hosted here per doc02.04 Rule 2. Suppressed in add-to-collection mode (no collectionsButton to fire it)."
+        },
+        "TAP_FILTER_CHIP": {
+          "target": "CollectionList",
+          "guard": "hasFilter",
+          "description": "Live only when `filter-context` is set. User taps the body of the filterChip (not its trailing close — that fires CLEAR_FILTER) to edit the active filter. Opens CollectionList as a sheet pre-loaded in selection mode with the rows in `filter-context.collectionIds` pre-checked, so the user can adjust the set rather than reconstruct it.",
+          "propagates": ["filter-context"]
+        },
+        "CLEAR_FILTER": {
+          "target": "MapOverview",
+          "guard": "hasFilter",
+          "description": "Live only when `filter-context` is set. Self-transition — drops `filter-context`, restoring all Collections' pins to the map. Reached via the trailing close (X) on the filterChip."
         },
         "DROP_PIN": {
           "target": "LocationDraftSheet",
@@ -158,7 +170,8 @@
         },
         "JUMP_TO_COLLECTION": {
           "target": "MapOverview",
-          "description": "User taps the trailing *See on Map* icon button on the collectionRow. Dismisses the drawer and re-enters MapOverview with its menuDrawer filter set to show only this Collection's pins and its viewport fit to that Collection's Entries. Invokes MapOverview.jumpToCollection on entry."
+          "description": "User taps the trailing *See on Map* icon button on the collectionRow. Dismisses the sheet and re-enters MapOverview with `filter-context` set to a single-element set containing this Collection's id, and the viewport fit to that Collection's Entries (MapOverview.jumpToCollection). Single-Collection variant of CollectionList's APPLY_FILTER.",
+          "propagates": ["filter-context"]
         },
         "TAP_EDIT_REVIEW": {
           "target": "ReviewForm",
@@ -178,18 +191,27 @@
     },
 
     "CollectionList": {
-      "description": "Manage the user's Collections. Create new ones, open existing ones, import external lists.",
-      "tags": ["list"],
+      "description": "Manage the user's Collections and configure which ones the map renders. Hosted as a tall bottom-sheet drawer over MapOverview (doc02.04 Rule 2), not a NavHost route — the map and any MapOverview-owned context (collection-context, search-context, filter-context) survive the sheet round-trip. Two modes: browse (the default — list rows are tappable to open a Collection, the topBar holds creation affordances) and selection (entered by long-pressing any row — rows grow leading checkboxes, the topBar swaps to a `{n} selected` action bar holding *Cancel* and *See on map*, and tapping rows toggles selection instead of navigating). Selection mode is also pre-entered when the sheet is opened via MapOverview's TAP_FILTER_CHIP with the active filter pre-checked, so the user can edit the filter set in place.",
+      "tags": ["list", "sheet"],
       "meta": {
         "surface": "CollectionList",
-        "modality": "fullScreen",
-        "reads": ["collections"],
+        "modality": "sheet",
+        "host": "MapOverview",
+        "modes": {
+          "browse": "Default. Rows are tappable to open a Collection; topBar shows the two creation affordances.",
+          "selection": "Entered by long-pressing any row (ENTER_SELECT_MODE), or by opening the sheet via TAP_FILTER_CHIP with `filter-context` set. Rows grow leading checkboxes; tap toggles selection; topBar swaps to a selection action bar."
+        },
+        "context": {
+          "filter-context": "Optional. Forwarded by MapOverview's TAP_FILTER_CHIP when the user opens the sheet to edit an active filter. Pre-selects the corresponding rows and pre-enters selection mode. Carried back to MapOverview by APPLY_FILTER (replacing the prior set) or dropped by EXIT_SELECT_MODE / BACK (leaving the active filter on the map untouched)."
+        },
+        "reads": ["collections", "filter-context"],
         "actions": ["Collection.create", "Collection.import"]
       },
       "on": {
         "TAP_COLLECTION": {
           "target": "CollectionDetail",
-          "description": "User opens a Collection to see its Collection Entries."
+          "guard": "notInSelectionMode",
+          "description": "Live only in browse mode. User taps a row to open a Collection and see its Entries. In selection mode the same tap toggles the row's checkbox instead — handled by TOGGLE_ROW_SELECTION, a within-mode self-transition not modeled here."
         },
         "TAP_NEW_COLLECTION": {
           "target": "CollectionEditor",
@@ -199,9 +221,24 @@
           "target": "ImportFlow",
           "description": "User imports an external collection (KML, GeoJSON, RTP bundle, third-party share URL)."
         },
+        "ENTER_SELECT_MODE": {
+          "target": "CollectionList",
+          "description": "Self-transition. User long-presses any row to enter selection mode. The long-pressed row starts checked; the topBar swaps to the `{n} selected` action bar (Cancel + See on map). Parallel to CollectionDetail's TAP_TOGGLE_PROJECTION — a within-surface mode toggle, not a navigation transition."
+        },
+        "EXIT_SELECT_MODE": {
+          "target": "CollectionList",
+          "description": "Self-transition. User taps the *Cancel* affordance on the selection action bar. Drops the in-progress selection set, returns the sheet to browse mode. Does not affect MapOverview's `filter-context` — to clear the active map filter use CLEAR_FILTER on the chip."
+        },
+        "APPLY_FILTER": {
+          "target": "MapOverview",
+          "guard": "inSelectionMode",
+          "description": "Live only in selection mode. User taps *See on map* on the selection action bar with at least one row checked. Dismisses the sheet, sets MapOverview's `filter-context` to the selected Collection ids (replacing any prior value), and fits the viewport to the union of those Collections' Entries (MapOverview.jumpToCollection).",
+          "propagates": ["filter-context"]
+        },
         "BACK": {
           "target": "MapOverview",
-          "description": "Return to the everything view."
+          "label": "Dismiss the sheet",
+          "description": "Dismiss the sheet — typically the swipe-down or scrim-tap gesture — and return to MapOverview. The active `filter-context` on MapOverview is untouched; this only closes the sheet."
         }
       }
     },

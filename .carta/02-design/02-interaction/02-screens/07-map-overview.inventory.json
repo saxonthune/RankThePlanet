@@ -6,13 +6,13 @@
       "purpose": "The full-screen map canvas — a pin for every Collection Entry in every visible Collection. Panning and zooming move the viewport; a long-press drops a pin."
     },
     {
-      "id": "menuButton",
-      "purpose": "A button in the top-left navigationIcon slot. In browse mode it shows the menu (hamburger) icon and opens the app menu drawer; suppressed in add-to-collection mode (replaced by closeButton).",
+      "id": "settingsButton",
+      "purpose": "A button in the top-left navigationIcon slot in browse and searchResults modes. Shows the settings (cog) icon and opens the Settings surface. Suppressed in add-to-collection mode (replaced by closeButton).",
       "appearsInModes": ["browse"]
     },
     {
       "id": "closeButton",
-      "purpose": "A button in the top-left navigationIcon slot in add-to-collection mode. Shows the close (X) icon and cancels the add-to-collection flow, dropping the carried Collection and returning to CollectionDetail. Replaces menuButton during the flow.",
+      "purpose": "A button in the top-left navigationIcon slot in add-to-collection mode. Shows the close (X) icon and cancels the add-to-collection flow, dropping the carried Collection and returning to CollectionDetail. Replaces settingsButton during the flow.",
       "appearsInModes": ["addToCollection"]
     },
     {
@@ -27,13 +27,13 @@
     },
     {
       "id": "collectionsButton",
-      "purpose": "An extended floating action button anchored bottom-end over the map, holding entry to the Collection list. Suppressed in add-to-collection mode so the user cannot start a second flow.",
+      "purpose": "An extended floating action button anchored bottom-end over the map, opening the CollectionList sheet (a tall bottom-sheet drawer hosted here per doc02.04 Rule 2). Suppressed in add-to-collection mode so the user cannot start a second flow.",
       "appearsInModes": ["browse"]
     },
     {
-      "id": "menuDrawer",
-      "purpose": "A left-hand drawer, opened from the menuButton — the app menu. Holds a Filter section — a field to search the user's Collections by name and a list of Collections, each toggleable to show or hide its pins — and an entry to Settings. Suppressed in add-to-collection mode (no menuButton to open it).",
-      "appearsInModes": ["browse"]
+      "id": "filterChip",
+      "purpose": "A Material 3 input/assist chip overlaid on the upper area of the map (anchored to the safe-area inset, sitting under the search field). Renders only when `filter-context` is set. Leading content reflects the filter: for a single-Collection filter, the Collection's appearance dot; for a multi-Collection filter, a stacked-dots glyph (or the leading Collection's dot). Label reads the Collection name when n=1 or `Filtered: {n} Collections` when n>1. Trailing close (X) icon fires CLEAR_FILTER. Tapping the chip body (not the close) fires TAP_FILTER_CHIP and reopens CollectionList in selection mode with the active filter pre-checked. Context-driven overlay (doc02.04 Rule 1); chrome is unchanged so this is not a mode.",
+      "reactsToContext": ["filter-context"]
     },
     {
       "id": "statusBar",
@@ -63,22 +63,10 @@
       "target": "LocationDraftSheet"
     },
     {
-      "id": "open-menu",
-      "label": "Open the app menu",
-      "region": "menuButton",
-      "appearsInModes": ["browse"]
-    },
-    {
       "id": "search-locations",
       "label": "Search for a place",
       "region": "search",
       "action": "Location.resolve"
-    },
-    {
-      "id": "search-collections",
-      "label": "Search the collection list",
-      "region": "menuDrawer",
-      "appearsInModes": ["browse"]
     },
     {
       "id": "open-collections",
@@ -91,10 +79,26 @@
     {
       "id": "open-settings",
       "label": "Open Settings",
-      "region": "menuDrawer",
+      "region": "settingsButton",
       "event": "TAP_SETTINGS",
       "target": "Settings",
       "appearsInModes": ["browse"]
+    },
+    {
+      "id": "tap-filter-chip",
+      "label": "Edit the active filter",
+      "region": "filterChip",
+      "event": "TAP_FILTER_CHIP",
+      "target": "CollectionList",
+      "reactsToContext": ["filter-context"]
+    },
+    {
+      "id": "clear-filter",
+      "label": "Clear filter",
+      "region": "filterChip",
+      "event": "CLEAR_FILTER",
+      "reactsToContext": ["filter-context"],
+      "rendering": "Trailing close (X) icon on the filterChip; tapping it drops `filter-context` and restores all Collections' pins."
     },
     {
       "id": "cancel-add",
@@ -177,7 +181,8 @@
           }
         ]
       },
-      "emptyState": "Before any Collection has Entries the map shows no pins; the collectionsButton still points the user toward creating a Collection."
+      "emptyState": "Before any Collection has Entries the map shows no pins; the collectionsButton still points the user toward creating a Collection.",
+      "visibility": "When `filter-context` is set, only pins whose owning Collection's id is in `filter-context.collectionIds` render; every other pin is hidden. With no `filter-context` set, every Collection's pins render."
     },
     {
       "id": "search-results",
@@ -248,27 +253,7 @@
       },
       "composition": "Drawn from `search-context.candidates`, the candidate list committed by COMMIT_SEARCH_TO_MAP and refreshed by SEARCH_THIS_AREA. The list is *only* the unadopted provider candidates from that committed set — existing-entry hits are already drawn by the `pins` list (their owning Entry's pin) and would double-render.",
       "emptyState": "If a SEARCH_THIS_AREA refresh returns zero candidates, the searchResults mode stays active with an empty candidate set; the chip remains available for further re-queries and CLEAR_SEARCH exits the mode."
-    },
-    {
-      "id": "collections",
-      "region": "menuDrawer",
-      "iterates": "Collection",
-      "reads": "all-collections",
-      "appearsInModes": ["browse"],
-      "item": {
-        "shows": [
-          "the Collection's name",
-          "the Collection's appearance color",
-          "whether its pins are currently shown"
-        ],
-        "affordance": {
-          "id": "toggle-collection",
-          "label": "Toggle a Collection's pins on the map",
-          "action": "MapOverview.toggleCollection"
-        }
-      },
-      "emptyState": "With no Collections the drawer's Filter section is empty; the user has nothing to toggle yet."
     }
   ],
-  "deferred": ["MapOverview.open"]
+  "deferred": ["MapOverview.open", "MapOverview.jumpToCollection"]
 }

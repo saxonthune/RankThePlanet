@@ -128,6 +128,27 @@
       "targets": ["CollectionList",         "CollectionDetail",  "MapOverview",   "LocationSearch", "LocationSheet",              "CollectionDetail", "ReviewForm"]
     },
     {
+      "id": "filter-map-from-sheet",
+      "description": "Open the CollectionList sheet from the map, long-press a row to enter selection mode (the long-pressed row starts checked), then tap *See on map* on the selection action bar to apply the filter. Lands on MapOverview with `filter-context` set to the selected Collection ids and the viewport fit to the union of those Collections' Entries. The filterChip renders over the upper area of the map with a trailing close (X) to clear the filter.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "ENTER_SELECT_MODE", "APPLY_FILTER"],
+      "targets": ["CollectionList",         "CollectionList",    "MapOverview"]
+    },
+    {
+      "id": "clear-map-filter",
+      "description": "With `filter-context` active on MapOverview, tap the trailing close (X) on the filterChip. Self-transition that drops `filter-context` and restores all Collections' pins to the map.",
+      "start": "MapOverview",
+      "events":  ["CLEAR_FILTER"],
+      "targets": ["MapOverview"]
+    },
+    {
+      "id": "edit-active-filter",
+      "description": "With `filter-context` active on MapOverview, tap the filterChip body (not its close) to reopen CollectionList in selection mode with the active filter pre-checked. Adjust the selection and tap *See on map* to commit the new filter set, replacing the prior one.",
+      "start": "MapOverview",
+      "events":  ["TAP_FILTER_CHIP", "APPLY_FILTER"],
+      "targets": ["CollectionList",  "MapOverview"]
+    },
+    {
       "id": "browse-to-submit-review",
       "description": "From the map, drill into a Collection, open one of its Entries, edit the review, submit, land back on the Entry detail with the review now saved.",
       "start": "MapOverview",

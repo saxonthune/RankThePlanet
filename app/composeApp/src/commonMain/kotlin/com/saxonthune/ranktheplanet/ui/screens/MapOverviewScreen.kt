@@ -7,11 +7,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,6 +27,8 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -53,6 +61,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -101,10 +111,16 @@ fun MapOverviewScreen(
     onNewCollectionForDraft: () -> Unit,
     onGoToReview: (EntryId) -> Unit,
     onPendingReviewDismissed: () -> Unit,
+    initialFilterCollectionId: String? = null,
     pendingNewCollectionForDraft: String? = null,
     onPendingNewCollectionForDraftConsumed: () -> Unit = {},
 ) {
     val vm = viewModel { MapOverviewViewModel(collections, entries, providerRegistry, templates, projection, session, locations) }
+
+    LaunchedEffect(initialFilterCollectionId) {
+        val id = initialFilterCollectionId ?: return@LaunchedEffect
+        vm.applyFilter(setOf(CollectionId(id)))
+    }
 
     LaunchedEffect(pendingNewCollectionForDraft) {
         val id = pendingNewCollectionForDraft ?: return@LaunchedEffect
@@ -170,6 +186,14 @@ fun MapOverviewScreen(
                         bearing = pos.bearing,
                     )
                 )
+                cameraState.projection?.queryVisibleBoundingBox()?.let { bbox ->
+                    vm.onVisibleBoundsChange(
+                        south = bbox.southwest.latitude,
+                        west = bbox.southwest.longitude,
+                        north = bbox.northeast.latitude,
+                        east = bbox.northeast.longitude,
+                    )
+                }
             }
     }
 
@@ -263,6 +287,7 @@ fun MapOverviewScreen(
                                         IconButton(onClick = {
                                             vm.clearSearch()
                                             searchQuery = ""
+                                            vm.onQueryChange("")
                                         }) {
                                             Icon(Icons.Default.Close, contentDescription = "Clear search results")
                                         }
@@ -271,12 +296,58 @@ fun MapOverviewScreen(
                             )
                         },
                     )
-                    if (searchExpanded && state.searchHits.isNotEmpty()) {
+                    if (searchExpanded && searchQuery.isNotBlank()) {
+                        val density = LocalDensity.current
+                        val windowInfo = LocalWindowInfo.current
+                        val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+                        val screenHeight = with(density) { windowInfo.containerSize.height.toDp() }
+                        // TopAppBar standard height is 64.dp; leave the rest for the dropdown so
+                        // the keyboard never clips the list — the IME inset is the load-bearing constraint.
+                        val maxDropdownHeight = (screenHeight - 64.dp - imeBottom).coerceAtLeast(0.dp)
+                        val hasCandidate = state.searchHits.any { it is SearchHitUi.Candidate }
                         Surface(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = maxDropdownHeight),
                             tonalElevation = 8.dp,
                         ) {
-                            Column {
+                            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    TextButton(
+                                        onClick = { vm.submitSearch() },
+                                        modifier = Modifier.weight(1f),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Refresh,
+                                            contentDescription = null,
+                                            modifier = Modifier.padding(end = 8.dp),
+                                        )
+                                        Text("Search")
+                                    }
+                                    if (hasCandidate) {
+                                        TextButton(
+                                            onClick = {
+                                                vm.commitSearchToMap()
+                                                searchExpanded = false
+                                            },
+                                            modifier = Modifier.weight(1f),
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Place,
+                                                contentDescription = null,
+                                                modifier = Modifier.padding(end = 8.dp),
+                                            )
+                                            Text("Search on map")
+                                        }
+                                    }
+                                }
+                                HorizontalDivider()
                                 state.searchHits.forEach { hit ->
                                     SearchHitRow(
                                         hit = hit,
@@ -293,25 +364,6 @@ fun MapOverviewScreen(
                                         },
                                     )
                                     HorizontalDivider()
-                                }
-                                if (state.searchHits.any { it is SearchHitUi.Candidate }) {
-                                    TextButton(
-                                        onClick = {
-                                            vm.commitSearchToMap()
-                                            searchExpanded = false
-                                            searchQuery = ""
-                                        },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Place,
-                                            contentDescription = null,
-                                            modifier = Modifier.padding(end = 8.dp),
-                                        )
-                                        Text("Search on map")
-                                    }
                                 }
                             }
                         }
@@ -377,16 +429,33 @@ fun MapOverviewScreen(
                         },
                     )
                 }
-                if (state.showSearchThisAreaChip) {
+                if (state.showSearchThisAreaChip || state.isSearchingArea) {
+                    val searching = state.isSearchingArea
                     AssistChip(
                         onClick = { vm.searchThisArea() },
-                        label = { Text("Search this area") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = null,
-                            )
+                        enabled = !searching,
+                        label = {
+                            Text(if (searching) "Searching…" else "Search this area")
                         },
+                        leadingIcon = {
+                            if (searching) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = null,
+                                )
+                            }
+                        },
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
+                        ),
+                        border = AssistChipDefaults.assistChipBorder(enabled = !searching),
+                        elevation = AssistChipDefaults.assistChipElevation(elevation = 3.dp),
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(top = 72.dp),

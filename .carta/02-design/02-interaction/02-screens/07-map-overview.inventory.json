@@ -17,7 +17,8 @@
     },
     {
       "id": "search",
-      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the navigationIcon. Tapping it widens the field and raises the keyboard. Results are biased near the current map viewport — the visible center is the query's locality anchor — and interleave two sources: Locations the user already has Entries for (rendered with their owning Collection's color dot) and unadopted provider candidates. Whether the field queries per keystroke or only on submit is a per-provider trait declared on LocationProvider (doc03.02.02); the field follows the active provider's setting. Present in all modes — finding a place is part of completing the add flow. In searchResults mode the field renders the committed query with a trailing close (X) affordance that fires CLEAR_SEARCH."
+      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the navigationIcon. Tapping it widens the field and raises the keyboard. Results are biased near the current map viewport — the visible center is the query's locality anchor — and interleave two sources: Locations the user already has Entries for (rendered with their owning Collection's color dot) and unadopted provider candidates. Whether the field queries per keystroke or only on submit is a per-provider trait declared on LocationProvider (doc03.02.02); the field follows the active provider's setting. Present in all modes — finding a place is part of completing the add flow. In searchResults mode the field renders the committed query with a trailing close (X) affordance that fires CLEAR_SEARCH.",
+      "rendering": "The dropdown's container consumes `WindowInsets.ime` so its available height is screen − keyboard − search-field; the search-results list scrolls within that remaining height. No keyboard-height constants or platform branches — the inset animates in lockstep with the IME on show/hide."
     },
     {
       "id": "searchThisAreaChip",
@@ -126,11 +127,18 @@
       "rendering": "Snackbar timeout or swipe-dismiss. Drops pending-review-context; the Entry stays saved."
     },
     {
+      "id": "submit-search",
+      "label": "Search",
+      "region": "search",
+      "event": "SUBMIT_SEARCH",
+      "rendering": "A button on the dropdown's action row — the row directly under the search field and above the hit list, shared with commit-search-to-map. Always present while the dropdown is open, irrespective of the active provider's `supportsTypeahead` trait. Tapping it re-issues the current query against the current viewport via Location.resolve; the dropdown's hit list refreshes in place and the field, keyboard, and dropdown stay open. Useful for non-typeahead providers (the user types then submits) and for typeahead providers when the viewport has moved since the last keystroke."
+    },
+    {
       "id": "commit-search-to-map",
       "label": "Search on map",
       "region": "search",
       "event": "COMMIT_SEARCH_TO_MAP",
-      "rendering": "A trailing button or row affordance on the search dropdown — only renders when the dropdown contains at least one unadopted provider candidate. Existing-entry-only results do not enable it (nothing new to pin). Tapping it dismisses the dropdown and keyboard, sets `search-context` from the current query / candidate set / viewport, and pivots the surface into searchResults mode."
+      "rendering": "A button on the dropdown's action row — the row directly under the search field and above the hit list, shared with submit-search. Only renders when the dropdown contains at least one unadopted provider candidate. Existing-entry-only results do not enable it (nothing new to pin). Tapping it dismisses the dropdown and keyboard, sets `search-context` from the current query / candidate set / viewport, and pivots the surface into searchResults mode."
     },
     {
       "id": "search-this-area",
@@ -160,7 +168,8 @@
         "shows": [
           "a pin at the Entry's Location coordinates",
           "the pin colored by its Collection's appearance",
-          "reviewed or unreviewed styling from the Entry's Review status"
+          "reviewed or unreviewed styling from the Entry's Review status",
+          "a darkened color variant when the pin's Location matches the host sheet currently open over MapOverview (LocationSheet, EntrySheet, or a Peek-shaped PinSheet) — a derived projection of which sheet is active, not a separately carried context; clears on sheet dismiss. See statechart `meta.derivedRendering.selectedPin` on MapOverview (doc02.02.01)"
         ],
         "affordance": {
           "id": "tap-pin",
@@ -231,8 +240,8 @@
       "appearsInModes": ["searchResults"],
       "item": {
         "shows": [
-          "a pin at the candidate's coordinates",
-          "candidate styling distinct from Collection Entry pins so the user can tell *result-to-adopt* from *already-saved*"
+          "a pin at the candidate's coordinates, drawn with the same teardrop body as Collection Entry pins but slightly smaller so a coincident entry pin's silhouette pokes out around the edges — the user can tell another pin is underneath",
+          "candidate styling distinct from Collection Entry pins (orange tint, smaller size) so the user can tell *result-to-adopt* from *already-saved*"
         ],
         "affordance": {
           "id": "tap-candidate-pin",

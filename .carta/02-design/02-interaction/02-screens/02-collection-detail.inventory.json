@@ -4,7 +4,7 @@
   "regions": [
     {
       "id": "topBar",
-      "purpose": "Identifies the Collection and holds the Collection-level affordances."
+      "purpose": "Identifies the Collection — title leads with a colored dot rendering the Collection's appearance — and holds the Collection-level affordances."
     },
     {
       "id": "details",
@@ -67,6 +67,14 @@
       "label": "Export the Collection — KML or GeoJSON",
       "region": "topBar",
       "action": "Collection.export"
+    },
+    {
+      "id": "view-on-map",
+      "label": "View on map",
+      "region": "topBar",
+      "event": "JUMP_TO_COLLECTION",
+      "target": "MapOverview",
+      "notes": "Re-enters MapOverview with `filter-context` set to a single-element set containing this Collection's id; the viewport fits to the Collection's Entries (MapOverview.jumpToCollection). Single-Collection variant of CollectionList's APPLY_FILTER."
     }
   ],
   "lists": [

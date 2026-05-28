@@ -95,6 +95,7 @@ class MapOverviewViewModelTest {
         collectionId = collectionId,
         location = makeLocation(locationId, lat, lng),
         review = null,
+        added = "2026-01-01T00:00:00Z",
     )
 
     private fun makeVm(
@@ -105,7 +106,7 @@ class MapOverviewViewModelTest {
         val provider = object : LocationProvider {
             override val type = SourceType.Fake
             override val supportsTypeahead = supportsTypeahead
-            override suspend fun resolve(query: String, near: Coordinates?) =
+            override suspend fun resolve(query: String, bias: com.saxonthune.ranktheplanet.data.location.LocationBias?) =
                 ProviderResult.Ok(if (query.isBlank()) emptyList() else candidates)
             override suspend fun resolveNearby(coordinates: Coordinates) =
                 ProviderResult.Ok(emptyList<LocationCandidate>())
@@ -141,7 +142,7 @@ class MapOverviewViewModelTest {
             override fun observeByCollection(collectionId: CollectionId): Flow<List<Entry>> =
                 MutableStateFlow(entriesList.filter { it.collectionId == collectionId })
             override fun observe(entryId: EntryId): Flow<Entry?> = MutableStateFlow(null)
-            override suspend fun editReview(entryId: EntryId, data: Map<String, String>, templateVersion: Int) =
+            override suspend fun editReview(entryId: EntryId, data: Map<String, String>) =
                 Result.failure<Entry>(UnsupportedOperationException())
         }
 

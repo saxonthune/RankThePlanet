@@ -40,7 +40,6 @@ internal class SqlEntryRepository(
     override suspend fun editReview(
         entryId: EntryId,
         data: Map<String, String>,
-        templateVersion: Int,
     ): Result<Entry> = withContext(Dispatchers.Default) {
         runCatching {
             database.transactionWithResult {
@@ -53,23 +52,18 @@ internal class SqlEntryRepository(
                     ?: throw IllegalStateException("Collection not found: ${entryRow.collectionId.value}")
 
                 val currentVersion = collection.template_version.toInt()
-                if (templateVersion != currentVersion) {
-                    throw IllegalStateException(
-                        "template version drift: caller=$templateVersion collection=$currentVersion"
-                    )
-                }
-                val existingReview = entryRow.review
-                if (existingReview != null && existingReview.recordedTemplateVersion != currentVersion) {
-                    throw IllegalStateException(
-                        "template version drift: recorded=${existingReview.recordedTemplateVersion} collection=$currentVersion"
-                    )
-                }
+                val currentFieldNames = database.templateFieldQueries
+                    .selectByCollectionAndVersion(entryRow.collectionId.value, collection.template_version)
+                    .executeAsList()
+                    .map { it.name }
+                    .toSet()
+                val reconciled = data.filterKeys { it in currentFieldNames }
 
                 val now = nowIso()
-                val dataJson = encodeReviewData(data)
+                val dataJson = encodeReviewData(reconciled)
                 database.entryQueries.updateReviewData(
                     data_ = dataJson,
-                    recorded_template_version = templateVersion.toLong(),
+                    recorded_template_version = currentVersion.toLong(),
                     last_modified = now,
                     id = entryId.value,
                 )
@@ -77,12 +71,13 @@ internal class SqlEntryRepository(
                 opLogWriter.append(Op.ReviewEdited(
                     entryId = entryId.value,
                     data = dataJson,
-                    templateVersion = templateVersion,
+                    templateVersion = currentVersion,
                 ))
 
+                val existingReview = entryRow.review
                 val updatedReview = ReviewInstance(
-                    data = data.toImmutableMap(),
-                    recordedTemplateVersion = templateVersion,
+                    data = reconciled.toImmutableMap(),
+                    recordedTemplateVersion = currentVersion,
                     created = existingReview?.created ?: now,
                     lastModified = now,
                 )

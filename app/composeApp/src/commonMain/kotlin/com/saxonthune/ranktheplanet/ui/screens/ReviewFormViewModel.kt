@@ -6,7 +6,12 @@ import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.domain.EntryId
+import com.saxonthune.ranktheplanet.domain.FieldType
 import com.saxonthune.ranktheplanet.domain.TemplateField
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
@@ -39,7 +44,7 @@ sealed interface ReviewFormEvent {
     data object Saved : ReviewFormEvent
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
 class ReviewFormViewModel(
     private val entryId: EntryId,
     private val entries: EntryRepository,
@@ -67,7 +72,7 @@ class ReviewFormViewModel(
         val s = _state.value
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true, error = null) }
-            entries.editReview(entryId, s.draft, s.currentTemplateVersion)
+            entries.editReview(entryId, s.draft)
                 .onSuccess { _events.send(ReviewFormEvent.Saved) }
                 .onFailure { e -> _state.update { it.copy(isSaving = false, error = e.message ?: "Save failed") } }
         }
@@ -97,19 +102,21 @@ class ReviewFormViewModel(
                     return@collect
                 }
                 val existing = entry.review
-                if (existing != null && existing.recordedTemplateVersion != template.version) {
-                    _state.value = ReviewFormUiState(
-                        title = entry.location.displayName,
-                        currentTemplateVersion = template.version,
-                        isLoading = false,
-                        error = "Template version mismatch (recorded=${existing.recordedTemplateVersion}, current=${template.version}). Pre-alpha: migration is not supported.",
-                    )
-                    return@collect
-                }
+                val fieldNames = template.fields.map { it.name }.toSet()
+                val reconciledDraft = (existing?.data ?: persistentMapOf())
+                    .filterKeys { it in fieldNames }
+                    .toPersistentMap()
+                val today = Clock.System.now()
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date
+                    .toString()
+                val draftWithDateDefaults = template.fields
+                    .filter { it.type == FieldType.Date && it.name !in reconciledDraft }
+                    .fold(reconciledDraft) { acc, field -> acc.put(field.name, today) }
                 _state.value = ReviewFormUiState(
                     title = entry.location.displayName,
                     fields = template.fields,
-                    draft = (existing?.data ?: persistentMapOf()).toPersistentMap(),
+                    draft = draftWithDateDefaults,
                     currentTemplateVersion = template.version,
                     isLoading = false,
                 )

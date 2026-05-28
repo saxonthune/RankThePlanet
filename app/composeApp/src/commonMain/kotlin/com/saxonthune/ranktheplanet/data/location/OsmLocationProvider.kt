@@ -48,15 +48,21 @@ class OsmLocationProvider(
         }
     }
 
-    override suspend fun resolve(query: String, near: Coordinates?): ProviderResult<List<LocationCandidate>> {
+    override suspend fun resolve(query: String, bias: LocationBias?): ProviderResult<List<LocationCandidate>> {
         throttle()
         return try {
             val response = client.get("$photonBase/api") {
                 parameter("q", query)
                 parameter("limit", "10")
-                if (near != null) {
-                    parameter("lat", near.lat.toString())
-                    parameter("lon", near.lng.toString())
+                when (bias) {
+                    is LocationBias.Point -> {
+                        parameter("lat", bias.coordinates.lat.toString())
+                        parameter("lon", bias.coordinates.lng.toString())
+                    }
+                    is LocationBias.Box -> {
+                        parameter("bbox", "${bias.west},${bias.south},${bias.east},${bias.north}")
+                    }
+                    null -> Unit
                 }
             }
             if (!response.status.isSuccess()) {

@@ -34,6 +34,20 @@ data class LocationCandidate(
                                     // Location.cachedMetadata
 )
 
+// A hint about where the caller is looking, supplied to `resolve` so providers
+// rank results in that area higher. Two shapes — a point (center of attention)
+// and a north-aligned box (the actual visible viewport). Always a bias, never
+// a filter: a strong textual match outside the hint still appears.
+sealed interface LocationBias {
+    data class Point(val coordinates: Coordinates) : LocationBias
+    data class Box(
+        val south: Double,
+        val west: Double,
+        val north: Double,
+        val east: Double,
+    ) : LocationBias
+}
+
 // Outcome of a provider call. A provider never throws across the seam;
 // network, rate-limit, and parse failures are values.
 sealed interface ProviderResult<out T> {
@@ -60,13 +74,13 @@ interface LocationProvider {
     val supportsTypeahead: Boolean
 
     // Forward / text search. Backs Location.resolve (doc01.03 §2). The
-    // optional `near` is a viewport-bias hint — the provider ranks results
-    // nearer this coordinate higher when supported, and ignores it otherwise.
-    // It is a bias, not a filter: a strong textual match far from `near`
-    // still appears.
+    // optional `bias` is a viewport hint — the provider ranks results nearer
+    // the supplied point or inside the supplied box higher when supported,
+    // and ignores it otherwise. It is a bias, not a filter: a strong textual
+    // match outside the bias still appears.
     suspend fun resolve(
         query: String,
-        near: Coordinates? = null,
+        bias: LocationBias? = null,
     ): ProviderResult<List<LocationCandidate>>
 
     // Reverse / proximity search. Backs Location.resolveNearby (doc01.03 §2).
@@ -76,7 +90,7 @@ interface LocationProvider {
 
 `resolve` and `resolveNearby` are the seam's whole surface — they back the two search actions of the Location concept and nothing else. `dropPin` produces a `Manual` Location with no provider involved, so it is not on this interface. `SourceType.Manual` is therefore never a provider `type`.
 
-The `near` hint maps cleanly onto each backing service: Photon's `lat`/`lon` bias parameters, Google Text Search's `locationBias` field. A provider whose backing service has no equivalent (a candidate kind not in the current catalogue) ignores `near` without error — biasing is best-effort, never a precondition.
+The `bias` hint maps cleanly onto each backing service. A `Point` becomes Photon's `lat`/`lon` parameters or Google's `locationBias.circle`; a `Box` becomes Photon's `bbox=west,south,east,north` or Google's `locationBias.rectangle`. The seam carries both shapes because the calling surface (MapOverview) has a real visible viewport, not just a center — a box bias is strictly more informative when available, and the providers that support both rank a "regional" intent like "regal cinema" inside Manhattan more accurately when the viewport is a rectangle rather than a single point. A provider whose backing service has no equivalent ignores the bias without error — biasing is best-effort, never a precondition.
 
 ### The registry
 

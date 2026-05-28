@@ -133,6 +133,7 @@ fun App(graph: RtpAppGraph? = null) {
                     },
                     onGoToReview = { entryId -> navController.navigate(ReviewForm(entryId.value)) },
                     onPendingReviewDismissed = { },
+                    initialFilterCollectionId = route.filterCollectionId,
                     pendingNewCollectionForDraft = pendingNewCollectionForDraft,
                     onPendingNewCollectionForDraftConsumed = { pendingNewCollectionForDraft = null },
                 )
@@ -146,8 +147,9 @@ fun App(graph: RtpAppGraph? = null) {
                     templates = templates,
                     portIo = portIo,
                     filePicker = filePicker,
-                    onAddEntry = { navController.navigate(MapOverview(route.collectionId)) },
+                    onAddEntry = { navController.navigate(MapOverview(addToCollectionId = route.collectionId)) },
                     onEditCollection = { navController.navigate(CollectionEditor(route.collectionId)) },
+                    onViewOnMap = { navController.navigate(MapOverview(filterCollectionId = route.collectionId)) },
                     onBack = { navController.popBackStack() },
                     onOpenEntry = { id -> navController.navigate(CollectionEntryDetail(id.value)) },
                 )

@@ -23,11 +23,18 @@ import kotlinx.coroutines.flow.update
 class PinRenderController {
     private val _pins = MutableStateFlow<ImmutableList<PinUi>>(persistentListOf())
     private val _revision = MutableStateFlow(0L)
+    private val _selection = MutableStateFlow<Set<String>>(emptySet())
 
-    val frames: Flow<PinFrame> = combine(_pins, _revision) { p, r -> PinFrame(p, r) }
+    val frames: Flow<PinFrame> = combine(_pins, _revision, _selection) { p, r, s -> PinFrame(p, r, s) }
 
     fun setPins(pins: ImmutableList<PinUi>) {
         _pins.value = pins
+    }
+
+    /** Location ids whose pins should render in the darkened "selected" variant — the
+     *  set is typically size 0 or 1, mirroring the open peek/entry sheet's location. */
+    fun setSelection(locationIds: Set<String>) {
+        _selection.value = locationIds
     }
 
     fun forceRedraw() {
@@ -38,4 +45,5 @@ class PinRenderController {
 data class PinFrame(
     val pins: ImmutableList<PinUi>,
     val revision: Long,
+    val selectedLocationIds: Set<String> = emptySet(),
 )

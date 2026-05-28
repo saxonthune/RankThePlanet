@@ -167,11 +167,45 @@ class OsmLocationProviderTest {
             }
         }
         val provider = OsmLocationProvider(client)
-        provider.resolve("coffee", near = com.saxonthune.ranktheplanet.domain.Coordinates(lat = 37.7749, lng = -122.4194))
+        provider.resolve(
+            "coffee",
+            bias = LocationBias.Point(com.saxonthune.ranktheplanet.domain.Coordinates(lat = 37.7749, lng = -122.4194)),
+        )
 
         assertNotNull(capturedUrl)
         assert(capturedUrl!!.contains("lat=37.7749")) { "Expected lat=37.7749 in URL: $capturedUrl" }
         assert(capturedUrl!!.contains("lon=-122.4194")) { "Expected lon=-122.4194 in URL: $capturedUrl" }
+    }
+
+    @Test
+    fun `resolve with box bias appends bbox to the Photon URL`() = runBlocking {
+        val photonJson = """{"type":"FeatureCollection","features":[]}"""
+        var capturedUrl: String? = null
+        val engine = MockEngine { request ->
+            capturedUrl = request.url.toString()
+            respond(
+                content = photonJson,
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; isLenient = true })
+            }
+        }
+        val provider = OsmLocationProvider(client)
+        provider.resolve(
+            "cinema",
+            bias = LocationBias.Box(south = 40.70, west = -74.02, north = 40.80, east = -73.93),
+        )
+
+        assertNotNull(capturedUrl)
+        // Photon expects west,south,east,north
+        assert(capturedUrl!!.contains("bbox=-74.02%2C40.7%2C-73.93%2C40.8") || capturedUrl!!.contains("bbox=-74.02,40.7,-73.93,40.8")) {
+            "Expected bbox in west,south,east,north order in URL: $capturedUrl"
+        }
+        assert(!capturedUrl!!.contains("lat=")) { "Expected no lat param when box bias is used: $capturedUrl" }
     }
 
     @Test

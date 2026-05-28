@@ -13,13 +13,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
@@ -32,6 +40,12 @@ import com.saxonthune.ranktheplanet.domain.TemplateFieldConfig
 import com.saxonthune.ranktheplanet.ui.RtpModalScaffold
 import com.saxonthune.ranktheplanet.ui.dismissKeyboardOnTap
 import kotlinx.collections.immutable.persistentListOf
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun ReviewFormScreen(
@@ -152,18 +166,49 @@ private fun FieldRow(
                     onCheckedChange = { onEdit(it.toString()) },
                 )
             }
-            FieldType.Date -> {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = value ?: "Not set",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f),
-                    )
-                    TextButton(onClick = { onEdit("2026-05-19") }) {
-                        Text("Pick a date")
+            FieldType.Date -> DateField(value = value, onEdit = onEdit)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
+@Composable
+private fun DateField(value: String?, onEdit: (String) -> Unit) {
+    var showPicker by remember { mutableStateOf(false) }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = value ?: "Not set",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = { showPicker = true }) {
+            Text(if (value == null) "Pick a date" else "Change")
+        }
+    }
+    if (showPicker) {
+        val initialMillis = value
+            ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            ?.atStartOfDayIn(TimeZone.UTC)
+            ?.toEpochMilliseconds()
+        val pickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+        DatePickerDialog(
+            onDismissRequest = { showPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { millis ->
+                        val date = Instant.fromEpochMilliseconds(millis)
+                            .toLocalDateTime(TimeZone.UTC)
+                            .date
+                        onEdit(date.toString())
                     }
-                }
-            }
+                    showPicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPicker = false }) { Text("Cancel") }
+            },
+        ) {
+            DatePicker(state = pickerState)
         }
     }
 }

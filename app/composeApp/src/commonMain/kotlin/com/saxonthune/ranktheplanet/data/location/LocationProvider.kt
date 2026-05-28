@@ -13,6 +13,16 @@ data class LocationCandidate(
     val needsConfirmation: Boolean = false,
 )
 
+sealed interface LocationBias {
+    data class Point(val coordinates: Coordinates) : LocationBias
+    data class Box(
+        val south: Double,
+        val west: Double,
+        val north: Double,
+        val east: Double,
+    ) : LocationBias
+}
+
 sealed interface ProviderResult<out T> {
     data class Ok<T>(val value: T) : ProviderResult<T>
     data class Failed(val error: ProviderError) : ProviderResult<Nothing>
@@ -23,7 +33,7 @@ enum class ProviderError { NETWORK, RATE_LIMITED, NOT_CONFIGURED, PROVIDER_ERROR
 interface LocationProvider {
     val type: SourceType
     val supportsTypeahead: Boolean
-    suspend fun resolve(query: String, near: Coordinates? = null): ProviderResult<List<LocationCandidate>>
+    suspend fun resolve(query: String, bias: LocationBias? = null): ProviderResult<List<LocationCandidate>>
     suspend fun resolveNearby(coordinates: Coordinates): ProviderResult<List<LocationCandidate>>
     suspend fun healthCheck(): ProviderResult<Unit>
     suspend fun confirm(candidate: LocationCandidate): ProviderResult<LocationCandidate> =

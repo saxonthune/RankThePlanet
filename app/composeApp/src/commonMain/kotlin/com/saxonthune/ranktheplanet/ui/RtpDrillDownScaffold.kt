@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -18,6 +19,7 @@ fun RtpDrillDownScaffold(
     title: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    titleLeading: (@Composable () -> Unit)? = null,
     actions: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
@@ -29,7 +31,19 @@ fun RtpDrillDownScaffold(
         snackbarHost = snackbarHost,
         topBar = {
             TopAppBar(
-                title = { Text(title) },
+                title = {
+                    if (titleLeading != null) {
+                        androidx.compose.foundation.layout.Row(
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
+                        ) {
+                            titleLeading()
+                            Text(title)
+                        }
+                    } else {
+                        Text(title)
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")

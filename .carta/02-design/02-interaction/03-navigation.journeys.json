@@ -135,6 +135,13 @@
       "targets": ["CollectionList",         "CollectionList",    "MapOverview"]
     },
     {
+      "id": "filter-map-from-collection-detail",
+      "description": "From the map, open the Collections list, drill into one Collection, and tap *View on map* in its topBar to focus the map on that single Collection. Lands on MapOverview with `filter-context` set to that Collection's id and the viewport fit to its Entries. Single-Collection variant of the filter-map-from-sheet journey.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "TAP_COLLECTION",    "JUMP_TO_COLLECTION"],
+      "targets": ["CollectionList",         "CollectionDetail",  "MapOverview"]
+    },
+    {
       "id": "clear-map-filter",
       "description": "With `filter-context` active on MapOverview, tap the trailing close (X) on the filterChip. Self-transition that drops `filter-context` and restores all Collections' pins to the map.",
       "start": "MapOverview",

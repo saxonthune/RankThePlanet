@@ -438,24 +438,30 @@ class FakeEntryRepository(private val store: InMemoryStore) : EntryRepository {
     override suspend fun editReview(
         entryId: EntryId,
         data: Map<String, String>,
-        templateVersion: Int,
     ): Result<Entry> {
         val current = store.entries.value.find { it.id == entryId }
             ?: return Result.failure(IllegalArgumentException("Entry not found: ${entryId.value}"))
         val collection = store.collections.value.find { it.id == current.collectionId }
             ?: return Result.failure(IllegalStateException("Collection not found: ${current.collectionId.value}"))
-        if (templateVersion != collection.templateVersion) {
-            return Result.failure(IllegalStateException(
-                "Template version mismatch: caller=$templateVersion collection=${collection.templateVersion}"
-            ))
-        }
+        val currentVersion = collection.templateVersion
+        val currentFieldNames = store.templates.value
+            .find { it.collectionId == current.collectionId }
+            ?.fields
+            ?.map { it.name }
+            ?.toSet()
+            ?: emptySet()
+        val reconciled = data.filterKeys { it in currentFieldNames }
         val existingReview = current.review
         val updatedReview = if (existingReview != null) {
-            existingReview.copy(data = data.toImmutableMap(), lastModified = FAKE_NOW)
+            existingReview.copy(
+                data = reconciled.toImmutableMap(),
+                recordedTemplateVersion = currentVersion,
+                lastModified = FAKE_NOW,
+            )
         } else {
             ReviewInstance(
-                data = data.toImmutableMap(),
-                recordedTemplateVersion = templateVersion,
+                data = reconciled.toImmutableMap(),
+                recordedTemplateVersion = currentVersion,
                 created = FAKE_NOW,
                 lastModified = FAKE_NOW,
             )

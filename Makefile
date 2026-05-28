@@ -25,7 +25,7 @@ export JAVA_HOME
 .DEFAULT_GOAL := build
 
 .PHONY: help build clean rebuild install run sync tasks stop adb-devices wrapper \
-        verify \
+        verify test \
         ios-build ios-run ios-debug ios-logs ios-crash ios-pod-install ios-clean \
         ios-device-build ios-device-run ios-device-debug ios-devices \
         code-map
@@ -93,6 +93,11 @@ wrapper:
 # local check that commonMain code will survive an iOS build.
 verify:
 	$(GRADLE) :composeApp:compileDebugKotlinAndroid :composeApp:compileCommonMainKotlinMetadata
+
+# Run the JVM unit tests. Accepts an optional FILTER=... gradle --tests pattern,
+# e.g. `make test FILTER=com.saxonthune.ranktheplanet.data.sql.*`.
+test:
+	$(GRADLE) :composeApp:jvmTest $(if $(FILTER),--tests "$(FILTER)",)
 
 # Regenerate .luminous/generated/code-map.md from the Kotlin sources.
 code-map:

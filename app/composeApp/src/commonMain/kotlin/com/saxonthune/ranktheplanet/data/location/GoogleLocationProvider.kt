@@ -49,15 +49,19 @@ class GoogleLocationProvider(
     private fun newToken(): String =
         (1..32).map { "0123456789abcdef"[Random.nextInt(16)] }.joinToString("")
 
-    override suspend fun resolve(query: String, near: Coordinates?): ProviderResult<List<LocationCandidate>> {
+    override suspend fun resolve(query: String, bias: LocationBias?): ProviderResult<List<LocationCandidate>> {
         if (query.isBlank()) return ProviderResult.Ok(emptyList())
         val key = apiKey()
         if (key.isNullOrBlank()) return ProviderResult.Failed(ProviderError.NOT_CONFIGURED)
         return try {
             val token = sessionToken()
-            val biasFragment = near?.let {
-                ""","locationBias":{"circle":{"center":{"latitude":${it.lat},"longitude":${it.lng}},"radius":50000.0}}"""
-            } ?: ""
+            val biasFragment = when (bias) {
+                is LocationBias.Point ->
+                    ""","locationBias":{"circle":{"center":{"latitude":${bias.coordinates.lat},"longitude":${bias.coordinates.lng}},"radius":50000.0}}"""
+                is LocationBias.Box ->
+                    ""","locationBias":{"rectangle":{"low":{"latitude":${bias.south},"longitude":${bias.west}},"high":{"latitude":${bias.north},"longitude":${bias.east}}}}"""
+                null -> ""
+            }
             val body = """{"input":"$query","sessionToken":"$token"$biasFragment}"""
             val response = client.post("$endpointBase/places:autocomplete") {
                 contentType(ContentType.Application.Json)

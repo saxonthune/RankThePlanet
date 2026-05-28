@@ -3,7 +3,10 @@ package com.saxonthune.ranktheplanet.nav
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import kotlinx.serialization.Serializable
 
-@Serializable data class MapOverview(val addToCollectionId: String? = null)
+@Serializable data class MapOverview(
+    val addToCollectionId: String? = null,
+    val filterCollectionId: String? = null,
+)
 @Serializable data class CollectionDetail(val collectionId: String)
 @Serializable data class CollectionEntryDetail(val entryId: String)
 @Serializable data class ReviewForm(val entryId: String)

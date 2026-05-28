@@ -65,7 +65,9 @@ internal fun SearchCandidatePinLayer(
         source = source,
         iconImage = bodyImage,
         iconColor = const(Color(0xFFE65100)),
-        iconSize = const(1.0f),
+        // Slightly smaller than entry pins so a coincident entry pin's silhouette pokes
+        // out around the edges — the user can tell another pin is underneath.
+        iconSize = const(0.7f),
         iconAllowOverlap = const(true),
         iconIgnorePlacement = const(true),
         iconAnchor = const(SymbolAnchor.Bottom),

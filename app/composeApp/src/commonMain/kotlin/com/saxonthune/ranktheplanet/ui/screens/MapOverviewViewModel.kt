@@ -7,6 +7,7 @@ import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.LocationRepository
 import com.saxonthune.ranktheplanet.data.TemplateRepository
+import com.saxonthune.ranktheplanet.data.location.LocationBias
 import com.saxonthune.ranktheplanet.data.location.LocationCandidate
 import com.saxonthune.ranktheplanet.data.location.LocationProviderRegistry
 import com.saxonthune.ranktheplanet.data.location.ProviderResult
@@ -23,6 +24,7 @@ import com.saxonthune.ranktheplanet.domain.ReviewDraft
 import com.saxonthune.ranktheplanet.domain.ReviewTemplate
 import com.saxonthune.ranktheplanet.domain.SourceType
 import com.saxonthune.ranktheplanet.domain.Viewport
+import com.saxonthune.ranktheplanet.ui.theme.darkenHex
 import com.saxonthune.ranktheplanet.ui.theme.parseAppearanceColor
 import com.saxonthune.ranktheplanet.util.formatShortDate
 import kotlinx.collections.immutable.ImmutableList
@@ -112,11 +114,13 @@ enum class PinKind { Unreviewed, Reviewed, Multi, MultiUnreviewed }
 data class PinUi(
     val entryId: EntryId,
     val collectionId: CollectionId,
+    val locationId: LocationId,
     val locationName: String,
     val lat: Double,
     val lng: Double,
     val color: Color,
     val colorHex: String,
+    val darkColorHex: String,
     val kind: PinKind,
 )
 
@@ -180,6 +184,7 @@ data class MapOverviewUiState(
     val viewport: Viewport? = null,
     val searchContext: SearchContext? = null,
     val showSearchThisAreaChip: Boolean = false,
+    val isSearchingArea: Boolean = false,
     val filterContext: Set<CollectionId>? = null,
     val collectionListSheet: CollectionListSheet = CollectionListSheet.Closed,
 ) {
@@ -204,6 +209,7 @@ class MapOverviewViewModel(
 
     private val _restoredViewport = MutableStateFlow<Viewport?>(null)
     private val _liveViewport = MutableStateFlow<Viewport?>(null)
+    private val _liveBbox = MutableStateFlow<LocationBias.Box?>(null)
     private val _filterContext = MutableStateFlow<Set<CollectionId>?>(null)
     private val _collectionListSheet = MutableStateFlow<CollectionListSheet>(CollectionListSheet.Closed)
     private val _isSearching = MutableStateFlow(false)
@@ -214,6 +220,7 @@ class MapOverviewViewModel(
     private val _isResolvingNearby = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
     private val _searchContext = MutableStateFlow<SearchContext?>(null)
+    private val _isSearchingArea = MutableStateFlow(false)
 
     private val _latestCollections = MutableStateFlow<List<Collection>>(emptyList())
     private val _latestEntries = MutableStateFlow<List<Entry>>(emptyList())
@@ -316,11 +323,13 @@ class MapOverviewViewModel(
                 PinUi(
                     entryId = entry.id,
                     collectionId = entry.collectionId,
+                    locationId = entry.location.id,
                     locationName = entry.location.displayName,
                     lat = entry.location.coordinates.lat,
                     lng = entry.location.coordinates.lng,
                     color = parseAppearanceColor(col.appearance.color),
                     colorHex = col.appearance.color,
+                    darkColorHex = darkenHex(col.appearance.color),
                     kind = kind,
                 )
             }.toImmutableList()
@@ -337,6 +346,26 @@ class MapOverviewViewModel(
         viewModelScope.launch {
             derivedBase.collect { pinController.setPins(it.pins) }
         }
+        viewModelScope.launch {
+            combine(_pinSheet, _latestEntries) { sheet, entries ->
+                selectedLocationIdsFor(sheet, entries)
+            }.collect { pinController.setSelection(it) }
+        }
+    }
+
+    private fun selectedLocationIdsFor(sheet: PinSheet, entries: List<Entry>): Set<String> = when (sheet) {
+        is PinSheet.None -> emptySet()
+        is PinSheet.Peek -> {
+            // Match the peek's location by coords; an unsaved candidate has no entry-backed
+            // location, so the set stays empty and no pin darkens (the candidate diamond
+            // is the only marker at that coord).
+            entries.firstOrNull {
+                it.location.coordinates.lat == sheet.lat &&
+                    it.location.coordinates.lng == sheet.lng
+            }?.location?.id?.value?.let { setOf(it) } ?: emptySet()
+        }
+        is PinSheet.Entry -> entries.firstOrNull { it.id == sheet.entry.entryId }
+            ?.location?.id?.value?.let { setOf(it) } ?: emptySet()
     }
 
     private val existingHitsFlow = combine(
@@ -377,8 +406,9 @@ class MapOverviewViewModel(
 
     private suspend fun runProviderSearch(query: String): List<SearchHitUi.Candidate> {
         _isSearching.value = true
-        val near = _liveViewport.value?.let { Coordinates(it.centerLat, it.centerLng) }
-        val result = providerRegistry.default().resolve(query, near)
+        val bias: LocationBias? = _liveBbox.value
+            ?: _liveViewport.value?.let { LocationBias.Point(Coordinates(it.centerLat, it.centerLng)) }
+        val result = providerRegistry.default().resolve(query, bias)
         _isSearching.value = false
         return when (result) {
             is ProviderResult.Ok -> result.value.map { c ->
@@ -483,13 +513,16 @@ class MapOverviewViewModel(
         },
         _restoredViewport,
         searchThisAreaChipFlow,
-        combine(_filterContext, _collectionListSheet) { fc, cls -> Pair(fc, cls) },
+        combine(_filterContext, _collectionListSheet, _isSearchingArea) { fc, cls, searching ->
+            Triple(fc, cls, searching)
+        },
     ) { state, viewport, showChip, filterState ->
         state.copy(
             viewport = viewport,
             showSearchThisAreaChip = showChip,
             filterContext = filterState.first,
             collectionListSheet = filterState.second,
+            isSearchingArea = filterState.third,
         )
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapOverviewUiState())
@@ -541,19 +574,24 @@ class MapOverviewViewModel(
             candidates = candidates.toImmutableList(),
             viewportAtQuery = viewport,
         )
-        _query.value = ""
     }
 
     fun searchThisArea() {
+        if (_isSearchingArea.value) return
         val ctx = _searchContext.value ?: return
         val viewport = _liveViewport.value ?: return
+        _isSearchingArea.value = true
         viewModelScope.launch {
-            val newCandidates = runProviderSearch(ctx.query)
-            _searchContext.value = SearchContext(
-                query = ctx.query,
-                candidates = newCandidates.toImmutableList(),
-                viewportAtQuery = viewport,
-            )
+            try {
+                val newCandidates = runProviderSearch(ctx.query)
+                _searchContext.value = SearchContext(
+                    query = ctx.query,
+                    candidates = newCandidates.toImmutableList(),
+                    viewportAtQuery = _liveViewport.value ?: viewport,
+                )
+            } finally {
+                _isSearchingArea.value = false
+            }
         }
     }
 
@@ -570,6 +608,12 @@ class MapOverviewViewModel(
 
     fun onSubmitSearch(value: String) {
         _submit.tryEmit(value)
+    }
+
+    fun submitSearch() {
+        val q = _query.value
+        if (q.isBlank()) return
+        _submit.tryEmit(q)
     }
 
     fun pickExistingHit(locationId: LocationId) {
@@ -828,13 +872,15 @@ class MapOverviewViewModel(
                 location = location,
                 review = ReviewDraft(persistentMapOf()),
             )
-            result.onSuccess { entry ->
-                _pendingReview.value = PendingReviewPrompt.Pending(
-                    entryId = entry.id,
-                    locationName = locationName,
-                )
-                dismissDraft()
-            }
+            result
+                .onSuccess { entry ->
+                    _pendingReview.value = PendingReviewPrompt.Pending(
+                        entryId = entry.id,
+                        locationName = locationName,
+                    )
+                    dismissDraft()
+                }
+                .onFailure { _error.value = "Add to Collection failed: ${it.message ?: it::class.simpleName}" }
         }
     }
 
@@ -849,18 +895,24 @@ class MapOverviewViewModel(
                 location = candidate,
                 review = ReviewDraft(persistentMapOf()),
             )
-            result.onSuccess { entry ->
-                _pendingReview.value = PendingReviewPrompt.Pending(
-                    entryId = entry.id,
-                    locationName = locationName,
-                )
-                _pinSheet.value = PinSheet.None
-            }
+            result
+                .onSuccess { entry ->
+                    _pendingReview.value = PendingReviewPrompt.Pending(
+                        entryId = entry.id,
+                        locationName = locationName,
+                    )
+                    _pinSheet.value = PinSheet.None
+                }
+                .onFailure { _error.value = "Add to Collection failed: ${it.message ?: it::class.simpleName}" }
         }
     }
 
     fun clearPendingReview() {
         _pendingReview.value = PendingReviewPrompt.None
+    }
+
+    fun onVisibleBoundsChange(south: Double, west: Double, north: Double, east: Double) {
+        _liveBbox.value = LocationBias.Box(south = south, west = west, north = north, east = east)
     }
 
     fun onViewportChange(viewport: Viewport) {

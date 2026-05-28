@@ -128,7 +128,7 @@ class CollectionDetailViewModelTest {
             override fun observeAll(): Flow<List<Entry>> = MutableStateFlow(emptyList())
             override fun observeByCollection(collectionId: CollectionId): Flow<List<Entry>> = entriesFlow
             override fun observe(entryId: EntryId): Flow<Entry?> = MutableStateFlow(null)
-            override suspend fun editReview(entryId: EntryId, data: Map<String, String>, templateVersion: Int) = Result.failure<Entry>(UnsupportedOperationException())
+            override suspend fun editReview(entryId: EntryId, data: Map<String, String>) = Result.failure<Entry>(UnsupportedOperationException())
         }
         val templateRepo = object : TemplateRepository {
             override fun observe(collectionId: CollectionId): Flow<ReviewTemplate?> = templateFlow

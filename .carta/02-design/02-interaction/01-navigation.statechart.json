@@ -21,7 +21,7 @@
           "location-context": "Optional already-committed Location carried when LocationSheet's TAP_ADD_ENTRY hands off to AddLocationToCollection. Lives in MapOverview's UiState because both sheets are hosted here; consumed by AddLocationToCollection in place of LocationDraftSheet's candidate.",
           "pending-review-context": "Optional Entry just created by AddLocationToCollection's PICK_COLLECTION. Transient — the surface renders a Snackbar (\"Review {place}?\" + action) over the bare map; the action fires GO_TO_REVIEW, the dismiss fires DISMISS_REVIEW_BAR, and either drops the context. Not a mode — the chrome is unchanged.",
           "search-context": "Optional committed search state: the query string, the candidate list returned by the provider at commit time, and the viewport that was active when the query was issued. Source: COMMIT_SEARCH_TO_MAP (committing the inline dropdown) or SEARCH_THIS_AREA (re-running the same query against the current viewport). Lives in MapOverview's UiState as the host of LocationDraftSheet, LocationSheet, EntrySheet, and AddLocationToCollection, so it survives every sheet round-trip just like collection-context does — landing back on MapOverview after a Draft / AddToCollection flow re-presents the same candidate pins and viewport rather than a cleared map, which is what makes the rapid-add loop possible. Consumed by: the searchCandidatePins list (renders pins for each candidate), the searchThisAreaChip region (compares viewportAtQuery against live viewport to decide when to show), and the CLEAR_SEARCH affordance.",
-          "filter-context": "Optional set of Collection ids whose pins (and their Entries' pins) are the only ones rendered on the map; pins from every other Collection are hidden. Source: CollectionList's APPLY_FILTER (the sheet's selection-mode *See on map* button) or EntrySheet's JUMP_TO_COLLECTION (a single-Collection focus from the Entry surface). Persists across sheet round-trips. Consumed by: the pins list (visibility predicate) and the filterChip region (renders the chip with leading Collection appearance and a trailing close (X) that fires CLEAR_FILTER). Set on entry by APPLY_FILTER also fits the viewport to the union of the filtered Collections' Entries (MapOverview.jumpToCollection); single-Collection set via JUMP_TO_COLLECTION fits to that Collection's Entries. Not a mode — the chrome is unchanged."
+          "filter-context": "Optional set of Collection ids whose pins (and their Entries' pins) are the only ones rendered on the map; pins from every other Collection are hidden. Source: CollectionList's APPLY_FILTER (the sheet's selection-mode *See on map* button), CollectionDetail's JUMP_TO_COLLECTION (the topBar *View on map* affordance — single-Collection focus from the owning Collection), or EntrySheet's JUMP_TO_COLLECTION (a single-Collection focus from the Entry surface). Persists across sheet round-trips. Consumed by: the pins list (visibility predicate) and the filterChip region (renders the chip with leading Collection appearance and a trailing close (X) that fires CLEAR_FILTER). Set on entry by APPLY_FILTER also fits the viewport to the union of the filtered Collections' Entries (MapOverview.jumpToCollection); single-Collection set via JUMP_TO_COLLECTION fits to that Collection's Entries. Not a mode — the chrome is unchanged."
         },
         "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context", "location-context", "pending-review-context", "search-context", "filter-context"],
         "actions": [
@@ -31,7 +31,10 @@
           "MapOverview.selectPin",
           "MapOverview.jumpToCollection",
           "Location.resolve"
-        ]
+        ],
+        "derivedRendering": {
+          "selectedPin": "When a host sheet (LocationSheet, EntrySheet, or any Peek-shaped PinSheet variant) is open over the map, the pin(s) whose Location matches that sheet render in a darkened color variant — the user sees which pin the open sheet is for, and the highlight survives sheet-internal navigation (peek → entry, entry → peek, etc.). Derived from the host's UiState (which sub-sheet is active), not a separately carried context: dismissing the sheet clears the highlight automatically. Per doc02.04 Rule 1 this is a visual projection of existing state — not a new mode and not new chrome."
+        }
       },
       "on": {
         "TAP_PIN": {
@@ -98,8 +101,11 @@
           "guard": "hasPendingReview",
           "description": "Live only when `pending-review-context` is set. Self-transition — the Snackbar times out or the user dismisses it; drop `pending-review-context` and leave the map untouched. The Entry stays saved; the user can author the Review later via the Entry's other surfaces."
         },
+        "SUBMIT_SEARCH": {
+          "description": "User taps *Search* on the inline search dropdown to issue the current query against the current viewport — the dropdown's hit list refreshes with the new results, the field and dropdown stay open. Self-transition; no context change. Always live while the dropdown is open, irrespective of provider trait (`supportsTypeahead`) — typeahead providers also support an explicit submit so the user can re-issue a query against a moved viewport without retyping. Shares its dropdown row with COMMIT_SEARCH_TO_MAP (the *Search on map* affordance), sitting between the search field and the hit list."
+        },
         "COMMIT_SEARCH_TO_MAP": {
-          "description": "User taps *Search on map* on the inline search dropdown to pivot from a textual list of hits to candidate pins on the map. Self-transition — sets `search-context` from the current query, candidate set, and viewport, then dismisses the dropdown and keyboard. Provider candidates from `search-context` render as pins via the searchCandidatePins list; existing-entry hits are *not* rendered as candidate pins because they already appear as Collection Entry pins on the map. Gated on the dropdown containing at least one *unadopted provider candidate* — an existing-entry-only result set does not enable the affordance, because nothing new would render."
+          "description": "User taps *Search on map* on the inline search dropdown to pivot from a textual list of hits to candidate pins on the map. Self-transition — sets `search-context` from the current query, candidate set, and viewport, then dismisses the dropdown and keyboard. Provider candidates from `search-context` render as pins via the searchCandidatePins list; existing-entry hits are *not* rendered as candidate pins because they already appear as Collection Entry pins on the map. Gated on the dropdown containing at least one *unadopted provider candidate* — an existing-entry-only result set does not enable the affordance, because nothing new would render. Shares its dropdown row with SUBMIT_SEARCH (the *Search* affordance)."
         },
         "SEARCH_THIS_AREA": {
           "guard": "inSearchResults",
@@ -274,6 +280,11 @@
         "TAP_EDIT_TEMPLATE": {
           "target": "CollectionEditor",
           "description": "User opens the CollectionEditor for this Collection — its metadata and its Review template (Review.editTemplate)."
+        },
+        "JUMP_TO_COLLECTION": {
+          "target": "MapOverview",
+          "description": "User taps the *View on map* topBar affordance. Re-enters MapOverview with `filter-context` set to a single-element set containing this Collection's id, and the viewport fit to that Collection's Entries (MapOverview.jumpToCollection). Single-Collection variant of CollectionList's APPLY_FILTER, parallel to EntrySheet's JUMP_TO_COLLECTION.",
+          "propagates": ["filter-context"]
         },
         "BACK": {
           "target": "CollectionList",

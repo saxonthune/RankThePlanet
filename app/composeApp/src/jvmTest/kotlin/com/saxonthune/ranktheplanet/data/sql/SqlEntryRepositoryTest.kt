@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SqlEntryRepositoryTest {
@@ -58,7 +58,6 @@ class SqlEntryRepositoryTest {
         val editResult = entryRepo.editReview(
             entry.id,
             mapOf("notes" to "Great place"),
-            updatedCol.templateVersion,
         )
         assertTrue(editResult.isSuccess)
         val updated = editResult.getOrThrow()
@@ -66,24 +65,31 @@ class SqlEntryRepositoryTest {
     }
 
     @Test
-    fun editReviewThrowsOnTemplateVersionDrift() = runBlocking {
+    fun editReviewDropsKeysAbsentAtCurrentTemplateVersion() = runBlocking {
         val (collRepo, entryRepo, templateRepo) = setup()
         val col = collRepo.create("Col", null, Appearance("#FF0000", "dot")).getOrThrow()
-        templateRepo.define(col.id, listOf(TemplateField("notes", type = FieldType.Text))).getOrThrow()
+        templateRepo.define(col.id, listOf(
+            TemplateField("notes", type = FieldType.Text),
+            TemplateField("oldField", type = FieldType.Text),
+        )).getOrThrow()
         val v1Col = collRepo.observeAll().first().first { it.id == col.id }
 
         val entry = collRepo.addEntry(
             col.id, testLocation(),
-            ReviewDraft(persistentMapOf("notes" to "ok"), v1Col.templateVersion)
+            ReviewDraft(persistentMapOf("notes" to "ok", "oldField" to "stale"), v1Col.templateVersion)
         ).getOrThrow()
 
         templateRepo.edit(col.id, listOf(
             TemplateField("notes", type = FieldType.Text),
             TemplateField("rating", type = FieldType.Score),
         )).getOrThrow()
+        val v2Col = collRepo.observeAll().first().first { it.id == col.id }
 
-        val result = entryRepo.editReview(entry.id, mapOf("notes" to "new"), v1Col.templateVersion)
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is IllegalStateException)
+        val result = entryRepo.editReview(entry.id, mapOf("notes" to "new", "oldField" to "stale"))
+        assertTrue(result.isSuccess)
+        val updated = result.getOrThrow()
+        assertEquals("new", updated.review?.data?.get("notes"))
+        assertNull(updated.review?.data?.get("oldField"))
+        assertEquals(v2Col.templateVersion, updated.review?.recordedTemplateVersion)
     }
 }

@@ -1,5 +1,6 @@
 package com.saxonthune.ranktheplanet.data.fake
 
+import com.saxonthune.ranktheplanet.data.location.LocationBias
 import com.saxonthune.ranktheplanet.data.location.LocationCandidate
 import com.saxonthune.ranktheplanet.data.location.LocationProvider
 import com.saxonthune.ranktheplanet.data.location.ProviderResult
@@ -21,7 +22,7 @@ class FakeLocationProvider : LocationProvider {
         )
     }
 
-    override suspend fun resolve(query: String, near: Coordinates?): ProviderResult<List<LocationCandidate>> {
+    override suspend fun resolve(query: String, bias: LocationBias?): ProviderResult<List<LocationCandidate>> {
         if (query.isBlank()) return ProviderResult.Ok(emptyList())
         return ProviderResult.Ok(
             candidates.filter { it.displayName.contains(query, ignoreCase = true) }

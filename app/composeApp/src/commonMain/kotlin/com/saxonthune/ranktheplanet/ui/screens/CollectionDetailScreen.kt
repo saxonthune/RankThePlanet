@@ -1,8 +1,11 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +19,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.AssistChip
@@ -54,6 +58,7 @@ import com.saxonthune.ranktheplanet.ui.RtpDrillDownScaffold
 import com.saxonthune.ranktheplanet.ui.RtpEmptyState
 import com.saxonthune.ranktheplanet.ui.RtpErrorState
 import com.saxonthune.ranktheplanet.ui.RtpSkeletonRow
+import com.saxonthune.ranktheplanet.ui.theme.parseAppearanceColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -67,6 +72,7 @@ fun CollectionDetailScreen(
     filePicker: FilePicker,
     onAddEntry: () -> Unit,
     onEditCollection: () -> Unit,
+    onViewOnMap: () -> Unit,
     onBack: () -> Unit,
     onOpenEntry: (EntryId) -> Unit,
 ) {
@@ -101,8 +107,20 @@ fun CollectionDetailScreen(
     RtpDrillDownScaffold(
         title = state.collection?.name ?: "Collection",
         onBack = onBack,
+        titleLeading = state.collection?.let { col ->
+            {
+                Box(
+                    modifier = Modifier
+                        .size(16.dp)
+                        .background(parseAppearanceColor(col.appearance.color), CircleShape),
+                )
+            }
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         actions = {
+            IconButton(onClick = onViewOnMap) {
+                Icon(Icons.Default.Map, contentDescription = "View on map")
+            }
             IconButton(onClick = onEditCollection) {
                 Icon(Icons.Default.Edit, contentDescription = "Edit collection")
             }

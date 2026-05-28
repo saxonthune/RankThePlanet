@@ -14,8 +14,10 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import org.jetbrains.compose.resources.painterResource
 import org.maplibre.compose.expressions.dsl.any
+import org.maplibre.compose.expressions.dsl.asBoolean
 import org.maplibre.compose.expressions.dsl.asString
 import org.maplibre.compose.expressions.dsl.case
+import org.maplibre.compose.expressions.dsl.condition
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.convertToColor
 import org.maplibre.compose.expressions.dsl.eq
@@ -58,18 +60,32 @@ internal fun PinLayers(
     val plusImage = image(painterResource(Res.drawable.pin_mark_plus), drawAsSdf = true)
     val grey = Color(0xFF9AA0A6)
     val offWhite = Color(0xFFF5F0E8)
+    val darkGrey = Color(0xFF55585B)
+    val darkOffWhite = Color(0xFF8C887F)
     val kindExpr = feature["kind"].asString()
     val colorExpr = feature["color"].convertToColor(const(grey))
+    val darkColorExpr = feature["darkColor"].convertToColor(const(darkGrey))
+    val selectedExpr = feature["selected"].asBoolean()
+    val baseColor = switch(
+        kindExpr,
+        case("multi", const(offWhite)),
+        case("multi-unreviewed", const(grey)),
+        fallback = colorExpr,
+    )
+    val darkenedColor = switch(
+        kindExpr,
+        case("multi", const(darkOffWhite)),
+        case("multi-unreviewed", const(darkGrey)),
+        fallback = darkColorExpr,
+    )
 
     SymbolLayer(
         id = "pins-body",
         source = source,
         iconImage = bodyImage,
         iconColor = switch(
-            kindExpr,
-            case("multi", const(offWhite)),
-            case("multi-unreviewed", const(grey)),
-            fallback = colorExpr,
+            condition(selectedExpr eq const(true), darkenedColor),
+            fallback = baseColor,
         ),
         iconSize = const(1.0f),
         iconAllowOverlap = const(true),
@@ -130,7 +146,9 @@ private fun PinFrame.toGeoJsonString(): String =
                         put("entryId", JsonPrimitive(pin.entryId.value))
                         put("name", JsonPrimitive(pin.locationName))
                         put("color", JsonPrimitive(pin.colorHex))
+                        put("darkColor", JsonPrimitive(pin.darkColorHex))
                         put("kind", JsonPrimitive(pin.kind.token()))
+                        put("selected", JsonPrimitive(pin.locationId.value in selectedLocationIds))
                     })
                 })
             }

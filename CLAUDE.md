@@ -103,6 +103,8 @@ The pipeline walks `.carta/` for `*.statechart.json` sidecars and emits a derive
 
 Use `make verify` to check Kotlin changes. On macOS the iOS Kotlin/Native targets are enabled, so verification covers iosMain (cinterop, cocoapods) in addition to commonMain and Android.
 
+Use `make test` to run the JVM unit suite (`:composeApp:jvmTest`). Pass `FILTER=...` to scope it, e.g. `make test FILTER=com.saxonthune.ranktheplanet.data.sql.*`. Prefer `make test` over invoking `./gradlew` directly — the make wrapper is allowlisted, the direct gradlew invocation is not.
+
 ## Code map
 
 `make code-map` regenerates `.luminous/generated/code-map.md` — a compressed signature skeleton of the Kotlin sources under `app/composeApp/src/` (bodies stripped, grouped by package and file). Read it for a fast whole-codebase overview without opening every `.kt` file. It is a gitignored build artifact — re-run after code changes, never hand-edit. Spec: `doc01.04.03`.

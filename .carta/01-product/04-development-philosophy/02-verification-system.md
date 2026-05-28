@@ -56,6 +56,44 @@ The verifier walks every owner state in the chart, evaluates each outbound trans
 
 Safety only by design — `clears` / `retains` cannot express liveness (something good eventually happens). Liveness invariants are a candidate future verifier kind, scoped separately in doc01.06.03 §5.
 
+## The `guard-coverage` verifier
+
+A transition's *liveness condition* — when the affordance is enabled — is asserted twice today: as prose on the transition (*"Live only when `filter-context` is set"*) and as structural fields on the inventory affordance (`appearsInModes`, `reactsToContext`). The two assertions can drift independently. The `guard-coverage` verifier replaces the prose with a typed `guard` field on the transition and cross-checks the chart side against the inventory side.
+
+### The predicate grammar
+
+A `guard` is a string in a small s-expression-shaped grammar:
+
+```
+predicate := atom | "not(" predicate ")"
+           | "and(" predicate ("," predicate)+ ")"
+           | "or("  predicate ("," predicate)+ ")"
+atom      := "has(" context-key ")"
+           | "mode(" mode-name ")"
+           | "eq("  context-key "." field "," literal ")"
+literal   := double-quoted string | integer | "true" | "false"
+```
+
+- `has(k)` — context key `k` is set on the surface. The primitive: `has(collection-context)` reads "the addToCollection mode is active" because that mode is *defined* as "collection-context is set."
+- `mode(m)` — the surface is in named mode `m`. Used where a mode is not backed by a context key (e.g., `CollectionList`'s `selection` mode is an in-sheet toggle, not a carried value).
+- `eq(k.field, v)` — payload field equality. Parses and identifier-validates in this phase; no caller in the chart today, but the grammar is shared with the invariants kind (Kind F).
+- `not / and / or` — boolean composition, explicit (no operator precedence).
+
+Preference: `has()` is canonical over `mode()` when both express the same fact, because mode definitions in `meta.modes` are themselves stated as "X-context is set" — `has()` is the primitive, `mode()` is sugar.
+
+### What the verifier checks
+
+For each transition in the chart sidecar:
+
+- **Parse** — the `guard` string parses; otherwise a `parse-error` issue names the offending substring and offset.
+- **Identifier validity** — every `has(k)` / `eq(k.f, v)` references a key in the surface's `meta.context.owns` ∪ `meta.context.receives`; every `mode(m)` references a name in the surface's `meta.modes`.
+- **Forward check** (permissive) — for an event-bearing transition whose event has a matching inventory affordance: every positive-polarity `has(k)` whose `k` is absent from the affordance's `reactsToContext` is a `key-disagreement`; every positive-polarity `mode(m)` whose `m` is absent from the affordance's `appearsInModes` is a `mode-disagreement`. Permissive means an affordance that uses `appearsInModes` to encode a context-backed mode (and omits `reactsToContext`) still satisfies a `has(k)` guard — bridging the two vocabularies is deferred to a future kind that models `meta.modes` formally.
+- **Inverse check** — an unguarded transition whose inventory affordance carries any `appearsInModes` or `reactsToContext` raises `missing-guard`. This is the drift this verifier exists to catch: the chart forgot to declare what the inventory already asserts.
+
+Negative-polarity atoms (under an odd number of `not`s) participate in identifier validity but not in the forward inventory cross-check — `not(has(collection-context))` and `appearsInModes: ["browse"]` express the same fact via different vocabularies, and reconciling them requires the formal mode-model deferred above.
+
+Transitions whose event has no inventory affordance (system-driven gestures, journey stubs, items in inventory `deferred` arrays) are skipped — the `screen-inventory` verifier owns the coverage check.
+
 ## How it grows
 
 Each affordance in an inventory already pairs an action with a target, so the inventory is, in effect, an action inventory the verifier walks entry by entry. The system unfolds along two axes: new verifier `kind`s as other artifact pairs become worth checking, and stricter checks within `screen-inventory` as the inventory schema firms up. Neither is built before a concrete piece of work needs it.

@@ -115,7 +115,7 @@
     },
     {
       "id": "drop-pin-new-collection-to-review",
-      "description": "Drop a pin, open AddLocationToCollection, pick *New Collection* to create one mid-flow, finish the editor, land back on MapOverview with the candidate auto-committed against the just-created Collection, then tap the post-add Snackbar to author the Review. The CollectionEditor detour preserves the in-flight candidate in the MapOverview host's UiState; DONE_AS_DRAFT_RETURN is modeled as a distinct event from DONE because the schema's one-transition-per-event constraint cannot branch on `return-to-draft-context`.",
+      "description": "Drop a pin, open AddLocationToCollection, pick *New Collection* to create one mid-flow, finish the editor, land back on MapOverview with the candidate auto-committed against the just-created Collection, then tap the post-add Snackbar to author the Review. The CollectionEditor detour carries the in-flight candidate as payload on `return-to-draft-context` (the editor is fullScreen so the MapOverview host is not preserved across it); DONE_AS_DRAFT_RETURN is modeled as a distinct event from DONE because the schema's one-transition-per-event constraint cannot branch on `return-to-draft-context`.",
       "start": "MapOverview",
       "events":  ["DROP_PIN",          "ADD_TO_COLLECTION",       "TAP_NEW_COLLECTION", "DONE_AS_DRAFT_RETURN", "GO_TO_REVIEW"],
       "targets": ["LocationDraftSheet","AddLocationToCollection", "CollectionEditor",   "MapOverview",          "ReviewForm"]

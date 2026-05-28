@@ -32,7 +32,7 @@
       "event": "TAP_NEW_COLLECTION",
       "target": "CollectionEditor",
       "action": "Collection.create",
-      "note": "Propagates return-to-draft-context. The candidate Location stays in the MapOverview host's UiState while the editor is on top; CollectionEditor's DONE_AS_DRAFT_RETURN pops back to MapOverview, commits the candidate against the just-created Collection, and surfaces the same post-add Snackbar as PICK_COLLECTION."
+      "note": "Propagates return-to-draft-context, which carries the candidate Location as payload (the editor is fullScreen so the MapOverview host is not preserved across it). CollectionEditor's DONE_AS_DRAFT_RETURN pops back to MapOverview, commits the carried candidate against the just-created Collection, and surfaces the same post-add Snackbar as PICK_COLLECTION."
     }
   ],
   "lists": [

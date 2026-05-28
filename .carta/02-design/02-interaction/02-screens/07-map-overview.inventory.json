@@ -245,7 +245,7 @@
         ],
         "affordance": {
           "id": "tap-candidate-pin",
-          "label": "Pick a provider candidate from the map (browse mode)",
+          "label": "Pick a provider candidate (browse mode)",
           "event": "PICK_SEARCH_RESULT",
           "target": "LocationSheet",
           "appliesWhen": "user is in browse mode (no `collection-context`)"
@@ -253,7 +253,7 @@
         "altAffordances": [
           {
             "id": "tap-candidate-pin-for-add",
-            "label": "Pick a provider candidate from the map (add-to-collection mode)",
+            "label": "Pick a provider candidate (add-to-collection mode)",
             "event": "PICK_SEARCH_RESULT_FOR_ADD",
             "target": "AddLocationToCollection",
             "appliesWhen": "`collection-context` is set — the pin tap funnels straight into the collection picker, skipping LocationSheet"

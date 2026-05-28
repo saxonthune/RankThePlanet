@@ -155,6 +155,51 @@ function verifyScreenInventory(inventoryPath, statechartPath, key) {
   return { pass, missing, phantom, mismatches, deferredCount: deferred.size };
 }
 
+// ── Verifier: context-chain ───────────────────────────────────────────────────
+//
+// Reads the statechart sidecar named by the verify entry. For every state with
+// meta.context.owns, walks every outbound transition and demands that each
+// owned key be either cleared or retained — and never both. Batch-reports per
+// state. Presence-only (per doc01.06.03 §1): the verifier reasons about whether
+// a key is set, not what payload it carries.
+
+function verifyContextChain(statechartPath) {
+  const statechart = JSON.parse(readFileSync(statechartPath, 'utf8'));
+  const states = statechart.states || {};
+  const issues = [];
+
+  for (const [stateId, state] of Object.entries(states)) {
+    const owns = state.meta && state.meta.context && state.meta.context.owns;
+    if (!owns) continue;
+    const ownedKeys = Object.keys(owns);
+    if (ownedKeys.length === 0) continue;
+
+    for (const [event, transition] of Object.entries(state.on || {})) {
+      const clears = new Set(transition.clears || []);
+      const retains = new Set(transition.retains || []);
+
+      // Unknown keys named in clears/retains are spec errors too.
+      for (const k of [...clears, ...retains]) {
+        if (!ownedKeys.includes(k)) {
+          issues.push({ state: stateId, event, kind: 'unknown-key', key: k });
+        }
+      }
+
+      for (const key of ownedKeys) {
+        const inClears = clears.has(key);
+        const inRetains = retains.has(key);
+        if (inClears && inRetains) {
+          issues.push({ state: stateId, event, kind: 'both', key });
+        } else if (!inClears && !inRetains) {
+          issues.push({ state: stateId, event, kind: 'unclassified', key });
+        }
+      }
+    }
+  }
+
+  return { pass: issues.length === 0, issues };
+}
+
 // ── Dispatch ──────────────────────────────────────────────────────────────────
 
 const VERIFIERS = {
@@ -163,6 +208,10 @@ const VERIFIERS = {
     const refMd = resolveDocRef(entry.against.doc);
     const scPath = sidecarPath(refMd, '.statechart.json');
     return verifyScreenInventory(invPath, scPath, entry.against.key);
+  },
+  'context-chain': (entry, mdDir) => {
+    const scPath = join(mdDir, entry.sidecar);
+    return verifyContextChain(scPath);
   },
 };
 
@@ -214,13 +263,32 @@ function main() {
         console.log(`  ✓ ${label}${note}`);
       } else {
         console.log(`  ✗ ${label}`);
-        if (result.missing.length > 0)
+        if (result.missing && result.missing.length > 0)
           console.log(`    missing:  ${result.missing.join(', ')}`);
-        if (result.phantom.length > 0)
+        if (result.phantom && result.phantom.length > 0)
           console.log(`    phantom:  ${result.phantom.join(', ')}`);
-        for (const m of result.mismatches) {
+        for (const m of result.mismatches || []) {
           const sc = m.statechartTarget ?? '(self-transition)';
           console.log(`    mismatch: ${m.event} → inventory "${m.inventoryTarget}", statechart "${sc}"`);
+        }
+        if (result.issues) {
+          const byState = new Map();
+          for (const i of result.issues) {
+            if (!byState.has(i.state)) byState.set(i.state, []);
+            byState.get(i.state).push(i);
+          }
+          for (const [state, items] of byState) {
+            console.log(`    ${state}:`);
+            for (const i of items) {
+              if (i.kind === 'unclassified') {
+                console.log(`      ${i.event} — owned key "${i.key}" neither cleared nor retained`);
+              } else if (i.kind === 'both') {
+                console.log(`      ${i.event} — owned key "${i.key}" listed in both clears and retains`);
+              } else if (i.kind === 'unknown-key') {
+                console.log(`      ${i.event} — clears/retains names "${i.key}" which is not in meta.context.owns`);
+              }
+            }
+          }
         }
         anyFail = true;
       }

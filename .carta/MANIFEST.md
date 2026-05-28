@@ -45,7 +45,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 
 | doc01.04.00 | `04-development-philosophy/00-index.md` | How we work on RTP and the artifacts that support it — method, verification, derived code maps | product, philosophy, method, process | — | — | — |
 | doc01.04.01 | `04-development-philosophy/01-development-philosophy.md` | How we work on RTP: two sources of truth, artifact chain, unfolding, concept-driven design, spec-before-code | product, philosophy, method, process | doc01.03 | doc01.04.03 | — |
-| doc01.04.02 | `04-development-philosophy/02-verification-system.md` | How carta docs declare machine-checkable verifications; the verify.mjs harness and the screen-inventory check against the statechart | product, verification, coverage, process, tooling | doc02.02.01, doc02.02.02.00, doc00.03 | doc01.06.02 | — |
+| doc01.04.02 | `04-development-philosophy/02-verification-system.md` | How carta docs declare machine-checkable verifications; the verify.mjs harness and the screen-inventory check against the statechart | product, verification, coverage, process, tooling | doc02.02.01, doc02.02.02.00, doc00.03 | doc01.06.02, doc01.06.03 | — |
 | doc01.04.03 | `04-development-philosophy/03-code-map-pipeline.md` | Pipelines that derive agent-consumable artifacts from Kotlin source: a compressed code map and a Luminous graph of the interface seams | method, tooling, pipeline, code-map, luminous | doc01.04.01, doc03.02 | — | — |
 
 ### Research Sessions
@@ -55,7 +55,8 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 
 | doc01.06.00 | `06-research-sessions/00-index.md` | Investigation logs that turn into reusable context — symptoms, diagnostic techniques, root causes, and the resulting fixes | research, debugging, index | — | — | — |
 | doc01.06.01 | `06-research-sessions/01-ios-map-tap-latency.md` | Why a pin tap on iOS lags ~300ms before the sheet animates, how the gesture-recognizer cascade is diagnosed, and the runtime patch on MLNMapView that removes the delay | research, ios, maplibre, gesture, latency, debugging | doc02.01, doc03.04 | — | — |
-| doc01.06.02 | `06-research-sessions/02-ui-behavioral-spec-patterns.md` | Survey of how production teams specify component-level UI behavior — per-flow statecharts, trace expect-tests, LTL-over-DOM invariants, schema-driven screens, preview-test pairing — and which layer fits next to RTP's carta sidecars and navigation statechart | research, ui, spec, statechart, behavior, verification | doc02.02.01, doc01.04.02 | — | — |
+| doc01.06.02 | `06-research-sessions/02-ui-behavioral-spec-patterns.md` | Survey of how production teams specify component-level UI behavior — per-flow statecharts, trace expect-tests, LTL-over-DOM invariants, schema-driven screens, preview-test pairing — and which layer fits next to RTP's carta sidecars and navigation statechart | research, ui, spec, statechart, behavior, verification | doc02.02.01, doc01.04.02 | doc01.06.03 | — |
+| doc01.06.03 | `06-research-sessions/03-fact-data-verification.md` | Survey of risks and prior art for moving carta prose into machine-checkable fact data — state explosion, spec drift, coverage criteria, property-based testing, liveness gap, two-sources-of-truth wedge | research, verification, statechart, datalog, model-checking, property-based-testing | doc02.02.01, doc01.06.02, doc01.04.02 | — | — |
 
 ## 02-design — Design
 
@@ -73,7 +74,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc02.02.00 | `02-interaction/00-index.md` | Platform-agnostic UI design — surfaces, navigation graph, action coverage | design, interaction, index | doc01.03 | — | — |
-| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.04.02, doc01.05, doc01.06.02, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.02.15, doc02.02.02.16, doc02.02.02.17, doc02.02.03, doc02.04, doc03.03 | statechart.json |
+| doc02.02.01 | `02-interaction/01-navigation.md` | Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance | design, interaction, navigation, statechart | doc01.03 | doc01.04.02, doc01.05, doc01.06.02, doc01.06.03, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.02.15, doc02.02.02.16, doc02.02.02.17, doc02.02.03, doc02.04, doc03.03 | statechart.json |
 | doc02.02.02.00 | `02-interaction/02-screens/00-index.md` | Per-surface affordance inventories — regions, affordances, lists | design, interaction, screens, index | doc02.02.01 | doc01.04.02 | — |
 | doc02.02.02.01 | `02-interaction/02-screens/01-collection-list.md` | Affordance inventory for the CollectionList surface — a tall bottom-sheet over MapOverview that browses Collections and filters the map | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.02 | `02-interaction/02-screens/02-collection-detail.md` | Affordance inventory for the CollectionDetail surface — Details section, sortable entry list | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
@@ -141,6 +142,7 @@ Quick lookup for file-path→doc mapping:
 | `conventions` | doc00.03 |
 | `coverage` | doc01.04.02 |
 | `data` | doc03.02.00, doc03.02.01 |
+| `datalog` | doc01.06.03 |
 | `debug` | doc02.02.02.14 |
 | `debugging` | doc01.06.00, doc01.06.01 |
 | `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.02.15, doc02.02.02.16, doc02.02.02.17, doc02.02.03, doc02.03, doc02.04, doc02.05.00, doc02.05.01 |
@@ -161,6 +163,7 @@ Quick lookup for file-path→doc mapping:
 | `maplibre` | doc01.06.01, doc02.01, doc03.04, doc03.05 |
 | `meta` | doc00.00, doc00.01 |
 | `method` | doc01.04.00, doc01.04.01, doc01.04.03 |
+| `model-checking` | doc01.06.03 |
 | `navigation` | doc02.02.01, doc02.02.03, doc03.03 |
 | `odbl` | doc03.02.02 |
 | `osm` | doc03.02.02 |
@@ -169,11 +172,12 @@ Quick lookup for file-path→doc mapping:
 | `pipeline` | doc01.04.03 |
 | `process` | doc01.04.00, doc01.04.01, doc01.04.02 |
 | `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04.00, doc01.04.01, doc01.04.02, doc01.05 |
+| `property-based-testing` | doc01.06.03 |
 | `providers` | doc03.02.02 |
 | `references` | doc01.05 |
 | `rendering` | doc03.04, doc03.05 |
 | `repository` | doc03.02.00, doc03.02.01 |
-| `research` | doc01.01, doc01.05, doc01.06.00, doc01.06.01, doc01.06.02 |
+| `research` | doc01.01, doc01.05, doc01.06.00, doc01.06.01, doc01.06.02, doc01.06.03 |
 | `resilience` | doc03.05 |
 | `retrieval` | doc00.04 |
 | `rules` | doc02.04 |
@@ -183,7 +187,7 @@ Quick lookup for file-path→doc mapping:
 | `spec` | doc01.06.02 |
 | `sqlcipher` | doc03.01 |
 | `stack` | doc02.01 |
-| `statechart` | doc01.06.02, doc02.02.01 |
+| `statechart` | doc01.06.02, doc01.06.03, doc02.02.01 |
 | `storage` | doc03.01 |
 | `styling` | doc02.03 |
 | `sync` | doc03.01 |
@@ -195,6 +199,6 @@ Quick lookup for file-path→doc mapping:
 | `ui` | doc01.06.02 |
 | `use-cases` | doc01.02 |
 | `ux` | doc01.02 |
-| `verification` | doc01.04.02, doc01.06.02, doc02.02.03 |
+| `verification` | doc01.04.02, doc01.06.02, doc01.06.03, doc02.02.03 |
 | `visual-language` | doc02.05.00, doc02.05.01 |
 | `wiring` | doc03.03 |

@@ -41,6 +41,21 @@ The first — and for now only — verifier checks a screen's affordance invento
 
 A surface is rarely inventoried all at once. An inventory may carry a `deferred` array — statechart events and actions it knowingly has not covered yet. Deferred items are not reported as *missing*; instead their count is surfaced as a backlog metric. The distinction matters: a gap nobody chose is a defect, a gap on the `deferred` list is a plan. Phantoms are never deferrable — a reference to something that does not exist is always wrong.
 
+## The `context-chain` verifier
+
+The second verifier addresses a class of bug the screen-inventory check is blind to: a context key whose lifetime is described in prose but never declared as a fact, so a transition that ought to drop it instead silently retains it. Motivated by the *Search this area → switch Collection* case named in [[03-fact-data-verification]] (doc01.06.03).
+
+`meta.context` on a state splits into two structural fields rather than a scope enum:
+
+- **`owns`** — keys whose lifetime this state controls. Each owned key declares a `set: [<State>.<EVENT>, …]` array naming the transitions that establish it, and a one-line `description`.
+- **`receives`** — keys forwarded into this state by an inbound transition's `propagates`. Read-only here; lifetime managed at the owner.
+
+Every outbound transition on a state that owns context declares, per owned key, **`clears: [keys]`** (the key is dropped on this transition) or **`retains: [keys]`** (the key survives). Both is an error; neither is an error. Presence-only — the verifier reasons about whether a key is set, not what payload it carries (doc01.06.03 §1).
+
+The verifier walks every owner state in the chart, evaluates each outbound transition against the owner's `owns` set, and batch-reports unclassified, both-listed, and unknown-key entries grouped by state. A `verify:` entry of kind `context-chain` on the chart doc activates it; no separate `against` ref because the verifier reads the chart sidecar directly.
+
+Safety only by design — `clears` / `retains` cannot express liveness (something good eventually happens). Liveness invariants are a candidate future verifier kind, scoped separately in doc01.06.03 §5.
+
 ## How it grows
 
 Each affordance in an inventory already pairs an action with a target, so the inventory is, in effect, an action inventory the verifier walks entry by entry. The system unfolds along two axes: new verifier `kind`s as other artifact pairs become worth checking, and stricter checks within `screen-inventory` as the inventory schema firms up. Neither is built before a concrete piece of work needs it.
@@ -50,7 +65,6 @@ Each affordance in an inventory already pairs an action with a target, so the in
 The schema fields introduced for [[01-navigation]] (doc02.02.01) and [[00-index]] (doc02.02.02.00) — modality, host, modes, context, propagates, appearsInModes, reactsToContext — admit further mechanical consistency checks. Each is a one-pass walk of the statechart plus inventories.
 
 - **`modality-host`** could check that every state with `modality != fullScreen` names a real `host`, and that every `host`'s `hostsSheets` matches its inbound sheet/drawer/overlay states.
-- **`context-chain`** could check that every key in a state's `meta.context` is either consumed (named by an affordance's `appearsInModes` or `reactsToContext` in the inventory, or in `meta.actions`) or forwarded by an outgoing transition's `propagates`. Catches the silent-drop failure named in [[04-surface-composition-rules]] (doc02.04).
 - **`mode-coverage`** could check that every mode named in a state's `meta.modes` is referenced by at least one region or affordance in the inventory's `appearsInModes`.
 - **`action-concept`** could diff `Concept.action` strings against doc01.03's concept-action lists to catch orphan actions (gulf of execution) and phantom tags (stale concept reference).
 

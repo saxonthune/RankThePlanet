@@ -17,11 +17,28 @@
           "searchResults": "Entered from any other mode via COMMIT_SEARCH_TO_MAP — the user has committed a query and asked to inspect results on the map. `search-context` is set. Composes with browse or addToCollection (the user can be both in add-to-collection mode and in searchResults mode); orthogonal axis. Exited via CLEAR_SEARCH or by issuing a new query that resets the committed candidate set."
         },
         "context": {
-          "collection-context": "Optional Collection carried into add-to-collection mode. Source: CollectionDetail's TAP_ADD_ENTRY. Consumed by: the statusBar region (display) and AddLocationToCollection's pre-selection.",
-          "location-context": "Optional already-committed Location carried when LocationSheet's TAP_ADD_ENTRY hands off to AddLocationToCollection. Lives in MapOverview's UiState because both sheets are hosted here; consumed by AddLocationToCollection in place of LocationDraftSheet's candidate.",
-          "pending-review-context": "Optional Entry just created by AddLocationToCollection's PICK_COLLECTION. Transient — the surface renders a Snackbar (\"Review {place}?\" + action) over the bare map; the action fires GO_TO_REVIEW, the dismiss fires DISMISS_REVIEW_BAR, and either drops the context. Not a mode — the chrome is unchanged.",
-          "search-context": "Optional committed search state: the query string, the candidate list returned by the provider at commit time, and the viewport that was active when the query was issued. Source: COMMIT_SEARCH_TO_MAP (committing the inline dropdown) or SEARCH_THIS_AREA (re-running the same query against the current viewport). Lives in MapOverview's UiState as the host of LocationDraftSheet, LocationSheet, EntrySheet, and AddLocationToCollection, so it survives every sheet round-trip just like collection-context does — landing back on MapOverview after a Draft / AddToCollection flow re-presents the same candidate pins and viewport rather than a cleared map, which is what makes the rapid-add loop possible. Consumed by: the searchCandidatePins list (renders pins for each candidate), the searchThisAreaChip region (compares viewportAtQuery against live viewport to decide when to show), and the CLEAR_SEARCH affordance.",
-          "filter-context": "Optional set of Collection ids whose pins (and their Entries' pins) are the only ones rendered on the map; pins from every other Collection are hidden. Source: CollectionList's APPLY_FILTER (the sheet's selection-mode *See on map* button), CollectionDetail's JUMP_TO_COLLECTION (the topBar *View on map* affordance — single-Collection focus from the owning Collection), or EntrySheet's JUMP_TO_COLLECTION (a single-Collection focus from the Entry surface). Persists across sheet round-trips. Consumed by: the pins list (visibility predicate) and the filterChip region (renders the chip with leading Collection appearance and a trailing close (X) that fires CLEAR_FILTER). Set on entry by APPLY_FILTER also fits the viewport to the union of the filtered Collections' Entries (MapOverview.jumpToCollection); single-Collection set via JUMP_TO_COLLECTION fits to that Collection's Entries. Not a mode — the chrome is unchanged."
+          "owns": {
+            "collection-context": {
+              "set": ["CollectionDetail.TAP_ADD_ENTRY"],
+              "description": "Optional Collection carried into add-to-collection mode. Consumed by the statusBar region (display) and AddLocationToCollection's pre-selection."
+            },
+            "location-context": {
+              "set": ["MapOverview.PICK_SEARCH_RESULT", "MapOverview.PICK_SEARCH_RESULT_FOR_ADD"],
+              "description": "Optional already-committed Location — a provider candidate picked from search, carried forward to LocationSheet (browse) or AddLocationToCollection (add mode) in place of LocationDraftSheet's draft candidate."
+            },
+            "pending-review-context": {
+              "set": ["AddLocationToCollection.PICK_COLLECTION", "CollectionEditor.DONE_AS_DRAFT_RETURN"],
+              "description": "Optional Entry just created by an add flow. Transient — the surface renders a Snackbar (\"Review {place}?\" + action) over the bare map; the action fires GO_TO_REVIEW, the dismiss fires DISMISS_REVIEW_BAR, and either drops the context. Not a mode — the chrome is unchanged."
+            },
+            "search-context": {
+              "set": ["MapOverview.COMMIT_SEARCH_TO_MAP", "MapOverview.SEARCH_THIS_AREA"],
+              "description": "Optional committed search state: the query string, the candidate list returned by the provider at commit time, and the viewport that was active when the query was issued. Consumed by the searchCandidatePins list (renders pins for each candidate), the searchThisAreaChip region (compares viewportAtQuery against live viewport to decide when to show), and the CLEAR_SEARCH affordance."
+            },
+            "filter-context": {
+              "set": ["CollectionList.APPLY_FILTER", "CollectionDetail.JUMP_TO_COLLECTION", "EntrySheet.JUMP_TO_COLLECTION"],
+              "description": "Optional set of Collection ids whose pins (and their Entries' pins) are the only ones rendered on the map; pins from every other Collection are hidden. Consumed by the pins list (visibility predicate) and the filterChip region (renders the chip with leading Collection appearance and a trailing close (X) that fires CLEAR_FILTER). Set on entry by APPLY_FILTER also fits the viewport to the union of the filtered Collections' Entries (MapOverview.jumpToCollection); single-Collection set via JUMP_TO_COLLECTION fits to that Collection's Entries. Not a mode — the chrome is unchanged."
+            }
+          }
         },
         "reads": ["all-collections", "all-entries", "viewport", "provider-results", "collection-context", "location-context", "pending-review-context", "search-context", "filter-context"],
         "actions": [
@@ -40,80 +57,108 @@
         "TAP_PIN": {
           "target": "LocationSheet",
           "description": "User taps a pin whose Location is referenced by more than one Collection Entry. The focus gesture is MapOverview.selectPin (see meta.actions); navigation follows. LocationSheet fans out to those Collection Entries rather than assuming one.",
-          "propagates": ["collection-context"]
+          "propagates": ["collection-context"],
+          "retains": ["collection-context", "location-context", "search-context", "filter-context"],
+          "clears": ["pending-review-context"]
         },
         "TAP_PIN_SINGLE": {
           "target": "EntrySheet",
           "description": "User taps a pin whose Location is referenced by exactly one Collection Entry. The focus gesture is MapOverview.selectPin (see meta.actions); navigation jumps straight to that Entry's EntrySheet, skipping the LocationSheet fan-out since there is nothing to fan out to.",
-          "propagates": ["collection-context"]
+          "propagates": ["collection-context"],
+          "retains": ["collection-context", "location-context", "search-context", "filter-context"],
+          "clears": ["pending-review-context"]
         },
         "TAP_COLLECTIONS_BUTTON": {
           "target": "CollectionList",
-          "description": "User opens CollectionList as a tall bottom-sheet drawer over the map. The map stays mounted behind the sheet — CollectionList is hosted here per doc02.04 Rule 2. Suppressed in add-to-collection mode (no collectionsButton to fire it)."
+          "description": "User opens CollectionList as a tall bottom-sheet drawer over the map. The map stays mounted behind the sheet — CollectionList is hosted here per doc02.04 Rule 2. Suppressed in add-to-collection mode (no collectionsButton to fire it).",
+          "retains": ["collection-context", "location-context", "search-context", "filter-context"],
+          "clears": ["pending-review-context"]
         },
         "TAP_FILTER_CHIP": {
           "target": "CollectionList",
           "guard": "hasFilter",
           "description": "Live only when `filter-context` is set. User taps the body of the filterChip (not its trailing close — that fires CLEAR_FILTER) to edit the active filter. Opens CollectionList as a sheet pre-loaded in selection mode with the rows in `filter-context.collectionIds` pre-checked, so the user can adjust the set rather than reconstruct it.",
-          "propagates": ["filter-context"]
+          "propagates": ["filter-context"],
+          "retains": ["collection-context", "location-context", "search-context", "filter-context"],
+          "clears": ["pending-review-context"]
         },
         "CLEAR_FILTER": {
           "target": "MapOverview",
           "guard": "hasFilter",
-          "description": "Live only when `filter-context` is set. Self-transition — drops `filter-context`, restoring all Collections' pins to the map. Reached via the trailing close (X) on the filterChip."
+          "description": "Live only when `filter-context` is set. Self-transition — drops `filter-context`, restoring all Collections' pins to the map. Reached via the trailing close (X) on the filterChip.",
+          "retains": ["collection-context", "location-context", "pending-review-context", "search-context"],
+          "clears": ["filter-context"]
         },
         "DROP_PIN": {
           "target": "LocationDraftSheet",
           "description": "User long-presses a spot on the map to place a point. This produces an uncommitted candidate — not yet a Location — and opens LocationDraftSheet over the map. Starts the Location-first flow from doc01.02 §3. The long-press gesture on the map is the only trigger; there is no dedicated drop-pin button.",
-          "propagates": ["collection-context"]
+          "propagates": ["collection-context"],
+          "retains": ["collection-context", "location-context", "search-context", "filter-context"],
+          "clears": ["pending-review-context"]
         },
         "PICK_SEARCH_RESULT": {
           "target": "LocationSheet",
           "description": "Browse-mode pick of an unadopted provider candidate. The candidate already carries everything a Location needs (displayName, coordinates, sourceType, sourceId) so it skips LocationDraftSheet's coordinate-resolution step and opens LocationSheet with the candidate as `location-context`. The entries list is empty for a fresh candidate; the peek's `TAP_ADD_ENTRY` is the next step into AddLocationToCollection. Sibling to PICK_SEARCH_RESULT_FOR_ADD (the add-mode variant) and PICK_SEARCH_ENTRY (the existing-Location variant); modeled as distinct events because the schema permits only one transition per event.",
-          "propagates": ["location-context"]
+          "propagates": ["location-context"],
+          "retains": ["collection-context", "location-context", "search-context", "filter-context"],
+          "clears": ["pending-review-context"]
         },
         "PICK_SEARCH_RESULT_FOR_ADD": {
           "target": "AddLocationToCollection",
           "guard": "inAddMode",
           "description": "Add-mode pick of an unadopted provider candidate. Live only when `collection-context` is set (the user reached MapOverview via CollectionDetail's TAP_ADD_ENTRY). Skips LocationSheet — the user already committed to adding a Location to a Collection, so the peek would be friction — and opens AddLocationToCollection directly with the candidate as `location-context` and the originating Collection pre-selected. Same affordance as PICK_SEARCH_RESULT; modeled as a distinct event because the target differs by mode and the schema permits only one transition per event.",
-          "propagates": ["collection-context", "location-context"]
+          "propagates": ["collection-context", "location-context"],
+          "retains": ["collection-context", "location-context", "search-context", "filter-context"],
+          "clears": ["pending-review-context"]
         },
         "PICK_SEARCH_ENTRY": {
           "target": "LocationSheet",
           "description": "User picks a search hit that already corresponds to a Location with at least one Collection Entry — the hit renders with its Collection's color dot. Opens LocationSheet over the map, which fans out the Entries (or renders EntrySheet directly when the Location has exactly one Entry). One of two terminal events on the search list — the other is PICK_SEARCH_RESULT for unadopted provider candidates.",
-          "propagates": ["collection-context"]
+          "propagates": ["collection-context"],
+          "retains": ["collection-context", "location-context", "search-context", "filter-context"],
+          "clears": ["pending-review-context"]
         },
         "TAP_SETTINGS": {
           "target": "Settings",
-          "description": "User opens settings (providers, BYOK keys, sync target)."
+          "description": "User opens settings (providers, BYOK keys, sync target).",
+          "clears": ["collection-context", "location-context", "pending-review-context", "search-context", "filter-context"]
         },
         "CANCEL_ADD": {
           "target": "CollectionDetail",
           "guard": "inAddMode",
-          "description": "Live only in add-to-collection mode (guard: `collection-context` is set). User abandons the add-to-collection flow from the status bar; return to the originating CollectionDetail without adding a Collection Entry."
+          "description": "Live only in add-to-collection mode (guard: `collection-context` is set). User abandons the add-to-collection flow from the status bar; return to the originating CollectionDetail without adding a Collection Entry.",
+          "clears": ["collection-context", "location-context", "pending-review-context", "search-context", "filter-context"]
         },
         "GO_TO_REVIEW": {
           "target": "ReviewForm",
           "guard": "hasPendingReview",
-          "description": "Live only when `pending-review-context` is set. User taps the action on the post-add Snackbar to author the Review for the Entry just created by AddLocationToCollection's PICK_COLLECTION."
+          "description": "Live only when `pending-review-context` is set. User taps the action on the post-add Snackbar to author the Review for the Entry just created by AddLocationToCollection's PICK_COLLECTION.",
+          "clears": ["collection-context", "location-context", "pending-review-context", "search-context", "filter-context"]
         },
         "DISMISS_REVIEW_BAR": {
           "guard": "hasPendingReview",
-          "description": "Live only when `pending-review-context` is set. Self-transition — the Snackbar times out or the user dismisses it; drop `pending-review-context` and leave the map untouched. The Entry stays saved; the user can author the Review later via the Entry's other surfaces."
+          "description": "Live only when `pending-review-context` is set. Self-transition — the Snackbar times out or the user dismisses it; drop `pending-review-context` and leave the map untouched. The Entry stays saved; the user can author the Review later via the Entry's other surfaces.",
+          "retains": ["collection-context", "location-context", "search-context", "filter-context"],
+          "clears": ["pending-review-context"]
         },
         "SUBMIT_SEARCH": {
-          "description": "User taps *Search* on the inline search dropdown to issue the current query against the current viewport — the dropdown's hit list refreshes with the new results, the field and dropdown stay open. Self-transition; no context change. Always live while the dropdown is open, irrespective of provider trait (`supportsTypeahead`) — typeahead providers also support an explicit submit so the user can re-issue a query against a moved viewport without retyping. Shares its dropdown row with COMMIT_SEARCH_TO_MAP (the *Search on map* affordance), sitting between the search field and the hit list."
+          "description": "User taps *Search* on the inline search dropdown to issue the current query against the current viewport — the dropdown's hit list refreshes with the new results, the field and dropdown stay open. Self-transition; no context change. Always live while the dropdown is open, irrespective of provider trait (`supportsTypeahead`) — typeahead providers also support an explicit submit so the user can re-issue a query against a moved viewport without retyping. Shares its dropdown row with COMMIT_SEARCH_TO_MAP (the *Search on map* affordance), sitting between the search field and the hit list.",
+          "retains": ["collection-context", "location-context", "pending-review-context", "search-context", "filter-context"]
         },
         "COMMIT_SEARCH_TO_MAP": {
-          "description": "User taps *Search on map* on the inline search dropdown to pivot from a textual list of hits to candidate pins on the map. Self-transition — sets `search-context` from the current query, candidate set, and viewport, then dismisses the dropdown and keyboard. Provider candidates from `search-context` render as pins via the searchCandidatePins list; existing-entry hits are *not* rendered as candidate pins because they already appear as Collection Entry pins on the map. Gated on the dropdown containing at least one *unadopted provider candidate* — an existing-entry-only result set does not enable the affordance, because nothing new would render. Shares its dropdown row with SUBMIT_SEARCH (the *Search* affordance)."
+          "description": "User taps *Search on map* on the inline search dropdown to pivot from a textual list of hits to candidate pins on the map. Self-transition — sets `search-context` from the current query, candidate set, and viewport, then dismisses the dropdown and keyboard. Provider candidates from `search-context` render as pins via the searchCandidatePins list; existing-entry hits are *not* rendered as candidate pins because they already appear as Collection Entry pins on the map. Gated on the dropdown containing at least one *unadopted provider candidate* — an existing-entry-only result set does not enable the affordance, because nothing new would render. Shares its dropdown row with SUBMIT_SEARCH (the *Search* affordance).",
+          "retains": ["collection-context", "location-context", "pending-review-context", "search-context", "filter-context"]
         },
         "SEARCH_THIS_AREA": {
           "guard": "inSearchResults",
-          "description": "Live only when `search-context` is set. Self-transition — re-issues the committed query against the current viewport via Location.resolve, replaces `search-context.candidates` and `search-context.viewportAtQuery` with the new result and viewport. The affordance (a chip over the map) only renders when the live viewport has drifted past a threshold from `search-context.viewportAtQuery`; the threshold itself is a UI detail (e.g., center moved beyond ~30% of viewport span, or zoom delta ≥ 1)."
+          "description": "Live only when `search-context` is set. Self-transition — re-issues the committed query against the current viewport via Location.resolve, replaces `search-context.candidates` and `search-context.viewportAtQuery` with the new result and viewport. The affordance (a chip over the map) only renders when the live viewport has drifted past a threshold from `search-context.viewportAtQuery`; the threshold itself is a UI detail (e.g., center moved beyond ~30% of viewport span, or zoom delta ≥ 1).",
+          "retains": ["collection-context", "location-context", "pending-review-context", "search-context", "filter-context"]
         },
         "CLEAR_SEARCH": {
           "guard": "inSearchResults",
-          "description": "Live only when `search-context` is set. Self-transition — drops `search-context`, removing the candidate pins and the *Search this area* chip. Reached two ways: explicitly via the trailing close (X) affordance on the search field, or implicitly when the user begins editing the query field while search-context is set (any keystroke into the field exits searchResults mode and resumes normal typing — the field then behaves as it does in non-searchResults modes). The implicit-edit path means typing in the field always represents 'starting a new query', never 'filtering the committed candidate set'."
+          "description": "Live only when `search-context` is set. Self-transition — drops `search-context`, removing the candidate pins and the *Search this area* chip. Reached two ways: explicitly via the trailing close (X) affordance on the search field, or implicitly when the user begins editing the query field while search-context is set (any keystroke into the field exits searchResults mode and resumes normal typing — the field then behaves as it does in non-searchResults modes). The implicit-edit path means typing in the field always represents 'starting a new query', never 'filtering the committed candidate set'.",
+          "retains": ["collection-context", "location-context", "pending-review-context", "filter-context"],
+          "clears": ["search-context"]
         }
       }
     },
@@ -126,7 +171,11 @@
         "modality": "sheet",
         "host": "MapOverview",
         "context": {
-          "location-context": "Forwarded by MapOverview's PICK_SEARCH_RESULT when a provider candidate is picked in browse mode. The candidate Location backs the peek; its entries list is empty because no Entry references it yet. TAP_ADD_ENTRY forwards the same `location-context` onward to AddLocationToCollection."
+          "receives": {
+            "location-context": {
+              "description": "Forwarded by MapOverview's PICK_SEARCH_RESULT when a provider candidate is picked in browse mode. The candidate Location backs the peek; its entries list is empty because no Entry references it yet. TAP_ADD_ENTRY forwards the same `location-context` onward to AddLocationToCollection."
+            }
+          }
         },
         "reads": ["location", "entries-for-location", "collections-with-location", "location-context"],
         "actions": ["Location.openExternally", "Location.refresh"]
@@ -208,7 +257,11 @@
           "selection": "Entered by long-pressing any row (ENTER_SELECT_MODE), or by opening the sheet via TAP_FILTER_CHIP with `filter-context` set. Rows grow leading checkboxes; tap toggles selection; topBar swaps to a selection action bar."
         },
         "context": {
-          "filter-context": "Optional. Forwarded by MapOverview's TAP_FILTER_CHIP when the user opens the sheet to edit an active filter. Pre-selects the corresponding rows and pre-enters selection mode. Carried back to MapOverview by APPLY_FILTER (replacing the prior set) or dropped by EXIT_SELECT_MODE / BACK (leaving the active filter on the map untouched)."
+          "receives": {
+            "filter-context": {
+              "description": "Optional. Forwarded by MapOverview's TAP_FILTER_CHIP when the user opens the sheet to edit an active filter. Pre-selects the corresponding rows and pre-enters selection mode. Carried back to MapOverview by APPLY_FILTER (replacing the prior set) or dropped by EXIT_SELECT_MODE / BACK (leaving the active filter on the map untouched)."
+            }
+          }
         },
         "reads": ["collections", "filter-context"],
         "actions": ["Collection.create", "Collection.import"]
@@ -359,7 +412,11 @@
         "surface": "CollectionEditor",
         "modality": "fullScreen",
         "context": {
-          "return-to-draft-context": "Optional. Set by AddLocationToCollection's TAP_NEW_COLLECTION when the user creates a new Collection mid-flow with an in-flight candidate Location in the MapOverview host's UiState. When set, the Save affordance fires DONE_AS_DRAFT_RETURN (commit candidate against the just-created Collection, return to MapOverview with pending-review-context) instead of DONE (continue into CollectionDetail). The context itself carries no payload — the candidate Location already lives in the host's UiState and survives the editor being on top of the back stack."
+          "receives": {
+            "return-to-draft-context": {
+              "description": "Optional. Set by AddLocationToCollection's TAP_NEW_COLLECTION when the user creates a new Collection mid-flow with an in-flight candidate Location in the MapOverview host's UiState. When set, the Save affordance fires DONE_AS_DRAFT_RETURN (commit candidate against the just-created Collection, return to MapOverview with pending-review-context) instead of DONE (continue into CollectionDetail). The context itself carries no payload — the candidate Location already lives in the host's UiState and survives the editor being on top of the back stack."
+            }
+          }
         },
         "reads": ["collection", "template", "return-to-draft-context"],
         "actions": ["Collection.create", "Collection.edit", "Review.defineTemplate", "Review.editTemplate", "Review.useBuiltIn"]
@@ -391,7 +448,11 @@
         "modality": "sheet",
         "host": "MapOverview",
         "context": {
-          "collection-context": "Forwarded by MapOverview's DROP_PIN when add-to-collection mode is active. Not consumed by this surface; carried onward to AddLocationToCollection so the originating Collection is pre-selected."
+          "receives": {
+            "collection-context": {
+              "description": "Forwarded by MapOverview's DROP_PIN when add-to-collection mode is active. Not consumed by this surface; carried onward to AddLocationToCollection so the originating Collection is pre-selected."
+            }
+          }
         },
         "reads": ["candidate-location", "nearby-candidates", "collection-context"],
         "actions": ["Location.dropPin", "Location.resolveNearby"]
@@ -422,8 +483,14 @@
         "modality": "sheet",
         "host": "MapOverview",
         "context": {
-          "collection-context": "Forwarded from LocationDraftSheet's ADD_TO_COLLECTION. Consumed: pre-selects the Collection in the picker so PICK_COLLECTION confirms rather than chooses.",
-          "location-context": "Forwarded from LocationSheet's TAP_ADD_ENTRY or MapOverview's PICK_SEARCH_RESULT_FOR_ADD. A resolved Location (display name + coordinates + source) — either an already-committed Location from LocationSheet, or a provider-resolved candidate picked from search — reused as the new Entry's Location in place of LocationDraftSheet's draft candidate. Consumed by Location.addToCollection."
+          "receives": {
+            "collection-context": {
+              "description": "Forwarded from LocationDraftSheet's ADD_TO_COLLECTION. Consumed: pre-selects the Collection in the picker so PICK_COLLECTION confirms rather than chooses."
+            },
+            "location-context": {
+              "description": "Forwarded from LocationSheet's TAP_ADD_ENTRY or MapOverview's PICK_SEARCH_RESULT_FOR_ADD. A resolved Location (display name + coordinates + source) — either an already-committed Location from LocationSheet, or a provider-resolved candidate picked from search — reused as the new Entry's Location in place of LocationDraftSheet's draft candidate. Consumed by Location.addToCollection."
+            }
+          }
         },
         "reads": ["collections", "candidate-location", "collection-context", "location-context"],
         "actions": ["Location.addToCollection", "Collection.addEntry", "Collection.create"]
@@ -546,7 +613,11 @@
         "surface": "ProviderConfig",
         "modality": "fullScreen",
         "context": {
-          "provider-context": "Which provider type is being configured. Source: ManageProviders' TAP_PROVIDER. Consumed by every region — it determines the surface's mode (`osm` vs `google` vs …) and so which fields and actions render."
+          "receives": {
+            "provider-context": {
+              "description": "Which provider type is being configured. Source: ManageProviders' TAP_PROVIDER. Consumed by every region — it determines the surface's mode (`osm` vs `google` vs …) and so which fields and actions render."
+            }
+          }
         },
         "modes": {
           "osm": "Provider-context is osm. The keyless OpenStreetMap provider. Setup region shows endpoint host and attribution as read-only metadata; no key entry.",

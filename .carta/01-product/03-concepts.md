@@ -3,6 +3,7 @@ title: Concepts
 summary: Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider
 tags: [product, concepts, design]
 deps: [doc01.02]
+verify: [{"kind":"action-concept","sidecar":"03-concepts.json"}]
 ---
 
 # Concepts

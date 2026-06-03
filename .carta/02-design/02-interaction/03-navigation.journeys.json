@@ -161,6 +161,53 @@
       "start": "MapOverview",
       "events":  ["TAP_COLLECTIONS_BUTTON","TAP_COLLECTION",    "TAP_ENTRY",             "TAP_EDIT_REVIEW","SUBMIT"],
       "targets": ["CollectionList",        "CollectionDetail",  "CollectionEntryDetail", "ReviewForm",     "CollectionEntryDetail"]
+    },
+    {
+      "id": "search-then-jump-to-collection-detail",
+      "description": "Adversarial: the motivating bug for Kind G. User commits a search to map, opens the Collections sheet over MapOverview (search-context persists — sheet over host), then taps a Collection row to navigate fullScreen into CollectionDetail. That fullScreen jump leaves MapOverview's host stack; search-context must die with its owning surface. If the host-stack derivation regresses (or someone makes CollectionList persist search-context past the host), the inactive-after-TAP_COLLECTION assertion fires.",
+      "start": "MapOverview",
+      "events":  ["COMMIT_SEARCH_TO_MAP", "TAP_COLLECTIONS_BUTTON", "TAP_COLLECTION"],
+      "targets": ["MapOverview",          "CollectionList",         "CollectionDetail"],
+      "expects": [
+        { "afterEvent": "COMMIT_SEARCH_TO_MAP", "active": ["search-context"], "note": "self-transition sets search-context per meta.context.owns" },
+        { "afterEvent": "TAP_COLLECTIONS_BUTTON", "active": ["search-context"], "note": "sheet over host; MapOverview stays mounted" },
+        { "afterEvent": "TAP_COLLECTION", "inactive": ["search-context"], "note": "fullScreen jump from sheet unmounts MapOverview; search-context dies with its owning surface" }
+      ]
+    },
+    {
+      "id": "search-then-settings-clears",
+      "description": "Adversarial: search-context dies on the explicit-clears fullScreen path. TAP_SETTINGS declares search-context in its `clears` array, so the key dies even before host-stack unmount applies.",
+      "start": "MapOverview",
+      "events":  ["COMMIT_SEARCH_TO_MAP", "TAP_SETTINGS"],
+      "targets": ["MapOverview",          "Settings"],
+      "expects": [
+        { "afterEvent": "COMMIT_SEARCH_TO_MAP", "active": ["search-context"] },
+        { "afterEvent": "TAP_SETTINGS", "inactive": ["search-context"] }
+      ]
+    },
+    {
+      "id": "add-mode-cancel-clears",
+      "description": "Adversarial: collection-context lifetime across the addToCollection round-trip. Set by CollectionDetail.TAP_ADD_ENTRY (the only transition in collection-context.set), persists across the MapOverview add-mode session, then cleared by CANCEL_ADD back to CollectionDetail. The intermediate steps confirm collection-context stays active until the explicit clear, and that the fullScreen jump from CollectionList to CollectionDetail at step 2 does not strand a stale value (none was active there).",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "TAP_COLLECTION",   "TAP_ADD_ENTRY", "CANCEL_ADD"],
+      "targets": ["CollectionList",         "CollectionDetail", "MapOverview",   "CollectionDetail"],
+      "expects": [
+        { "afterEvent": "TAP_COLLECTION", "inactive": ["collection-context"], "note": "fresh CollectionDetail; not in add-mode yet" },
+        { "afterEvent": "TAP_ADD_ENTRY", "active": ["collection-context"], "note": "collection-context.set lists this transition" },
+        { "afterEvent": "CANCEL_ADD", "inactive": ["collection-context"], "note": "CANCEL_ADD's `clears` drops the key explicitly" }
+      ]
+    },
+    {
+      "id": "filter-then-clear",
+      "description": "Adversarial: filter-context lifetime across the CollectionList selection sheet and the trailing close (X) on the filterChip. ENTER_SELECT_MODE is a within-sheet self-transition that must not disturb context; APPLY_FILTER sets filter-context on MapOverview (via its set entry); CLEAR_FILTER drops it via the chip's close affordance.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "ENTER_SELECT_MODE", "APPLY_FILTER", "CLEAR_FILTER"],
+      "targets": ["CollectionList",         "CollectionList",    "MapOverview",  "MapOverview"],
+      "expects": [
+        { "afterEvent": "ENTER_SELECT_MODE", "inactive": ["filter-context"], "note": "sheet self-transition; nothing set yet" },
+        { "afterEvent": "APPLY_FILTER", "active": ["filter-context"], "note": "filter-context.set lists CollectionList.APPLY_FILTER" },
+        { "afterEvent": "CLEAR_FILTER", "inactive": ["filter-context"], "note": "self-transition with clears: [filter-context]" }
+      ]
     }
   ]
 }

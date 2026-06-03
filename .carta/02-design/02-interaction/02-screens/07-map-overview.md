@@ -3,7 +3,7 @@ title: Map Overview
 summary: Affordance inventory for the MapOverview surface — the everything view: pins, collection filter, search, drop-pin
 tags: [design, interaction, screens]
 deps: [doc02.02.01, doc01.03]
-verify: [{"kind":"screen-inventory","sidecar":"07-map-overview.inventory.json","against":{"doc":"doc02.02.01","key":"MapOverview"}}]
+verify: [{"kind":"screen-inventory","sidecar":"07-map-overview.inventory.json","against":{"doc":"doc02.02.01","key":"MapOverview"}},{"kind":"slot-coverage","sidecar":"07-map-overview.inventory.json","against":{"doc":"doc02.02.01","key":"MapOverview"}},{"kind":"invariant-resolution","sidecar":"07-map-overview.inventory.json","against":{"doc":"doc02.02.01","key":"MapOverview"}}]
 ---
 
 # Map Overview

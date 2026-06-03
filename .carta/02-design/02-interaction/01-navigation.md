@@ -3,7 +3,7 @@ title: Navigation
 summary: Platform-agnostic surface graph as XState statechart; verifies every concept action has a UI affordance
 tags: [design, interaction, navigation, statechart]
 deps: [doc01.03]
-verify: [{"kind":"context-chain","sidecar":"01-navigation.statechart.json"},{"kind":"guard-coverage","sidecar":"01-navigation.statechart.json"}]
+verify: [{"kind":"context-chain","sidecar":"01-navigation.statechart.json"},{"kind":"guard-coverage","sidecar":"01-navigation.statechart.json"},{"kind":"modality-host","sidecar":"01-navigation.statechart.json"},{"kind":"generated-traces","sidecar":"01-navigation.statechart.json","traces":200,"length":20,"seed":1}]
 ---
 
 # Navigation

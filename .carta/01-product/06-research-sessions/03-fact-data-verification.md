@@ -31,15 +31,15 @@ Candidate mitigation: compile the statechart to a runtime interpreter and bind r
 
 ### 3. Coverage criterion needs a deliberate pick
 
-Model-based testing surveys are clear that *which* coverage criterion is targeted dominates outcomes: state, edge, N-switch (every pair / triple of consecutive transitions), or path coverage. The doc02.02.03 reverse-coverage idea — "every transition exercised by ≥1 journey" — is **1-switch (edge) coverage**. The search-cancel bug is a 2-switch bug (`set` → `leave` → `return`) — edge coverage cannot catch it by construction.
+Model-based testing surveys are clear that *which* coverage criterion is targeted dominates outcomes: state, edge, N-switch (every pair / triple of consecutive transitions), or path coverage. The reverse-coverage shape — "every transition exercised by ≥1 journey" — is **1-switch (edge) coverage**, and a `set` → `leave` → `return` bug like search-context surviving a sheet-trip is a 2-switch bug that edge coverage cannot catch by construction.
 
-Candidate mitigation: target ≥2-switch coverage on journeys and state the criterion explicitly in doc02.02.03. Corpus size grows quadratically; budget accordingly.
+The `journey-trace` verifier ([[../04-development-philosophy/02-verification-system]], doc01.04.02) carries the per-step active-context derivation the bug needs — host-stack-aware, safety-only, diffed against `expects: []` assertions on each journey. The sibling `journeys-verify` emits a 2-switch coverage signal (every `(state, eventIn, eventOut)` triple) as a backlog count rather than a failing check; targeted 2-switch saturation grows quadratically with the corpus and remains a corpus-authoring exercise. Liveness, predicate-shaped expects, and generated-trace coverage stay out of scope for these verifiers — generated traces sit in Kind H below.
 
 ### 4. Hypothesis-style property tests are the missing layer
 
 Hand-written journeys are linear and biased toward what authors expect. Stateful property-based testing (Hypothesis, the Bonsai trace-tests pattern in doc01.06.02 §2) **generates** random transition sequences from the chart, evaluates invariants after each step, and **shrinks** failing sequences to minimal counterexamples. The shrink is what makes a 20-step crash debuggable.
 
-Candidate mitigation: a pure-Kotlin chart interpreter under `:jvmTest` plus a small property runner that walks generated sequences and asserts invariants. Journeys cover intent; generated traces cover adversarial reachability. Both run against the same fact layer.
+Candidate mitigation: the `generated-traces` verifier in `verify.mjs` (doc01.04.02 §Verifier kinds) reuses the same `deriveActiveContext` host-stack walker `journey-trace` uses, plus a guard evaluator over `parseGuard`/`walkGuardLeaves`, and walks uniformly-sampled guard-enabled transitions from the chart's `initial` state. Hand-rolled bisect-truncate + index-drop shrinker, deterministic per-trace seeds, configurable trace count and length. Sibling sheet → sibling sheet over the same host pops the source sheet first (doc02.04 Rule 2) — a small extension of `deriveActiveContext`'s strict push. Properties checked per step: every active context key's owning surface is in the current stack, and no derivation-errors accumulate. Journeys cover intent; generated traces cover adversarial reachability. Both run against the same fact layer in one runtime — no port, no schema drift.
 
 ### 5. Liveness is outside what `clears` / `retains` can express
 

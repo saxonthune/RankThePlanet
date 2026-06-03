@@ -7,12 +7,14 @@
     },
     {
       "id": "settingsButton",
-      "purpose": "A button in the top-left navigationIcon slot in browse and searchResults modes. Shows the settings (cog) icon and opens the Settings surface. Suppressed in add-to-collection mode (replaced by closeButton).",
+      "purpose": "Shows the settings (cog) icon and opens the Settings surface.",
+      "slot": "navigationIcon",
       "appearsInModes": ["browse"]
     },
     {
       "id": "closeButton",
-      "purpose": "A button in the top-left navigationIcon slot in add-to-collection mode. Shows the close (X) icon and cancels the add-to-collection flow, dropping the carried Collection and returning to CollectionDetail. Replaces settingsButton during the flow.",
+      "purpose": "Shows the close (X) icon and cancels the add-to-collection flow, dropping the carried Collection and returning to CollectionDetail.",
+      "slot": "navigationIcon",
       "appearsInModes": ["addToCollection"]
     },
     {
@@ -28,7 +30,8 @@
     },
     {
       "id": "collectionsButton",
-      "purpose": "An extended floating action button anchored bottom-end over the map, opening the CollectionList sheet (a tall bottom-sheet drawer hosted here per doc02.04 Rule 2). Suppressed in add-to-collection mode so the user cannot start a second flow.",
+      "purpose": "An extended floating action button anchored bottom-end over the map, opening the CollectionList sheet (a tall bottom-sheet drawer hosted here per doc02.04 Rule 2).",
+      "slot": "fab",
       "appearsInModes": ["browse"]
     },
     {
@@ -38,7 +41,8 @@
     },
     {
       "id": "statusBar",
-      "purpose": "A panel along the bottom of the surface in add-to-collection mode, naming the target Collection — \"Adding to {collectionName}\".",
+      "purpose": "A panel along the bottom of the surface naming the target Collection — \"Adding to {collectionName}\".",
+      "slot": "bottomBar",
       "appearsInModes": ["addToCollection"],
       "reactsToContext": ["collection-context"]
     }
@@ -264,5 +268,32 @@
       "emptyState": "If a SEARCH_THIS_AREA refresh returns zero candidates, the searchResults mode stays active with an empty candidate set; the chip remains available for further re-queries and CLEAR_SEARCH exits the mode."
     }
   ],
-  "deferred": ["MapOverview.open", "MapOverview.jumpToCollection"]
+  "deferred": ["MapOverview.open", "MapOverview.jumpToCollection"],
+  "invariants": [
+    {
+      "id": "search-typing-starts-new",
+      "text": "Typing into the `search` region while `search-context` is set fires `CLEAR_SEARCH`; editing the query never filters the committed candidate set.",
+      "predicate": "has(search-context)"
+    },
+    {
+      "id": "commit-search-needs-candidates",
+      "text": "The `commit-search-to-map` affordance renders only when at least one unadopted provider candidate is present in the dropdown; existing-entry-only results do not enable it.",
+      "note": "Text-only — the precondition is candidate-set-shape (dropdown content), not a context key or mode. Awaits an `enabled(affordance-id)` or candidate-set atom extension."
+    },
+    {
+      "id": "add-mode-suppresses-competing-flows",
+      "text": "In `addToCollection` mode the `settingsButton` and `collectionsButton` regions are suppressed; the user cannot bounce into `Settings` or `CollectionList` mid-flow.",
+      "predicate": "mode(addToCollection)"
+    },
+    {
+      "id": "search-this-area-needs-drift",
+      "text": "The `searchThisAreaChip` region renders only when the live viewport has drifted past a threshold from `search-context.viewportAtQuery`.",
+      "predicate": "has(search-context)"
+    },
+    {
+      "id": "search-context-survives-sheet-trip",
+      "text": "The candidate-pin to `LocationDraftSheet` to `AddLocationToCollection` to `MapOverview` round-trip preserves `search-context.candidates` and `search-context.viewportAtQuery`; the user returns to the same pins and viewport, not a cleared map.",
+      "predicate": "has(search-context)"
+    }
+  ]
 }

@@ -42,11 +42,7 @@ Spec shape for the overlay case: declare the context on `meta.context`, declare 
 
 > A surface that visually overlays another surface — sheet, drawer, popover — is **state owned by the host's UiState**, not a separate route in the NavHost.
 
-The statechart records the relationship with two fields:
-
-- `meta.modality` on the overlay state: `sheet`, `drawer`, or `overlay`.
-- `meta.host` on the overlay state: the surface it renders over.
-- `meta.hostsSheets` on the host state: the inverse, for discoverability and verifier coverage.
+The `modality-host` verifier in `.carta/verify.mjs` enforces this on the statechart: read the verifier for the field contract.
 
 Why a route is wrong:
 

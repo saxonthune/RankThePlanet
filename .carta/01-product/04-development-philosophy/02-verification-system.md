@@ -94,6 +94,82 @@ Negative-polarity atoms (under an odd number of `not`s) participate in identifie
 
 Transitions whose event has no inventory affordance (system-driven gestures, journey stubs, items in inventory `deferred` arrays) are skipped — the `screen-inventory` verifier owns the coverage check.
 
+## The `invariant-resolution` verifier
+
+Load-bearing assertions about a surface — *"typing in the search field while `search-context` is set fires `CLEAR_SEARCH`"*, *"`commit-search-to-map` renders only when at least one unadopted provider candidate is in the dropdown"* — sit in screen-description prose where nothing can reach them. A typo in a referenced event name, a renamed mode, or a deleted context key silently rots the prose. The `invariant-resolution` verifier lifts these assertions into a structured `invariants: []` array on inventory sidecars and resolves their references against the surface's local address space.
+
+Each entry is `{id?, text, predicate?}`. `text` is free-form prose; symbol references are marked with backticks. The verifier scans every backtick-quoted token in each `text` field and resolves it against the union of: chart events (`state.on` keys), modes (`meta.modes` keys), context keys (`meta.context.owns` ∪ `meta.context.receives`), inventory region ids, affordance ids, list ids, and chart state ids (target surfaces). Dotted tokens like `` `search-context.viewportAtQuery` `` resolve the left side; the right side is unchecked at this layer — field-level resolution lands when context keys gain typed payloads. Tokens containing whitespace or starting with a quote are treated as prose and skipped — the cheap line between *symbol* and *prose phrase*. Issues: `missing-text`, `duplicate-id`, `unknown-reference`.
+
+The optional `predicate` field carries a string in the Kind B guard grammar (`has(k)` / `mode(m)` / `eq(k.f, v)` with `not` / `and` / `or` — the same `parseGuard` consumed by `guard-coverage`). It states a *necessary precondition* for the invariant's positive case; the prose `text` refines with the consequence or the runtime-only part of the claim that the static grammar cannot express. The verifier parses the predicate and walks every leaf atom, validating `has`/`eq` keys against the surface's owns + receives keys and `mode` atoms against its declared modes. New issue kinds: `predicate-parse-error`, `predicate-unknown-key`, `predicate-unknown-mode`. The check is static-only — the predicate is not evaluated against generated transition sequences; that work is a future trace-runner kind under `:jvmTest`. Invariants whose claim resists the current atom vocabulary stay `text`-only and carry an optional `note` field documenting the gap (a candidate extension like `enabled(affordance-id)` or `fires(EVENT)`, or a multi-step temporal claim that waits for the runner). Reusing one parser across `guard-coverage`, `invariant-resolution`, and the eventual trace runner is the economy.
+
+A doc opts in with `verify: [{"kind":"invariant-resolution","sidecar":"<inventory>","against":{"doc":"<chart-doc-ref>","key":"<surface-id>"}}]` — same shape as `screen-inventory` and `slot-coverage`.
+
+## The `journeys-verify` verifier
+
+The journey corpus ([[../../02-design/02-interaction/03-navigation-journeys]], doc02.02.03) declares user-intent paths as parallel `events[]` / `targets[]` arrays. `journeys-verify` diffs each step against the chart: for every `(from, event, claimedTarget)` triple along a journey, it reports `chart-missing` when `chart.states[from].on[event]` is absent, `target-mismatch` when the chart's transition target differs from `claimedTarget` (self-transitions fall back to `from`), and `unknown-surface` when the chart has no state for a named surface (including the journey's `start`). The verifier keeps walking after each divergence so a journey's full diff lands in one pass.
+
+Divergences print as **warnings**: the run logs them and exits 0. Several existing journeys carry intentional `chart-missing` / `target-mismatch` entries as documentation of pending work (the chart-vs-journey reconciliation is editorial, not mechanical). Hardening to failing-mode waits on the chart catching up to those journeys — at which point the warnings should drop to zero and the threshold flips.
+
+Alongside the diff, `journeys-verify` emits a **2-switch coverage** signal: every `(state, eventIn, eventOut)` triple in the chart is enumerated (every event reaching `state` paired with every event leaving it), the same shape is harvested from the journey corpus, and the difference is reported as a count plus a sample of up to twenty `uncovered-triple` warnings. Coverage is not a failing check — it is a backlog signal whose corpus today is far from saturation by design.
+
+A doc opts in with `verify: [{"kind":"journeys-verify","sidecar":"<journeys-sidecar>"}]`. The sidecar's top-level `statechart` field names the sibling statechart sidecar; both verifiers below resolve it the same way.
+
+## The `journey-trace` verifier
+
+Where `journeys-verify` checks shape, `journey-trace` checks *context lifetime*. Each journey may carry an optional `expects: [{ afterEvent, active?, inactive?, note? }]` array, with `active` and `inactive` listing context-key names whose state is asserted at the step whose event slug matches `afterEvent`. The verifier walks the journey under a **host-stack derivation** and diffs the derived active set against each `expects` entry.
+
+The derivation maintains a surface stack starting at `journey.start`, and at each step:
+
+- Resolves the chart transition for `(from, event)`. A missing transition halts the journey with `trace-broken-by-chart` and the rest of the journey's expects are skipped.
+- Activates every key whose owning surface declares `meta.context.owns[k].set` includes `"<from>.<event>"`.
+- Deactivates every key in the transition's `clears` array. (`retains` is structural documentation; the derivation infers it.)
+- Reshapes the stack against the target's modality: a sheet pushes over its declared `host`; a fullScreen target lower in the stack pops down to it (BACK-style return); any other fullScreen target replaces the entire stack and deactivates every key owned by an unmounted surface. Static map `ownedBy[k] → surface` (one-shot from `meta.context.owns`) drives the unmount cleanup.
+
+The host-stack rule is the load-bearing piece: it catches multi-step context bugs the intra-state `context-chain` verifier cannot see by construction — most notably context owned by a sheet's host surviving past a sheet → fullScreen jump that leaves the host stack.
+
+Issue kinds: `unknown-after-event` (anchor not in `events[]`), `ambiguous-after-event` (anchor appears more than once — split the journey or rephrase), `expected-active-missing`, `expected-inactive-present`, `derivation-error` (impossible stack — should never fire if `modality-host` is green), `trace-broken-by-chart` (chart cannot tell the derivation what comes next). Failing on any.
+
+The verifier is static-only — predicates over `active` / `inactive` (e.g. `has(k)`, `and(…)`) and liveness assertions are deliberately deferred. Trace evaluation against generated sequences is the future Kind H runner under `:jvmTest`.
+
+A doc opts in with `verify: [{"kind":"journey-trace","sidecar":"<journeys-sidecar>"}]`. The same sidecar typically opts into `journeys-verify` as well.
+
+## The `generated-traces` verifier
+
+Where `journey-trace` checks hand-authored intent paths, `generated-traces` is the adversarial reachability layer (doc01.06.03 §4). It walks **randomly generated** transition sequences from the chart's `initial` state, asserts safety invariants after every step, and shrinks failing sequences to a minimal counterexample. The shrink is what makes a 20-step crash debuggable.
+
+The runner reuses `deriveActiveContext`'s host-stack semantics for the step function, plus a guard evaluator built over `parseGuard`/`walkGuardLeaves`. From the current state, the generator lists every `state.on` entry whose guard evaluates true against the current world (`active` set + per-surface mode) and picks one uniformly. Mode tracking uses event-name conventions — `ENTER_*_MODE` sets the top surface's mode, `EXIT_*_MODE` resets it to `browse`. `eq(k.f, v)` atoms are payload-shape and evaluate to false (under-generate rather than over-generate).
+
+Sibling sheet → sibling sheet over the same host pops the source sheet before pushing the target — a small extension of `deriveActiveContext`'s strict push, matching doc02.04 Rule 2 (overlays are owned by the host's UiState, not stacked).
+
+Two properties are asserted after every step:
+
+- **owner-in-stack**: for every key `k` in `active`, the surface listed in `meta.context.owns[k]` is present in the current stack. Catches the search-context-survives-unmount class of bug.
+- **derivation-error-free**: no overlay-with-absent-host or no-modality events accumulate.
+
+On failure, the shrinker bisects the trace to the minimal failing prefix, then attempts to drop each remaining index. The output reports the shrunk event sequence plus the violation list.
+
+A doc opts in with `verify: [{"kind":"generated-traces","sidecar":"<chart-sidecar>","traces":200,"length":20,"seed":1}]`. The runner is deterministic for a given seed.
+
+## The `action-concept` verifier
+
+A surface's affordances are tagged with `Concept.action` strings (`Collection.create`, `Location.resolve`, `MapOverview.pan`), and the chart's `meta.actions` carries the same vocabulary. The set of valid concept actions lives in prose on [[03-concepts]] (doc01.03). Without a join, typos in either tag (`Collecton.create`) and references to actions a concept never declared survive both review and the `screen-inventory` check — that verifier only cares whether the inventory covers the chart's transitions, not whether the action names them in agreement with the concept layer.
+
+The `action-concept` verifier closes that gap. A flat sidecar attached to doc01.03 lists every concept action as data — `{"concept": "Collection", "action": "create"}` rows, plus a `skipNamespaces: ["Debug", "About"]` field declaring the closed set of non-concept namespaces (debug-only tools, surface-local affordances like `About.openRepository`) that may legitimately appear in tag strings without backing a concept.
+
+For each `Concept.action` string in chart `meta.actions` and inventory `affordance.action`, the verifier splits on the first `.` and dispatches:
+
+- **`namespace ∈ skipNamespaces`** — skip silently.
+- **`namespace` is a concept and `action` is one of its rows** — record a reference.
+- **`namespace` is a concept but `action` is not a row** — `phantom` issue (stale reference). Includes the source state-id or surface-id so reconciliation has a target.
+- **`namespace` is neither a concept nor in the skip-list** — `unknown-namespace` issue. This is the typo-catcher.
+- **string has no `.`** — `malformed` issue.
+
+After the scan, every row in the sidecar that no chart or inventory referenced becomes an `orphan` issue: a concept action declared but unreachable from the UI — the gulf-of-execution catch named in doc01.06.03. Following the epic's permissive-first norm ([[fact-verification.epic]]), orphans surface as backlog signal but do not fail the run; only phantoms, unknown-namespace, and malformed entries are failing.
+
+The verifier needs no `against` ref — it discovers the chart via `doc02.02.01` and walks every `*.inventory.json` under `.carta/`. A doc opts in with `verify: [{"kind":"action-concept","sidecar":"03-concepts.json"}]`.
+
+The sidecar does not capture action arity, parameter names, or types. Those are reserved for a future signature-verifier kind.
+
 ## How it grows
 
 Each affordance in an inventory already pairs an action with a target, so the inventory is, in effect, an action inventory the verifier walks entry by entry. The system unfolds along two axes: new verifier `kind`s as other artifact pairs become worth checking, and stricter checks within `screen-inventory` as the inventory schema firms up. Neither is built before a concrete piece of work needs it.
@@ -104,6 +180,5 @@ The schema fields introduced for [[01-navigation]] (doc02.02.01) and [[00-index]
 
 - **`modality-host`** could check that every state with `modality != fullScreen` names a real `host`, and that every `host`'s `hostsSheets` matches its inbound sheet/drawer/overlay states.
 - **`mode-coverage`** could check that every mode named in a state's `meta.modes` is referenced by at least one region or affordance in the inventory's `appearsInModes`.
-- **`action-concept`** could diff `Concept.action` strings against doc01.03's concept-action lists to catch orphan actions (gulf of execution) and phantom tags (stale concept reference).
 
 A kind earns implementation when a concrete piece of work — typically the unfolding of a new surface — would benefit from the check.

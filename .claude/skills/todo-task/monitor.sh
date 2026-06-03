@@ -27,7 +27,7 @@ fi
 EL=$'\033[K'
 
 # ── Generic helpers ──────────────────────────────────────────────────────────
-mtime() { stat -c %Y "$1" 2>/dev/null || date +%s; }
+mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null || date +%s; }
 
 elapsed() {
   local now age; now=$(date +%s); age=$((now - $(mtime "$1")))

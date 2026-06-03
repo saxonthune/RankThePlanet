@@ -53,7 +53,10 @@ class OsmLocationProvider(
         return try {
             val response = client.get("$photonBase/api") {
                 parameter("q", query)
-                parameter("limit", "10")
+                // Photon ranks by prefix-match score; the viewport bias below re-sorts
+                // toward the visible area. A wider limit gives that bias more local
+                // candidates to surface before the interleave caps the dropdown.
+                parameter("limit", "15")
                 when (bias) {
                     is LocationBias.Point -> {
                         parameter("lat", bias.coordinates.lat.toString())

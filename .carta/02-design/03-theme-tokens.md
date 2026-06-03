@@ -21,7 +21,7 @@ The indirection earns its keep: semantic names survive a redesign, one token-set
 
 ## Token categories — first cut
 
-Three categories are specified now because every screen needs them. Others (shapes, elevation, motion) are deferred — add a category when a surface demands it, not before.
+Three categories are specified now because every screen needs them; a fourth — the overlay treatment — is specified because the map surface composes floating overlays that need a shared anchor. Motion (durations, easing) stays deferred — add it when an animation is specified.
 
 ### Colors — `RtpColors`
 
@@ -34,6 +34,16 @@ A fixed scale of `Dp` values (`xs`, `sm`, `md`, `lg`). Every `padding`/`gap` in 
 ### Typography — `RtpTypography`
 
 Named text roles (e.g. `screenTitle`, `body`, `caption`, `label`), each a `TextStyle`. Roles are named for *where text appears in RTP*, not for a type-ramp number.
+
+### Overlay treatment — `RtpOverlay`
+
+The shared shape + spacing + elevation contract for surfaces that float **over the map** — the search dropdown, the filter chip, the *Search this area* chip, and any later FAB or attribution overlay. One token set so every map overlay shares a corner radius, an inset from the surface edges, and an elevation, instead of each picking its own. The slots:
+
+- `shape` — the corner radius for overlay panels (a `CornerBasedShape`). The panel reads as a card over the map, not an edge-to-edge slab.
+- `edgeInset` — the gap an overlay keeps from the surface edges, so it floats rather than bleeding to the bezel. This is the *anchor* the overlays align to.
+- `tonalElevation` / `shadowElevation` — the depth that lifts the panel off the map (HIG *Depth*, Material elevation). Deference: enough to separate the panel from the map without veiling it (cf. doc02.05 G009 — overlays must leave the map readable).
+
+Unlike colors, these slots are **theme-invariant** — a corner radius and an inset do not change light↔dark. So `RtpOverlay` is a plain top-level token object, not published through `CompositionLocal`; the `CompositionLocal` mechanism below is reserved for token sets that vary by active theme (colors). `Dp` and `CornerBasedShape` are multiplatform, so `RtpOverlay` lives in `commonMain` like the rest.
 
 ## The provider and the accessor
 
@@ -61,6 +71,5 @@ All token types and the provider live in `commonMain` — `Color`, `Dp`, `TextSt
 
 ## Deferred
 
-- Shapes / corner radii — when a component needs a non-default shape.
-- Elevation / tint — when a surface needs layering beyond Material's default.
 - Motion (durations, easing) — when an animation is specified.
+- Component-anatomy shapes beyond the overlay treatment (e.g. a bespoke card or button radius) — when a component needs one. `RtpOverlay` covers map overlays; a general `RtpShapes` set graduates when a second, non-overlay shape need appears.

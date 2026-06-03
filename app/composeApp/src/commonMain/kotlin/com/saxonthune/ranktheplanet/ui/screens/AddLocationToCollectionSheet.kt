@@ -5,10 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -35,71 +38,86 @@ fun AddLocationToCollectionSheet(
     onNewCollection: () -> Unit,
     onPickCollection: (CollectionId) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(bottom = 16.dp),
     ) {
-        DebugSheetLabel("AddLocationToCollectionSheet")
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+        item {
+            DebugSheetLabel("AddLocationToCollectionSheet")
+        }
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                }
             }
         }
 
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+        item {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = draft.adoptedCandidate ?: draft.displayName ?: "Dropped pin",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = formatLatLng(draft.lat, draft.lng),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        item {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        }
+
+        item {
             Text(
-                text = draft.adoptedCandidate ?: draft.displayName ?: "Dropped pin",
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = formatLatLng(draft.lat, draft.lng),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = "Pick a Collection",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
         }
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-        Text(
-            text = "Pick a Collection",
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onNewCollection)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Icon(Icons.Default.Add, contentDescription = null)
-            Text(
-                text = "New Collection",
-                style = MaterialTheme.typography.bodyLarge,
-            )
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onNewCollection)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Text(
+                    text = "New Collection",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         }
-        HorizontalDivider()
+        item {
+            HorizontalDivider()
+        }
 
         if (collections.isEmpty()) {
-            Text(
-                text = "No Collections yet — tap New Collection above to start one. The candidate stays here while you create it.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            )
+            item {
+                Text(
+                    text = "No Collections yet — tap New Collection above to start one. The candidate stays here while you create it.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                )
+            }
         } else {
-            collections.forEach { col ->
+            items(collections, key = { it.id }) { col ->
                 val isPreSelected = preSelectedCollectionId == col.id
                 Row(
                     modifier = Modifier

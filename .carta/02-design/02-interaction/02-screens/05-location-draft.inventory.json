@@ -28,7 +28,8 @@
       "region": "topBar",
       "event": "CANCEL_ADD",
       "target": "CollectionDetail",
-      "appearsInModes": ["addToCollection"]
+      "appearsInModes": ["addToCollection"],
+      "reactsToContext": ["collection-context"]
     },
     {
       "id": "add-to-collection",

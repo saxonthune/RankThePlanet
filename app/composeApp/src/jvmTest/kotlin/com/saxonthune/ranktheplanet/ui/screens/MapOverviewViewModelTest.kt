@@ -124,8 +124,24 @@ class MapOverviewViewModelTest {
             override suspend fun saveProviderKey(type: SourceType, key: String) {}
         }
 
+        // Pin derivation joins each entry against its Collection (for the appearance
+        // color) and drops entries whose Collection is absent — so the fake must supply
+        // a Collection for every collectionId the entries reference, or no pins render.
+        val collectionList = entriesList.map { it.collectionId }.distinct().map { cid ->
+            Collection(
+                id = cid,
+                name = "Collection",
+                description = null,
+                appearance = Appearance(color = "#FF8800", pinStyle = "default"),
+                templateVersion = 1,
+                isVisible = true,
+                powerRanking = false,
+                created = "2026-01-01T00:00:00Z",
+                lastModified = "2026-01-01T00:00:00Z",
+            )
+        }
         val collectionRepo = object : CollectionRepository {
-            override fun observeAll(): Flow<List<Collection>> = MutableStateFlow(emptyList())
+            override fun observeAll(): Flow<List<Collection>> = MutableStateFlow(collectionList)
             override fun observe(id: CollectionId): Flow<Collection?> = MutableStateFlow(null)
             override suspend fun create(name: String, description: String?, appearance: Appearance, powerRanking: Boolean) =
                 Result.failure<Collection>(UnsupportedOperationException())

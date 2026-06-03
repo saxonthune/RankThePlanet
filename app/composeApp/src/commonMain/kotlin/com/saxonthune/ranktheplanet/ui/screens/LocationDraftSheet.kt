@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,42 +51,54 @@ fun LocationDraftSheet(
         ?: draft.manualName.takeIf { it.isNotBlank() }
         ?: draft.displayName
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding(),
     ) {
-        TopBar(
-            mode = mode,
-            onDismiss = onDismiss,
-            onCancelAdd = onCancelAdd,
-            onAddToCollection = onAddToCollection,
-        )
-        Preview(
-            title = effectiveTitle,
-            lat = draft.lat,
-            lng = draft.lng,
-        )
-        Spacer(Modifier.height(16.dp))
-        CandidatesHeader(
-            isResolvingNearby = isResolvingNearby,
-            hasResults = nearbyCandidates.isNotEmpty(),
-            onFindNearby = onFindNearby,
-        )
-        UseCoordinatesRow(
-            selected = useCoordinatesSelected,
-            manualName = draft.manualName,
-            onSelect = onKeepCoordinates,
-            onManualNameChange = onManualNameChange,
-        )
-        nearbyCandidates.forEach { candidate ->
+        item {
+            TopBar(
+                mode = mode,
+                onDismiss = onDismiss,
+                onCancelAdd = onCancelAdd,
+                onAddToCollection = onAddToCollection,
+            )
+        }
+        item {
+            Preview(
+                title = effectiveTitle,
+                lat = draft.lat,
+                lng = draft.lng,
+            )
+        }
+        item {
+            Spacer(Modifier.height(16.dp))
+        }
+        item {
+            CandidatesHeader(
+                isResolvingNearby = isResolvingNearby,
+                hasResults = nearbyCandidates.isNotEmpty(),
+                onFindNearby = onFindNearby,
+            )
+        }
+        item {
+            UseCoordinatesRow(
+                selected = useCoordinatesSelected,
+                manualName = draft.manualName,
+                onSelect = onKeepCoordinates,
+                onManualNameChange = onManualNameChange,
+            )
+        }
+        items(nearbyCandidates) { candidate ->
             CandidateRow(
                 candidate = candidate,
                 selected = draft.adoptedCandidate == candidate.displayName,
                 onSelect = { onAdoptCandidate(candidate.displayName) },
             )
         }
-        Spacer(Modifier.height(8.dp))
+        item {
+            Spacer(Modifier.height(8.dp))
+        }
     }
 }
 

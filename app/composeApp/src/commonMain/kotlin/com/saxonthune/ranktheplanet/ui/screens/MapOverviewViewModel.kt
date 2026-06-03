@@ -442,8 +442,11 @@ class MapOverviewViewModel(
             }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    private val searchHitsFlow = combine(existingHitsFlow, candidatesFlow, _query) { existing, candidates, q ->
-        if (q.isBlank()) return@combine persistentListOf()
+    private val searchHitsFlow = combine(existingHitsFlow, candidatesFlow, _query, _searchContext) { existing, candidates, q, searchCtx ->
+        // Once a search is committed to the map (search-context set), the dropdown is
+        // dismissed and its candidates live on the map as pins — so the hit list clears
+        // regardless of the retained working query. See doc02.02.02.07.
+        if (q.isBlank() || searchCtx != null) return@combine persistentListOf()
         val deduped = candidates.filter { c ->
             c.sourceId == null || locationsRepo.findByIdentity(c.sourceType, c.sourceId) == null
         }
@@ -713,6 +716,16 @@ class MapOverviewViewModel(
     fun startDraft(lat: Double, lng: Double, displayName: String? = null) {
         _draft.value = LocationDraftSheet.Open(lat, lng, displayName)
         findNearby()
+    }
+
+    /**
+     * Drop a pin at the current viewport center — the search-dropdown fallback when the
+     * provider returns no candidate to adopt. Reuses the long-press DROP_PIN flow, so
+     * add-to-collection context propagates identically. No-op until a viewport exists.
+     */
+    fun startDraftAtViewportCenter() {
+        val viewport = _liveViewport.value ?: return
+        startDraft(lat = viewport.centerLat, lng = viewport.centerLng)
     }
 
     fun pickSearchCandidate(hit: SearchHitUi.Candidate, inAddMode: Boolean, collectionId: CollectionId? = null) {

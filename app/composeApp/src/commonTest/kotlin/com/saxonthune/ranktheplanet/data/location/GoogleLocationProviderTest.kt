@@ -21,6 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class GoogleLocationProviderTest {
 
@@ -52,23 +53,28 @@ class GoogleLocationProviderTest {
     }
 
     @Test
-    fun `resolve maps searchText response to LocationCandidates`() = runBlocking {
-        val placesJson = """
+    fun `resolve maps autocomplete predictions to unconfirmed candidates`() = runBlocking {
+        // resolve() hits places:autocomplete, which returns lightweight predictions —
+        // a placeId and labels, but no coordinates. The candidate is unconfirmed until
+        // confirm() fetches place details (see the confirm test below).
+        val autocompleteJson = """
             {
-              "places": [
+              "suggestions": [
                 {
-                  "id": "places/ChIJN1t_tDeuEmsRUsoyG83frY4",
-                  "displayName": {"text": "Google Sydney", "languageCode": "en"},
-                  "location": {"latitude": -33.8688, "longitude": 151.2093},
-                  "formattedAddress": "48 Pirrama Rd, Pyrmont NSW 2009, Australia",
-                  "types": ["establishment", "point_of_interest"]
+                  "placePrediction": {
+                    "placeId": "ChIJN1t_tDeuEmsRUsoyG83frY4",
+                    "structuredFormat": {
+                      "mainText": {"text": "Google Sydney"},
+                      "secondaryText": {"text": "48 Pirrama Rd, Pyrmont NSW 2009, Australia"}
+                    }
+                  }
                 }
               ]
             }
         """.trimIndent()
 
         val provider = GoogleLocationProvider(
-            client = mockClient(placesJson),
+            client = mockClient(autocompleteJson),
             apiKey = { "test-key" },
         )
         val result = provider.resolve("Google Sydney")
@@ -77,11 +83,13 @@ class GoogleLocationProviderTest {
         val candidates = result.value
         assertEquals(1, candidates.size)
         val c = candidates[0]
-        assertEquals(-33.8688, c.coordinates.lat)
-        assertEquals(151.2093, c.coordinates.lng)
+        assertEquals(0.0, c.coordinates.lat)
+        assertEquals(0.0, c.coordinates.lng)
+        assertTrue(c.needsConfirmation)
         assertEquals(SourceType.Google, c.sourceType)
-        assertEquals("places/ChIJN1t_tDeuEmsRUsoyG83frY4", c.sourceId)
+        assertEquals("ChIJN1t_tDeuEmsRUsoyG83frY4", c.sourceId)
         assertEquals("Google Sydney", c.displayName)
+        assertEquals("48 Pirrama Rd, Pyrmont NSW 2009, Australia", c.detail)
     }
 
     @Test
@@ -218,30 +226,42 @@ class GoogleLocationProviderTest {
     }
 
     @Test
-    fun `cachedMetadata contains only minimal fields not the full response`() = runBlocking {
-        val placesJson = """
+    fun `confirm resolves a prediction to coordinates and minimal cachedMetadata`() = runBlocking {
+        // confirm() fetches place details for an unconfirmed prediction, filling in
+        // coordinates and a minimal cachedMetadata snapshot — only the cacheable fields,
+        // never the raw response (per the google retention rule, doc03.02.02).
+        val placeJson = """
             {
-              "places": [
-                {
-                  "id": "places/abc123",
-                  "displayName": {"text": "Test Place", "languageCode": "en"},
-                  "location": {"latitude": 1.0, "longitude": 2.0},
-                  "formattedAddress": "1 Test St",
-                  "types": ["restaurant"]
-                }
-              ]
+              "id": "places/abc123",
+              "displayName": {"text": "Test Place", "languageCode": "en"},
+              "location": {"latitude": 1.0, "longitude": 2.0},
+              "formattedAddress": "1 Test St",
+              "types": ["restaurant"]
             }
         """.trimIndent()
 
         val provider = GoogleLocationProvider(
-            client = mockClient(placesJson),
+            client = mockClient(placeJson),
             apiKey = { "test-key" },
         )
-        val result = provider.resolve("Test Place")
-        assertIs<ProviderResult.Ok<List<LocationCandidate>>>(result)
-        val metadata = result.value[0].cachedMetadata
-        assertNotNull(metadata)
+        val stub = LocationCandidate(
+            coordinates = com.saxonthune.ranktheplanet.domain.Coordinates(0.0, 0.0),
+            displayName = "Test Place",
+            sourceType = SourceType.Google,
+            sourceId = "abc123",
+            cachedMetadata = null,
+            detail = null,
+            needsConfirmation = true,
+        )
+        val result = provider.confirm(stub)
+        assertIs<ProviderResult.Ok<LocationCandidate>>(result)
+        val c = result.value
+        assertEquals(1.0, c.coordinates.lat)
+        assertEquals(2.0, c.coordinates.lng)
+        assertFalse(c.needsConfirmation)
 
+        val metadata = c.cachedMetadata
+        assertNotNull(metadata)
         val parsed = Json.parseToJsonElement(metadata).jsonObject
         assertEquals("places/abc123", parsed["id"]?.jsonPrimitive?.content)
         assertEquals("Test Place", parsed["displayName"]?.jsonPrimitive?.content)

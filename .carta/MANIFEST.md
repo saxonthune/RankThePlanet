@@ -24,7 +24,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc00.00 | `00-index.md` | Meta-documentation — how to read this workspace | index, meta | — | — | — |
 | doc00.01 | `01-about.md` | Why this workspace exists, how to read it, two-sources-of-truth theory | docs, meta, theory | — | — | — |
 | doc00.02 | `02-maintenance.md` | Doc lifecycle — unfolding philosophy, development loop, versioning, epochs | docs, maintenance, philosophy | — | — | — |
-| doc00.03 | `03-conventions.md` | Cross-reference syntax, frontmatter schema, file naming, writing style | docs, conventions | — | doc01.04.02 | — |
+| doc00.03 | `03-conventions.md` | Cross-reference syntax, frontmatter schema, file naming, writing style | docs, conventions | — | doc01.04.02, doc01.06.05 | — |
 | doc00.04 | `04-ai-retrieval.md` | How AI agents navigate this workspace — hierarchical retrieval, MANIFEST usage, token budgets | docs, ai, retrieval | — | — | — |
 
 ## 01-product — Product
@@ -33,7 +33,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 |-----|------|---------|------|------|------|-------------|
 
 | doc01.00 | `00-index.md` | Product specs — what we're building and why | product, index | — | — | — |
-| doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc02.01 | — |
+| doc01.01 | `01-background-context.md` | Condensed research session: My Maps API, map tech, sync, location abstraction, competitive landscape, cold start | product, research, background | — | doc01.02, doc01.06.04, doc02.01 | — |
 | doc01.02 | `02-use-cases.md` | User-mental-model walkthroughs: Drip Coffee ranking, NYT Top 100 import, Geo Diary | product, use-cases, ux | doc01.01 | doc01.03 | — |
 | doc01.03 | `03-concepts.md` | Concept-driven design (Jackson): Collection, Location, Review, Map Overview, Location Provider | product, concepts, design | doc01.02 | doc01.04.01, doc02.02.00, doc02.02.01, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.02.15, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02 | json |
 | doc01.05 | `05-cmp-composition-research.md` | Research session: how to design shared CMP surfaces that bend to context (mode parameter, sheet-not-route), with a Tier-1..4 audit of reference apps to compare against | product, research, cmp, patterns, references | doc02.01, doc02.02.01 | doc02.04 | — |
@@ -57,6 +57,8 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.06.01 | `06-research-sessions/01-ios-map-tap-latency.md` | Why a pin tap on iOS lags ~300ms before the sheet animates, how the gesture-recognizer cascade is diagnosed, and the runtime patch on MLNMapView that removes the delay | research, ios, maplibre, gesture, latency, debugging | doc02.01, doc03.04 | — | — |
 | doc01.06.02 | `06-research-sessions/02-ui-behavioral-spec-patterns.md` | Survey of how production teams specify component-level UI behavior — per-flow statecharts, trace expect-tests, LTL-over-DOM invariants, schema-driven screens, preview-test pairing — and which layer fits next to RTP's carta sidecars and navigation statechart | research, ui, spec, statechart, behavior, verification | doc02.02.01, doc01.04.02 | doc01.06.03 | — |
 | doc01.06.03 | `06-research-sessions/03-fact-data-verification.md` | Survey of risks and prior art for moving carta prose into machine-checkable fact data — state explosion, spec drift, coverage criteria, property-based testing, liveness gap, two-sources-of-truth wedge | research, verification, statechart, datalog, model-checking, property-based-testing | doc02.02.01, doc01.06.02, doc01.04.02 | — | — |
+| doc01.06.04 | `06-research-sessions/04-geocoding-provider-options.md` | Survey of BYOK geocoding/search providers RTP could add beyond the osm/Photon default — POI density, free tiers, storage terms, and which double as MapLibre tile sources for a search+tiles bundle | research, providers, location, geocoding, byok, references | doc03.02.02, doc01.01 | — | — |
+| doc01.06.05 | `06-research-sessions/05-writing-register-jargon-nominalization.md` | Empirical findings on how jargon and nominalization affect reader comprehension and persuasion; the zombie-noun frame as a mechanical revision rule for agent-authored docs | research, writing, language, jargon, nominalization, style | doc00.03 | — | — |
 
 ## 02-design — Design
 
@@ -93,7 +95,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc02.02.02.15 | `02-interaction/02-screens/15-about.md` | Affordance inventory for the About surface — app blurb, repository link, entries to in-app license viewer and open-source attributions | design, interaction, screens | doc02.02.01, doc01.03 | — | inventory.json |
 | doc02.02.02.16 | `02-interaction/02-screens/16-license-viewer.md` | Affordance inventory for the LicenseViewer surface — in-app scrollable view of the AGPLv3 LICENSE bundled with the app | design, interaction, screens | doc02.02.01 | — | inventory.json |
 | doc02.02.02.17 | `02-interaction/02-screens/17-attributions.md` | Affordance inventory for the Attributions surface — open-source library list generated from the build's dependency graph | design, interaction, screens | doc02.02.01 | — | inventory.json |
-| doc02.02.03 | `02-interaction/03-navigation-journeys.md` | User-intent navigation paths declared as event/target pairs; diffed against the statechart to surface chart-missing transitions, target mismatches, and undeclared screens | design, interaction, navigation, journeys, verification | doc02.02.01 | — | navigation.journeys.json |
+| doc02.02.03 | `02-interaction/03-navigation-journeys.md` | User-intent navigation paths declared as event/target pairs; diffed against the statechart to surface chart-missing transitions, target mismatches, and undeclared screens; per-step active-context assertions | design, interaction, navigation, journeys, verification | doc02.02.01 | — | navigation.journeys.json |
 
 ### Visual Language
 
@@ -121,7 +123,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 
 | doc03.02.00 | `02-data-interfaces/00-index.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | — | — |
 | doc03.02.01 | `02-data-interfaces/01-location-repository.md` | The LocationRepository interface: identity lookup, upsert, merge — the persistence-shaped contract screens consume for Locations | system, interfaces, repository, data, contract, location | doc01.03, doc03.01, doc03.02 | — | — |
-| doc03.02.02 | `02-data-interfaces/02-location-providers.md` | The LocationProvider seam: osm default backed by Photon (forward + reverse) endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | doc02.02.02.13 | — |
+| doc03.02.02 | `02-data-interfaces/02-location-providers.md` | The LocationProvider seam: osm default backed by Photon (forward + reverse) endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | doc01.06.04, doc02.02.02.13 | — |
 
 ## Tag Index
 
@@ -133,6 +135,7 @@ Quick lookup for file-path→doc mapping:
 | `architecture` | doc02.01 |
 | `background` | doc01.01 |
 | `behavior` | doc01.06.02 |
+| `byok` | doc01.06.04 |
 | `cmp` | doc01.05, doc02.01, doc02.03, doc03.03 |
 | `code-map` | doc01.04.03 |
 | `composition` | doc02.04 |
@@ -147,16 +150,19 @@ Quick lookup for file-path→doc mapping:
 | `debugging` | doc01.06.00, doc01.06.01 |
 | `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.02.15, doc02.02.02.16, doc02.02.02.17, doc02.02.03, doc02.03, doc02.04, doc02.05.00, doc02.05.01 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
+| `geocoding` | doc01.06.04 |
 | `gesture` | doc01.06.01 |
 | `grievances` | doc02.05.01 |
 | `index` | doc00.00, doc01.00, doc01.06.00, doc02.02.00, doc02.02.02.00, doc02.05.00, doc03.00 |
 | `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.02.15, doc02.02.02.16, doc02.02.02.17, doc02.02.03, doc02.04 |
 | `interfaces` | doc03.02.00, doc03.02.01 |
 | `ios` | doc01.06.01 |
+| `jargon` | doc01.06.05 |
 | `journeys` | doc02.02.03 |
+| `language` | doc01.06.05 |
 | `latency` | doc01.06.01 |
 | `licensing` | doc03.02.02 |
-| `location` | doc03.02.01, doc03.02.02 |
+| `location` | doc01.06.04, doc03.02.01, doc03.02.02 |
 | `log` | doc02.05.01 |
 | `luminous` | doc01.04.03 |
 | `maintenance` | doc00.02 |
@@ -165,6 +171,7 @@ Quick lookup for file-path→doc mapping:
 | `method` | doc01.04.00, doc01.04.01, doc01.04.03 |
 | `model-checking` | doc01.06.03 |
 | `navigation` | doc02.02.01, doc02.02.03, doc03.03 |
+| `nominalization` | doc01.06.05 |
 | `odbl` | doc03.02.02 |
 | `osm` | doc03.02.02 |
 | `patterns` | doc01.05 |
@@ -173,11 +180,11 @@ Quick lookup for file-path→doc mapping:
 | `process` | doc01.04.00, doc01.04.01, doc01.04.02 |
 | `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04.00, doc01.04.01, doc01.04.02, doc01.05 |
 | `property-based-testing` | doc01.06.03 |
-| `providers` | doc03.02.02 |
-| `references` | doc01.05 |
+| `providers` | doc01.06.04, doc03.02.02 |
+| `references` | doc01.05, doc01.06.04 |
 | `rendering` | doc03.04, doc03.05 |
 | `repository` | doc03.02.00, doc03.02.01 |
-| `research` | doc01.01, doc01.05, doc01.06.00, doc01.06.01, doc01.06.02, doc01.06.03 |
+| `research` | doc01.01, doc01.05, doc01.06.00, doc01.06.01, doc01.06.02, doc01.06.03, doc01.06.04, doc01.06.05 |
 | `resilience` | doc03.05 |
 | `retrieval` | doc00.04 |
 | `rules` | doc02.04 |
@@ -189,6 +196,7 @@ Quick lookup for file-path→doc mapping:
 | `stack` | doc02.01 |
 | `statechart` | doc01.06.02, doc01.06.03, doc02.02.01 |
 | `storage` | doc03.01 |
+| `style` | doc01.06.05 |
 | `styling` | doc02.03 |
 | `sync` | doc03.01 |
 | `system` | doc03.00, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02, doc03.03, doc03.04, doc03.05 |
@@ -202,3 +210,4 @@ Quick lookup for file-path→doc mapping:
 | `verification` | doc01.04.02, doc01.06.02, doc01.06.03, doc02.02.03 |
 | `visual-language` | doc02.05.00, doc02.05.01 |
 | `wiring` | doc03.03 |
+| `writing` | doc01.06.05 |

@@ -78,6 +78,7 @@ import com.saxonthune.ranktheplanet.domain.EntryId
 import com.saxonthune.ranktheplanet.domain.Viewport
 import com.saxonthune.ranktheplanet.nav.MapMode
 import com.saxonthune.ranktheplanet.ui.RtpErrorState
+import com.saxonthune.ranktheplanet.ui.theme.RtpOverlay
 import com.saxonthune.ranktheplanet.util.tuneMapForFastTaps
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -263,8 +264,22 @@ fun MapOverviewScreen(
                                         contentDescription = "Close search",
                                     )
                                 }
-                                mode is MapMode.Browse -> IconButton(onClick = onOpenSettings) {
-                                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+                                mode is MapMode.Browse -> Surface(
+                                    onClick = onOpenSettings,
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.surface,
+                                    contentColor = MaterialTheme.colorScheme.onSurface,
+                                    tonalElevation = RtpOverlay.tonalElevation,
+                                    shadowElevation = RtpOverlay.shadowElevation,
+                                    modifier = Modifier
+                                        .padding(start = RtpOverlay.edgeInset)
+                                        .size(40.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Default.Settings,
+                                        contentDescription = "Settings",
+                                        modifier = Modifier.padding(8.dp),
+                                    )
                                 }
                                 mode is MapMode.AddingToCollection -> IconButton(onClick = onCancelAdd) {
                                     Icon(Icons.Default.Close, contentDescription = "Cancel adding")
@@ -307,9 +322,12 @@ fun MapOverviewScreen(
                         val hasCandidate = state.searchHits.any { it is SearchHitUi.Candidate }
                         Surface(
                             modifier = Modifier
+                                .padding(horizontal = RtpOverlay.edgeInset)
                                 .fillMaxWidth()
                                 .heightIn(max = maxDropdownHeight),
-                            tonalElevation = 8.dp,
+                            shape = RtpOverlay.shape,
+                            tonalElevation = RtpOverlay.tonalElevation,
+                            shadowElevation = RtpOverlay.shadowElevation,
                         ) {
                             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                                 Row(
@@ -365,6 +383,27 @@ fun MapOverviewScreen(
                                     )
                                     HorizontalDivider()
                                 }
+                                // Fallback when the provider found nothing to adopt: offer the
+                                // manual drop-pin flow at the viewport center so a place the
+                                // geocoder can't surface is still reachable. See doc02.02.02.07.
+                                if (!hasCandidate && !state.isSearching) {
+                                    TextButton(
+                                        onClick = {
+                                            closeSearch()
+                                            vm.startDraftAtViewportCenter()
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Place,
+                                            contentDescription = null,
+                                            modifier = Modifier.padding(end = 8.dp),
+                                        )
+                                        Text("Can't find it? Drop a pin here")
+                                    }
+                                }
                             }
                         }
                     }
@@ -407,6 +446,16 @@ fun MapOverviewScreen(
                     options = MapOptions(ornamentOptions = OrnamentOptions.OnlyLogo),
                     onMapLoadFinished = {
                         vm.pinController.forceRedraw()
+                    },
+                    onMapClick = { _, _ ->
+                        // A tap on empty map (one that misses every pin layer) dismisses an open
+                        // search dropdown; otherwise the canvas does nothing. See doc02.02.02.07.
+                        if (searchExpanded) {
+                            closeSearch()
+                            ClickResult.Consume
+                        } else {
+                            ClickResult.Pass
+                        }
                     },
                     onMapLongClick = { position, _ ->
                         vm.startDraft(lat = position.latitude, lng = position.longitude)

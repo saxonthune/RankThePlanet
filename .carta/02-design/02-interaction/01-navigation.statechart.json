@@ -276,7 +276,7 @@
           }
         },
         "reads": ["collections", "filter-context"],
-        "actions": ["Collection.create", "Collection.import"]
+        "actions": ["Collection.create", "Collection.import", "MapOverview.applyFilter"]
       },
       "on": {
         "TAP_COLLECTION": {

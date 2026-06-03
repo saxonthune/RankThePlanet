@@ -80,12 +80,9 @@ The Collection's review template lives in the Review concept (§3), not here. Th
 - `resolve(query, provider)` — forward search: query a provider with text; return candidate Locations.
 - `resolveNearby(coordinates, provider)` — reverse search: query a provider for places near a coordinate; return ranked candidate Locations. Used when the user has a point (a dropped pin) and wants to know what real places sit there.
 - `dropPin(coordinates)` — create a `manual` Location with a generated UUID.
-- `import(externalRef)` — adopt a Location from a KML placemark, GeoJSON feature, or shared URL.
 - `addToCollection(collection, data)` — make this Location a Collection Entry (this is `Collection.addEntry` viewed from the Location's side; see synchronization below).
 - `openExternally(target)` — hand off to an external map app (e.g. Google Maps, Apple Maps) for navigation, street view, or richer details. RTP does not reimplement those affordances; it cedes them by handoff.
 - `refresh()` — if `refreshable`, re-query the provider to update `cachedMetadata`.
-- `detectDuplicates()` — scan existing Locations for pairs that likely refer to the same real place (proximity + name similarity), surfacing merge candidates.
-- `merge(other)` — user-confirmed reconciliation when two Locations from different providers refer to the same real place.
 
 **Operational principle.** A user searches "Blue Bottle Mint Plaza" via the Google provider and resolves a Location. They add it to two Collections. Later they tap the Location and choose "Open in Google Maps"; the OS hands off to the Google Maps app, which opens at the same coordinates. Their Collection Entries in both Collections are unaffected.
 
@@ -94,8 +91,7 @@ The Collection's review template lives in the Review concept (§3), not here. Th
 - "Open in Google Maps" is one instance of `openExternally`. Apple Maps, OsmAnd, etc., are equally valid targets. The user picks; RTP does not privilege one.
 - A Location with no Collection memberships is allowed but normally garbage-collected. (Decide when this matters.)
 - A dropped pin need not be resolved. Keeping it coordinates-only yields a `manual` Location — a first-class outcome, not a degraded one. `resolveNearby` only *offers* provider candidates; adopting one is the user's choice. The uncommitted candidate before that choice is interaction-layer draft state (the `candidate-location` a surface holds), not a concept state.
-- `merge` is the user's tool for "looks like the same place." Never automatic.
-- Identity is a single `(sourceType, sourceId)` pair. A multi-identity model — one Location carrying several provider identities — would not disturb Collection Entries, since an entry references a Location by surrogate id, not by identity. Adopting it would move identity (with its `cachedMetadata` and `refreshable`) into a child record per provider, and `merge` would have the survivor absorb the other's identities rather than discard them. Flagged, not pre-built.
+- Identity is a single `(sourceType, sourceId)` pair. A multi-identity model — one Location carrying several provider identities — would not disturb Collection Entries, since an entry references a Location by surrogate id, not by identity. Adopting it would move identity (with its `cachedMetadata` and `refreshable`) into a child record per provider. Flagged, not pre-built.
 
 ---
 
@@ -185,7 +181,7 @@ Instance:
 - `open()` — launch action. Restore `viewport`, render `visiblePins` for all Collections in `collectionFilter`. Renders before any background data has loaded (see doc01.01 §"Cold-start playbook").
 - `pan(delta)`, `zoom(delta)` — standard map navigation. Updates `viewport`.
 - `selectPin(pin)` — focus a Collection Entry; reveal its Collection and per-Collection-Entry data.
-- `toggleCollection(collection)` — add/remove a Collection from `collectionFilter`. Persistent.
+- `applyFilter(collections)` — set the active Collection filter to the given set, replacing any prior value; clear it via the filter chip's close affordance. Constrains which Collections' pins render.
 - `jumpToCollection(collection)` — fit viewport to that Collection's Collection Entries.
 
 **Operational principle.** A user taps the RTP icon. Within ~200ms, they see their last viewport with pins from all their Collections: orange-filled pins for "Drip Coffee" (reviewed), orange-outlined gray pins for cafés on their wishlist (unreviewed), green-filled pins for "NYT Top 100" places they've been, green-outlined gray pins for the rest of the NYT list. Without any further action, they understand the state of their world. Tapping a pin reveals which Collection it belongs to and the Collection Entry's data.
@@ -218,7 +214,7 @@ Instance:
 **Notes.**
 
 - A keyless provider (`osm` via Nominatim) is the always-available fallback, so RTP works with zero configuration.
-- `switchProvider` changes the default only — it does not migrate or re-resolve existing Locations. Rebuilding a library against a new provider is a separate, per-place-confirmed flow (see §2 `merge`).
+- `switchProvider` changes the default only — it does not migrate or re-resolve existing Locations. Rebuilding a library against a new provider is a separate, per-place-confirmed flow, deferred.
 - The full provider catalogue and the `LocationProvider` data-layer seam live in doc03.02.02; this concept covers only what the user does.
 
 ---

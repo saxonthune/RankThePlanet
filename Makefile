@@ -25,7 +25,7 @@ export JAVA_HOME
 .DEFAULT_GOAL := build
 
 .PHONY: help build clean rebuild install run sync tasks stop adb-devices wrapper \
-        verify test \
+        verify compile-check test \
         ios-build ios-run ios-debug ios-logs ios-crash ios-pod-install ios-clean \
         ios-device-build ios-device-run ios-device-debug ios-devices \
         code-map
@@ -42,7 +42,8 @@ help:
 	@echo "  stop          Stop the Gradle daemon"
 	@echo "  adb-devices   List attached Android devices/emulators"
 	@echo "  wrapper       Print Gradle wrapper version"
-	@echo "  verify        Compile Android + commonMain metadata (off-macOS proxy for iOS)"
+	@echo "  verify        Run the carta doc verifier (.carta/verify.mjs)"
+	@echo "  compile-check Compile Android + commonMain metadata (off-macOS proxy for iOS)"
 	@echo "  code-map      Regenerate the agent-consumable Kotlin code map"
 	@echo ""
 	@echo "iOS targets (override sim with: make ios-run SIM='iPhone 16 Pro'):"
@@ -88,10 +89,19 @@ adb-devices:
 wrapper:
 	$(GRADLE) --version
 
+# Run the carta doc verifier suite — context-chain, guard-coverage,
+# modality-host, screen-inventory, invariant-resolution, action-concept,
+# journeys-verify, journey-trace, generated-traces. Walks every .md doc with
+# a `verify:` frontmatter entry and runs the named kinds against their
+# sidecars. Doc-level gate; run after any .carta/ change.
+verify:
+	node .carta/verify.mjs
+
 # Compile the Android target + commonMain metadata. Off macOS the iOS targets
 # are disabled (cinterop for MapLibre needs macOS), so this is the strongest
-# local check that commonMain code will survive an iOS build.
-verify:
+# local check that commonMain code will survive an iOS build. For real iOS
+# verification on macOS, prefer `make ios-device-run`.
+compile-check:
 	$(GRADLE) :composeApp:compileDebugKotlinAndroid :composeApp:compileCommonMainKotlinMetadata
 
 # Run the JVM unit tests. Accepts an optional FILTER=... gradle --tests pattern,

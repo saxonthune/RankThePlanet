@@ -44,6 +44,27 @@ Detection: agents finding any of the words above in a doc they're editing should
 
 See also the saved memory `feedback_carta_no_temporal_language.md` and doc00.03's writing-style section.
 
+## Agentive prose, not zombie nouns
+
+Experimental rule, applied to docs, code comments, PR descriptions, and the prose Claude writes in conversation. Background and citations in doc01.06.05.
+
+**Name a concrete actor as the grammatical subject, and let verbs be verbs.** Where a sentence has no agent, find the person or system doing the work and put them in the subject slot. Where a verb has been turned into a noun (*-tion*, *-ment*, *-ity*, *-ance*, *-ism*) and paired with a weak verb (*is, has, makes, performs, conducts, undertakes*), promote the buried verb and drop the scaffolding.
+
+Examples — the bad form is on the left:
+
+- *"the ask is to verify X"* → *"verify X"*
+- *"perform a verification of"* → *"verify"*
+- *"there is a need for the addition of"* → *"add"*
+- *"the change introduces a regression"* → *"the change breaks X"*
+- *"an unblock is required"* → *"unblock X"*
+- *"backlog this"* → *"defer this"* (the noun-as-verb is the same shape inverted)
+
+The rule targets the heavy-noun-phrase pattern Pinker/Williams/Sword document, not a vocabulary list. Banning specific HN/Slack words while leaving the agent-less subjects around them in place is cosmetic. Pruning the agent-less subjects is the move that matters.
+
+Detection: scan for a subject of the form *"the {noun}"* coupled with *is/has/makes/performs*, or for nominalized verbs (*-tion*, *-ment*, *-ance*) load-bearing in a sentence's main clause. Rewrite so a concrete actor does a concrete verb. If the rewrite drops content the original sentence claimed to carry, the original was decoration — delete it.
+
+This is an experiment, not yet a load-bearing rule. The evidence for human readability is strong (jargon disrupts processing fluency even with inline definitions; see doc01.06.05 §1). The evidence for LLM output quality is thin and untested directly. Apply the rule and notice whether the prose reads better.
+
 ## Working with the carta workspace
 
 All design lives under `.carta/`. Carta is a CLI for managing numbered Markdown docs with stable cross-references and an auto-generated MANIFEST.
@@ -88,6 +109,8 @@ Use the dedicated tools — they're allowlisted and don't trigger approval promp
 - DON'T `cat file` to read — DO use the Read tool.
 - DON'T loop the shell over files (`for f in …; do cat $f; done`) — variable expansion blocks auto-approval; DO issue parallel Read calls, one per file.
 - DON'T `wc -l *.kt` or other glob-expanded shell over many files — DO use Glob to list paths, then Read each (Read reports line counts).
+- DON'T `python3 -c '…'` / `node -e '…'` / `jq` to parse, query, or pretty-print a file (JSON sidecars included) — DO Read the file directly; Read renders JSON fine and these inline-interpreter invocations trigger approval prompts. To inspect one slice of a large JSON, Read with `offset`/`limit` or Grep for the key.
+- DON'T filter a build/verify command's output inline (`make verify | grep …`, `make verify > /tmp/log; grep … /tmp/log`, `… | tail`, `echo "EXIT=$?"`) — the pipe/redirect-then-grep wrapper triggers an approval prompt every session. DO run the bare allowlisted command (`make verify`, `make compile-check`) and read its output directly; if it's long, redirect once to a file (`make verify > /tmp/rtp_verify.log 2>&1`) and then **Read** that file (with `offset`/`limit`), never `grep`/`tail` it.
 
 ## Statechart sidecar workflow
 
@@ -99,11 +122,13 @@ node .luminous/statechart-canvas.pipeline.mjs
 
 The pipeline walks `.carta/` for `*.statechart.json` sidecars and emits a derived canvas pair (`*.canvas.graph.json` + `*.canvas.pack.json`) per sidecar under `.luminous/generated/`. That output tree is gitignored — edit the sidecar and re-run, never hand-edit the generated files.
 
-## Verifying Kotlin changes locally
+## Verifying changes locally
 
-Use `make verify` to check Kotlin changes. On macOS the iOS Kotlin/Native targets are enabled, so verification covers iosMain (cinterop, cocoapods) in addition to commonMain and Android.
+Three gates, picked by what changed:
 
-Use `make test` to run the JVM unit suite (`:composeApp:jvmTest`). Pass `FILTER=...` to scope it, e.g. `make test FILTER=com.saxonthune.ranktheplanet.data.sql.*`. Prefer `make test` over invoking `./gradlew` directly — the make wrapper is allowlisted, the direct gradlew invocation is not.
+- `make verify` — the carta doc verifier (`node .carta/verify.mjs`). Walks every `.md` doc for a `verify:` frontmatter entry and runs the named kinds against their sidecars — `context-chain`, `guard-coverage`, `modality-host`, `screen-inventory`, `invariant-resolution`, `action-concept`, `journeys-verify`, `journey-trace`, `generated-traces`. Each kind is documented in doc01.04.02. Run after any `.carta/` change — schema edits, transition changes, inventory additions, statechart edits all flow through this.
+- `make compile-check` — compile Android + commonMain metadata. Off-macOS proxy for iOS; on macOS the iOS Kotlin/Native targets compile too. Run after Kotlin changes. For real iOS verification on macOS prefer `make ios-device-run`.
+- `make test` — JVM unit suite (`:composeApp:jvmTest`). Pass `FILTER=...` to scope it, e.g. `make test FILTER=com.saxonthune.ranktheplanet.data.sql.*`. Prefer this over invoking `./gradlew` directly — the make wrapper is allowlisted, the direct gradlew invocation is not.
 
 ## Code map
 

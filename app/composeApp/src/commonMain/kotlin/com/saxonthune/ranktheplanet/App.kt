@@ -1,5 +1,10 @@
 package com.saxonthune.ranktheplanet
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -92,7 +97,19 @@ fun App(graph: RtpAppGraph? = null) {
             value = DefaultLocationProviderRegistry.create(secureStore)
         }
         var pendingNewCollectionForDraft by remember { mutableStateOf<String?>(null) }
-        NavHost(navController = navController, startDestination = MapOverview()) {
+        NavHost(
+            navController = navController,
+            startDestination = MapOverview(),
+            // One motion for every destination: the entering surface rises from the bottom
+            // over the screen below, which holds perfectly still (ExitTransition.None) so it
+            // stays opaque behind the rising panel — fading it would expose the black NavHost
+            // background and flash before the panel covers. Pop drops the top surface back
+            // down. A consistent, sheet-like push with no horizontal cross-slide. See G014.
+            enterTransition = { slideInVertically(initialOffsetY = { it }) + fadeIn() },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { slideOutVertically(targetOffsetY = { it }) },
+        ) {
             composable<MapOverview> { backStackEntry ->
                 val r = registry ?: return@composable
                 val route = backStackEntry.toRoute<MapOverview>()

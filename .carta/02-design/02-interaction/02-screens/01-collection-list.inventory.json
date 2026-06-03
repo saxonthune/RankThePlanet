@@ -61,6 +61,7 @@
       "region": "topBar",
       "event": "APPLY_FILTER",
       "target": "MapOverview",
+      "action": "MapOverview.applyFilter",
       "appearsInModes": ["selection"],
       "rendering": "Primary action on the selection action bar. Disabled when zero rows are checked. On fire: sets MapOverview's `filter-context` to the selected ids (replacing any prior value), dismisses the sheet, and invokes MapOverview.jumpToCollection."
     }

@@ -1,5 +1,9 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -140,6 +144,23 @@ fun MapOverviewScreen(
         searchExpanded = false
         searchQuery = ""
         vm.onQueryChange("")
+    }
+
+    // The active provider owns the typeahead debounce window. The countdown ring mirrors
+    // the ViewModel flow's delay: full on each keystroke, sweeping to empty exactly when
+    // the auto-search fires. Both read the same provider trait, so they stay in lockstep.
+    val activeProvider by providerRegistry.defaultFlow.collectAsState()
+    val debounceProgress = remember { Animatable(0f) }
+    LaunchedEffect(searchQuery, activeProvider) {
+        if (!activeProvider.supportsTypeahead || searchQuery.isBlank()) {
+            debounceProgress.snapTo(0f)
+            return@LaunchedEffect
+        }
+        debounceProgress.snapTo(1f)
+        debounceProgress.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(activeProvider.typeaheadDebounceMillis, easing = LinearEasing),
+        )
     }
 
     val cameraState = rememberCameraState(
@@ -337,6 +358,10 @@ fun MapOverviewScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
+                                    SearchPhaseIndicator(
+                                        debounceProgress = debounceProgress.value,
+                                        isSearching = state.isSearching,
+                                    )
                                     TextButton(
                                         onClick = { vm.submitSearch() },
                                         modifier = Modifier.weight(1f),
@@ -651,6 +676,38 @@ fun MapOverviewScreen(
             onNewCollection = { onNewCollectionForDraft() },
             onPickCollection = { vm.pickCollectionForDraft(it) },
         )
+    }
+}
+
+/**
+ * The search field's pending-state indicator, fixed-width so the action row never jumps.
+ * While the typeahead debounce counts down it draws a filled pie that sweeps away (full →
+ * empty) over the provider's debounce window; once the query is in flight it becomes a
+ * spinner; otherwise it is blank. See doc02.02.02.07.
+ */
+@Composable
+private fun SearchPhaseIndicator(
+    debounceProgress: Float,
+    isSearching: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val color = MaterialTheme.colorScheme.primary
+    Box(modifier = modifier.size(24.dp), contentAlignment = Alignment.Center) {
+        when {
+            isSearching -> CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 2.dp,
+            )
+            debounceProgress > 0f -> Canvas(modifier = Modifier.size(16.dp)) {
+                drawArc(
+                    color = color,
+                    // Start at 12 o'clock; negative sweep runs counter-clockwise.
+                    startAngle = -90f,
+                    sweepAngle = -360f * debounceProgress,
+                    useCenter = true,
+                )
+            }
+        }
     }
 }
 

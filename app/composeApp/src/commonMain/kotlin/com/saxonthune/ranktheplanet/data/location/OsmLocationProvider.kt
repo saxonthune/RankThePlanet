@@ -29,6 +29,10 @@ class OsmLocationProvider(
     override val type: SourceType = SourceType.Osm
     override val supportsTypeahead: Boolean = true
 
+    // Photon's hosted instance asks callers to stay near one request per second; a
+    // half-second debounce keeps per-keystroke autocomplete comfortably inside that.
+    override val typeaheadDebounceMillis: Int = 500
+
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
     private val throttleMutex = Mutex()

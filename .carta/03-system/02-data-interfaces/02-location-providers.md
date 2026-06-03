@@ -73,6 +73,16 @@ interface LocationProvider {
     // submit-only behavior.
     val supportsTypeahead: Boolean
 
+    // How long the search field waits after the last keystroke before issuing a
+    // typeahead `resolve`. A per-provider trait because the right window follows the
+    // backing service's cost/rate model — a politeness throttle, per-call billing, or
+    // session-coalescing each push it differently. Ignored when `supportsTypeahead`
+    // is false (those providers query only on submit). MapOverview also reads it to
+    // drive the countdown ring that shows how long remains until the auto-search
+    // fires. Defaults to 300ms; `osm` raises it to 500ms to sit comfortably inside
+    // Photon's ~1 req/s budget.
+    val typeaheadDebounceMillis: Int
+
     // Forward / text search. Backs Location.resolve (doc01.03 §2). The
     // optional `bias` is a viewport hint — the provider ranks results nearer
     // the supplied point or inside the supplied box higher when supported,
@@ -119,7 +129,7 @@ interface LocationProviderRegistry {
 
 Because every candidate carries OSM object identity (`osm_type` + `osm_id`, e.g. `N240109189`), a place found through either endpoint resolves to a stable `(sourceType, sourceId)`. (The multi-identity model flagged in doc01.03 §2 is for genuinely distinct providers — a Google `place_id` *and* an OSM node for one real place — which is `merge` territory, not this.)
 
-`OsmLocationProvider.supportsTypeahead` is `true` — Photon is built for per-keystroke autocomplete.
+`OsmLocationProvider.supportsTypeahead` is `true` — Photon is built for per-keystroke autocomplete. `OsmLocationProvider.typeaheadDebounceMillis` is `500`, half a second of quiet before a query fires — enough to coalesce a burst of keystrokes into one request and stay inside Photon's ~1 req/s budget.
 
 A Photon result that carries no `osm_id` (an interpolated address) yields a candidate with no stable `sourceId`. Adopting it produces a `manual`-style Location — the same coordinates-only outcome as a dropped pin (doc01.03 §2), not a special case.
 

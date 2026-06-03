@@ -57,7 +57,7 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 | doc01.06.01 | `06-research-sessions/01-ios-map-tap-latency.md` | Why a pin tap on iOS lags ~300ms before the sheet animates, how the gesture-recognizer cascade is diagnosed, and the runtime patch on MLNMapView that removes the delay | research, ios, maplibre, gesture, latency, debugging | doc02.01, doc03.04 | — | — |
 | doc01.06.02 | `06-research-sessions/02-ui-behavioral-spec-patterns.md` | Survey of how production teams specify component-level UI behavior — per-flow statecharts, trace expect-tests, LTL-over-DOM invariants, schema-driven screens, preview-test pairing — and which layer fits next to RTP's carta sidecars and navigation statechart | research, ui, spec, statechart, behavior, verification | doc02.02.01, doc01.04.02 | doc01.06.03 | — |
 | doc01.06.03 | `06-research-sessions/03-fact-data-verification.md` | Survey of risks and prior art for moving carta prose into machine-checkable fact data — state explosion, spec drift, coverage criteria, property-based testing, liveness gap, two-sources-of-truth wedge | research, verification, statechart, datalog, model-checking, property-based-testing | doc02.02.01, doc01.06.02, doc01.04.02 | — | — |
-| doc01.06.04 | `06-research-sessions/04-geocoding-provider-options.md` | Survey of BYOK geocoding/search providers RTP could add beyond the osm/Photon default — POI density, free tiers, storage terms, and which double as MapLibre tile sources for a search+tiles bundle | research, providers, location, geocoding, byok, references | doc03.02.02, doc01.01 | — | — |
+| doc01.06.04 | `06-research-sessions/04-geocoding-provider-options.md` | Survey of BYOK geocoding/search providers RTP could add beyond the osm/Photon default — POI density, free tiers, storage terms, and which double as MapLibre tile sources for a search+tiles bundle | research, providers, location, geocoding, byok, references | doc03.02.02, doc01.01 | doc03.02.03.01 | — |
 | doc01.06.05 | `06-research-sessions/05-writing-register-jargon-nominalization.md` | Empirical findings on how jargon and nominalization affect reader comprehension and persuasion; the zombie-noun frame as a mechanical revision rule for agent-authored docs | research, writing, language, jargon, nominalization, style | doc00.03 | — | — |
 
 ## 02-design — Design
@@ -123,7 +123,9 @@ Orphaned attachments (non-md files with no corresponding root .md) are reported 
 
 | doc03.02.00 | `02-data-interfaces/00-index.md` | Domain models and the data-layer interface inventory: typed repositories, op-log, overview projection, sync engine — the contract UI sessions build against | system, interfaces, repository, data, contract | doc01.03, doc03.01 | — | — |
 | doc03.02.01 | `02-data-interfaces/01-location-repository.md` | The LocationRepository interface: identity lookup, upsert, merge — the persistence-shaped contract screens consume for Locations | system, interfaces, repository, data, contract, location | doc01.03, doc03.01, doc03.02 | — | — |
-| doc03.02.02 | `02-data-interfaces/02-location-providers.md` | The LocationProvider seam: osm default backed by Photon (forward + reverse) endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | doc01.06.04, doc02.02.02.13 | — |
+| doc03.02.02 | `02-data-interfaces/02-location-providers.md` | The LocationProvider seam: osm default backed by Photon (forward + reverse) endpoints, BYOK providers, per-provider caching rules, ODbL export obligations | system, providers, location, osm, odbl, licensing | doc01.03, doc03.02 | doc01.06.04, doc02.02.02.13, doc03.02.03.00, doc03.02.03.01 | — |
+| doc03.02.03.00 | `02-data-interfaces/03-provider-playbooks/00-index.md` | Per-provider operational guides for the LocationProvider seam — free-tier and key flow, attribution duties, privacy posture, typeahead and caching callouts; the prose companion to the seam contract | system, providers, location, playbook, index | doc03.02.02 | — | — |
+| doc03.02.03.01 | `02-data-interfaces/03-provider-playbooks/01-geoapify.md` | Operational playbook for the Geoapify BYOK provider — free-tier shape, the per-user-key posture that keeps RTP out of GDPR DPA territory, attribution, typeahead and caching callouts | system, providers, location, geoapify, byok, playbook | doc03.02.02, doc01.06.04 | — | — |
 
 ## Tag Index
 
@@ -135,7 +137,7 @@ Quick lookup for file-path→doc mapping:
 | `architecture` | doc02.01 |
 | `background` | doc01.01 |
 | `behavior` | doc01.06.02 |
-| `byok` | doc01.06.04 |
+| `byok` | doc01.06.04, doc03.02.03.01 |
 | `cmp` | doc01.05, doc02.01, doc02.03, doc03.03 |
 | `code-map` | doc01.04.03 |
 | `composition` | doc02.04 |
@@ -150,10 +152,11 @@ Quick lookup for file-path→doc mapping:
 | `debugging` | doc01.06.00, doc01.06.01 |
 | `design` | doc01.03, doc02.01, doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.02.15, doc02.02.02.16, doc02.02.02.17, doc02.02.03, doc02.03, doc02.04, doc02.05.00, doc02.05.01 |
 | `docs` | doc00.01, doc00.02, doc00.03, doc00.04 |
+| `geoapify` | doc03.02.03.01 |
 | `geocoding` | doc01.06.04 |
 | `gesture` | doc01.06.01 |
 | `grievances` | doc02.05.01 |
-| `index` | doc00.00, doc01.00, doc01.06.00, doc02.02.00, doc02.02.02.00, doc02.05.00, doc03.00 |
+| `index` | doc00.00, doc01.00, doc01.06.00, doc02.02.00, doc02.02.02.00, doc02.05.00, doc03.00, doc03.02.03.00 |
 | `interaction` | doc02.02.00, doc02.02.01, doc02.02.02.00, doc02.02.02.01, doc02.02.02.02, doc02.02.02.03, doc02.02.02.04, doc02.02.02.05, doc02.02.02.06, doc02.02.02.07, doc02.02.02.08, doc02.02.02.09, doc02.02.02.10, doc02.02.02.11, doc02.02.02.12, doc02.02.02.13, doc02.02.02.14, doc02.02.02.15, doc02.02.02.16, doc02.02.02.17, doc02.02.03, doc02.04 |
 | `interfaces` | doc03.02.00, doc03.02.01 |
 | `ios` | doc01.06.01 |
@@ -162,7 +165,7 @@ Quick lookup for file-path→doc mapping:
 | `language` | doc01.06.05 |
 | `latency` | doc01.06.01 |
 | `licensing` | doc03.02.02 |
-| `location` | doc01.06.04, doc03.02.01, doc03.02.02 |
+| `location` | doc01.06.04, doc03.02.01, doc03.02.02, doc03.02.03.00, doc03.02.03.01 |
 | `log` | doc02.05.01 |
 | `luminous` | doc01.04.03 |
 | `maintenance` | doc00.02 |
@@ -177,10 +180,11 @@ Quick lookup for file-path→doc mapping:
 | `patterns` | doc01.05 |
 | `philosophy` | doc00.02, doc01.04.00, doc01.04.01 |
 | `pipeline` | doc01.04.03 |
+| `playbook` | doc03.02.03.00, doc03.02.03.01 |
 | `process` | doc01.04.00, doc01.04.01, doc01.04.02 |
 | `product` | doc01.00, doc01.01, doc01.02, doc01.03, doc01.04.00, doc01.04.01, doc01.04.02, doc01.05 |
 | `property-based-testing` | doc01.06.03 |
-| `providers` | doc01.06.04, doc03.02.02 |
+| `providers` | doc01.06.04, doc03.02.02, doc03.02.03.00, doc03.02.03.01 |
 | `references` | doc01.05, doc01.06.04 |
 | `rendering` | doc03.04, doc03.05 |
 | `repository` | doc03.02.00, doc03.02.01 |
@@ -199,7 +203,7 @@ Quick lookup for file-path→doc mapping:
 | `style` | doc01.06.05 |
 | `styling` | doc02.03 |
 | `sync` | doc03.01 |
-| `system` | doc03.00, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02, doc03.03, doc03.04, doc03.05 |
+| `system` | doc03.00, doc03.01, doc03.02.00, doc03.02.01, doc03.02.02, doc03.02.03.00, doc03.02.03.01, doc03.03, doc03.04, doc03.05 |
 | `theme` | doc02.03 |
 | `theory` | doc00.01 |
 | `tokens` | doc02.03 |

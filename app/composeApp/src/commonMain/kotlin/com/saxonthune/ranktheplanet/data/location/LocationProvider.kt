@@ -33,6 +33,17 @@ enum class ProviderError { NETWORK, RATE_LIMITED, NOT_CONFIGURED, PROVIDER_ERROR
 interface LocationProvider {
     val type: SourceType
     val supportsTypeahead: Boolean
+
+    /**
+     * How long the search field waits after the last keystroke before issuing a
+     * typeahead `resolve`. A per-provider trait because the right value follows the
+     * backing service's cost/rate model — a politeness throttle, per-call billing, or
+     * session-coalescing all push it differently. Ignored when [supportsTypeahead] is
+     * false (those providers query only on submit). Read by the search field both to
+     * pace the query and to drive the countdown ring that shows the pending window.
+     */
+    val typeaheadDebounceMillis: Int get() = 300
+
     suspend fun resolve(query: String, bias: LocationBias? = null): ProviderResult<List<LocationCandidate>>
     suspend fun resolveNearby(coordinates: Coordinates): ProviderResult<List<LocationCandidate>>
     suspend fun healthCheck(): ProviderResult<Unit>

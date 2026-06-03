@@ -359,15 +359,17 @@ function verifyContextChain(statechartPath) {
 //      ∪ `meta.context.receives` (for has/eq keys) and `meta.modes` (for mode
 //      names). Unknown identifier → issue.
 //   3. Locate the inventory affordance whose `event` matches; if found, do a
-//      permissive cross-check:
-//        - For each positive `has(k)` leaf: if the affordance has a
-//          `reactsToContext` field AND k ∉ reactsToContext → key disagreement.
+//      cross-check. The `has(k)` side is **strict**: every positive `has(k)`
+//      leaf requires the affordance to declare `reactsToContext` including k —
+//      no mode-bridge escape. The `mode(m)` side stays permissive (deferred to
+//      Phase 6's mode-vs-context bridging):
+//        - For each positive `has(k)` leaf: if the affordance's
+//          `reactsToContext` is missing or does not contain k → key disagreement.
 //        - For each positive `mode(m)` leaf: if the affordance has an
 //          `appearsInModes` field AND m ∉ appearsInModes → mode disagreement.
 //        - If the transition has NO guard but the affordance has either
 //          restriction field → missing-guard.
-//      Atom-level rigor (mode↔context bridging, negative-polarity coverage)
-//      is deferred to a future phase that models meta.modes formally.
+//      Negative-polarity coverage remains deferred.
 
 function walkInventoryAffordances(inventory) {
   const out = [];
@@ -465,13 +467,15 @@ function verifyGuardCoverage(statechartPath) {
         continue;
       }
 
-      // Permissive forward check: only flag outright key/mode disagreement.
+      // Forward check. Strict on has(k): the affordance must declare
+      // reactsToContext including k. Permissive on mode(m): only flag when
+      // appearsInModes is present and disagrees.
       for (const { atom, polarity } of walkGuardLeaves(ast)) {
         if (!polarity) continue; // negative-polarity atoms deferred (see header comment)
-        if (atom.op === 'has' && reactsTo && reactsTo.length > 0 && !reactsTo.includes(atom.key)) {
+        if (atom.op === 'has' && !(reactsTo && reactsTo.includes(atom.key))) {
           issues.push({
             state: stateId, event, kind: 'key-disagreement',
-            guardKey: atom.key, inventoryReactsTo: reactsTo,
+            guardKey: atom.key, inventoryReactsTo: reactsTo || [],
           });
         }
         if (atom.op === 'mode' && appearsIn && appearsIn.length > 0 && !appearsIn.includes(atom.name)) {

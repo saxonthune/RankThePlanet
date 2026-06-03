@@ -432,7 +432,7 @@ class MapOverviewViewModel(
                 _query
                     .mapLatest { q ->
                         if (q.isBlank()) return@mapLatest emptyList()
-                        delay(250)
+                        delay(provider.typeaheadDebounceMillis.toLong())
                         runProviderSearch(q)
                     }
             } else {

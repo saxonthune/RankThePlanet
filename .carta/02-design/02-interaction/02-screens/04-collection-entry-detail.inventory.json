@@ -44,10 +44,10 @@
     },
     {
       "id": "tap-location",
-      "label": "Peek the Location on the map",
+      "label": "View the Location on the map",
       "region": "location",
       "event": "TAP_LOCATION",
-      "target": "LocationSheet"
+      "target": "MapOverview"
     },
     {
       "id": "open-externally",

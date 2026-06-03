@@ -224,7 +224,7 @@
           }
         },
         "reads": ["entry", "location", "review", "collection"],
-        "actions": ["Review.edit", "MapOverview.jumpToCollection"]
+        "actions": ["Review.edit", "Location.openExternally", "MapOverview.jumpToCollection"]
       },
       "on": {
         "TAP_LOCATION": {
@@ -356,8 +356,8 @@
           "propagates": ["filter-context"]
         },
         "BACK": {
-          "target": "CollectionList",
-          "description": "Return to the Collection list."
+          "target": "MapOverview",
+          "description": "Return to the map. (CollectionDetail is a fullScreen surface; the back-stack entry that preceded it is MapOverview, not a CollectionList sheet — CollectionList only exists as a sheet when MapOverview is in the stack.)"
         }
       }
     },
@@ -386,8 +386,8 @@
           "description": "User removes this Collection Entry from the Collection (Collection.removeEntry). Does not delete the Location — it may exist in other Collections. The affordance is an inline two-tap confirm (trashcan → 'Delete Entry?' → remove); this transition fires on the confirmed second tap."
         },
         "TAP_LOCATION": {
-          "target": "LocationSheet",
-          "description": "User taps the location region to peek the Location itself — the LocationSheet fan-out of every Collection Entry that references it, plus the *Add another Entry at this Location* affordance. The peek renders for any Entry count, so a single-sibling list is a one-row list above the add affordance."
+          "target": "MapOverview",
+          "description": "User taps the location region to return to the map centered on this Location. (CollectionEntryDetail is a fullScreen surface; LocationSheet is a sheet that requires MapOverview to be in the host stack, which is not guaranteed here. Returning to MapOverview is the correct navigation target — the map then surfaces the Location's pin context.)"
         },
         "VIEW_COLLECTION": {
           "target": "CollectionDetail",
@@ -543,14 +543,14 @@
       },
       "on": {
         "DONE": {
-          "target": "CollectionList",
+          "target": "MapOverview",
           "label": "Finish the import",
-          "description": "Import committed; return to the refreshed Collection list."
+          "description": "Import committed; return to the map. (ImportFlow is fullScreen; MapOverview, not CollectionList, is the correct back-stack target.)"
         },
         "CLOSE": {
-          "target": "CollectionList",
+          "target": "MapOverview",
           "label": "Cancel the import",
-          "description": "Cancel the import."
+          "description": "Cancel the import and return to the map."
         }
       }
     },

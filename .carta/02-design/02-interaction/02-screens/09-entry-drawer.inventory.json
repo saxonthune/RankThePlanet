@@ -40,6 +40,12 @@
       "target": "LocationSheet"
     },
     {
+      "id": "open-externally",
+      "label": "Open in an external map app",
+      "region": "locationBlock",
+      "action": "Location.openExternally"
+    },
+    {
       "id": "edit-review",
       "label": "Edit the Review",
       "region": "reviewBlock",

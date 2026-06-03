@@ -21,7 +21,7 @@
       "label": "Back",
       "region": "topBar",
       "event": "BACK",
-      "target": "CollectionList"
+      "target": "MapOverview"
     },
     {
       "id": "add-entry",

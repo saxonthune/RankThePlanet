@@ -358,6 +358,12 @@ fun MapOverviewScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
+                                    // The pie is transient, so it draws inside a constant
+                                    // 24.dp slot (empty when idle) rather than appearing and
+                                    // disappearing — toggling its presence would remeasure the
+                                    // Row and reflow the buttons on every keystroke. The matching
+                                    // trailing Spacer counterweights the leading slot so the two
+                                    // weighted buttons stay centered in the card.
                                     SearchPhaseIndicator(
                                         debounceProgress = debounceProgress.value,
                                         isSearching = state.isSearching,
@@ -373,22 +379,21 @@ fun MapOverviewScreen(
                                         )
                                         Text("Search")
                                     }
-                                    if (hasCandidate) {
-                                        TextButton(
-                                            onClick = {
-                                                vm.commitSearchToMap()
-                                                searchExpanded = false
-                                            },
-                                            modifier = Modifier.weight(1f),
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Place,
-                                                contentDescription = null,
-                                                modifier = Modifier.padding(end = 8.dp),
-                                            )
-                                            Text("Search on map")
-                                        }
+                                    TextButton(
+                                        onClick = {
+                                            vm.commitSearchToMap()
+                                            searchExpanded = false
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Place,
+                                            contentDescription = null,
+                                            modifier = Modifier.padding(end = 8.dp),
+                                        )
+                                        Text("Map")
                                     }
+                                    Spacer(Modifier.size(24.dp))
                                 }
                                 HorizontalDivider()
                                 state.searchHits.forEach { hit ->

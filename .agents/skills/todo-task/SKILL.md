@@ -27,7 +27,7 @@ Route based on `$ARGUMENTS[0]`:
 Run the status script and display results:
 
 ```bash
-bash .claude/skills/todo-task/status.sh
+bash .agents/skills/todo-task/status.sh
 ```
 
 If `$ARGUMENTS` includes `--archive`, run with `--archive-success` flag.
@@ -38,7 +38,7 @@ After showing status, handle completed agents:
 
 **Successful agents:** Archive automatically. Also archives completed or resolved chains (worktrees, branches, manifests, and logs):
 ```bash
-bash .claude/skills/todo-task/status.sh --archive-success
+bash .agents/skills/todo-task/status.sh --archive-success
 ```
 
 **Conflict agents (success but merge failed):** Check if the branch was already merged manually. If `git log` shows the agent's commits on the current branch, the conflict was already resolved — clean up the worktree, delete the branch, and archive. If not, treat as a failed merge and ask the user.
@@ -324,7 +324,7 @@ Launch a headless agent to implement a triaged plan.
 3. **Launch** — Run `launch.sh`. It validates preconditions synchronously (plan exists, clean tree, correct branch) and only backgrounds the real run if validation passes. Do NOT manually run `execute-plan.sh --validate-only` or hand-roll `nohup` — `launch.sh` handles both.
 
    ```bash
-   bash .claude/skills/todo-task/launch.sh {slug}
+   bash .agents/skills/todo-task/launch.sh {slug}
    ```
 
    If the command exits non-zero, validation failed — show the error to the user and tell them what to fix. Do NOT retry.
@@ -339,19 +339,19 @@ Launch a headless agent to implement a triaged plan.
 
 - `--no-merge` — leave branch for manual review instead of auto-merging:
   ```bash
-  bash .claude/skills/todo-task/launch.sh {slug} --no-merge
+  bash .agents/skills/todo-task/launch.sh {slug} --no-merge
   ```
 
 ### Chain execution
 
 If `--chain` is passed with multiple slugs, call `launch-chain.sh`:
 ```bash
-bash .claude/skills/todo-task/launch-chain.sh {chain-name} {slug1} {slug2} ...
+bash .agents/skills/todo-task/launch-chain.sh {chain-name} {slug1} {slug2} ...
 ```
 
 To queue a chain to start after a running or pending standalone task completes and merges, pass `--after <predecessor-slug>`:
 ```bash
-bash .claude/skills/todo-task/launch-chain.sh {chain-name} {slug1} {slug2} ... --after {predecessor-slug}
+  bash .agents/skills/todo-task/launch-chain.sh {chain-name} {slug1} {slug2} ... --after {predecessor-slug}
 ```
 
 The predecessor must be a standalone task (not part of the chain). It merges to trunk independently; the chain waits for it to complete and merge successfully before cutting its worktree from the now-updated trunk. If the predecessor fails or does not produce a result, the chain aborts. The predecessor slug must exist in pending, running, or done at launch time.
@@ -365,13 +365,13 @@ Launch a live dashboard that refreshes every 5 seconds, showing running agents, 
 Tell the user to run this in a separate terminal:
 
 ```bash
-watch -n5 bash .claude/skills/todo-task/monitor.sh
+watch -n5 bash .agents/skills/todo-task/monitor.sh
 ```
 
 Or run it once for a snapshot:
 
 ```bash
-bash .claude/skills/todo-task/monitor.sh
+bash .agents/skills/todo-task/monitor.sh
 ```
 
 ---
@@ -417,7 +417,7 @@ When you manually resolve a merge conflict from an agent (e.g., merging the agen
 
 3. **Archive the task:**
    ```bash
-   bash .claude/skills/todo-task/status.sh --archive-success
+   bash .agents/skills/todo-task/status.sh --archive-success
    ```
 
 If you skip these steps, future sessions will see stale worktrees and unresolved conflicts in status output, and may try to re-resolve them.

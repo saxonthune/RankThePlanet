@@ -569,14 +569,31 @@ class MapOverviewViewModel(
 
     fun commitSearchToMap() {
         val query = _query.value
-        val candidates = candidatesFlow.value
+        if (query.isBlank()) return
         val viewport = _liveViewport.value ?: return
-        if (query.isBlank() || candidates.isEmpty()) return
-        _searchContext.value = SearchContext(
-            query = query,
-            candidates = candidates.toImmutableList(),
-            viewportAtQuery = viewport,
-        )
+        val ready = candidatesFlow.value
+        if (ready.isNotEmpty()) {
+            _searchContext.value = SearchContext(
+                query = query,
+                candidates = ready.toImmutableList(),
+                viewportAtQuery = viewport,
+            )
+            return
+        }
+        // The affordance is always live, so the user can tap it before a typeahead
+        // pass has run (debounce still pending) or against a non-typeahead provider
+        // that only queries on submit. Force the query now and pivot to the map once
+        // candidates land; a result set that comes back empty leaves the dropdown as
+        // it was, where the drop-pin fallback offers the manual path.
+        viewModelScope.launch {
+            val hits = runProviderSearch(query)
+            if (hits.isEmpty()) return@launch
+            _searchContext.value = SearchContext(
+                query = query,
+                candidates = hits.toImmutableList(),
+                viewportAtQuery = _liveViewport.value ?: viewport,
+            )
+        }
     }
 
     fun searchThisArea() {

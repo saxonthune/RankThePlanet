@@ -140,10 +140,10 @@
     },
     {
       "id": "commit-search-to-map",
-      "label": "Search on map",
+      "label": "Map",
       "region": "search",
       "event": "COMMIT_SEARCH_TO_MAP",
-      "rendering": "A button on the dropdown's action row — the row directly under the search field and above the hit list, shared with submit-search. Only renders when the dropdown contains at least one unadopted provider candidate. Existing-entry-only results do not enable it (nothing new to pin). Tapping it dismisses the dropdown and keyboard, sets `search-context` from the current query / candidate set / viewport, and pivots the surface into searchResults mode."
+      "rendering": "A button on the dropdown's action row — the row directly under the search field and above the hit list, shared with submit-search. Always present while the dropdown is open. Tapping it sets `search-context` from the current query / candidate set / viewport, dismisses the dropdown and keyboard, and pivots the surface into searchResults mode. When the dropdown already holds unadopted provider candidates it commits them straight away; when it holds none yet — the user tapped before a typeahead pass ran, or the provider only queries on submit — it forces the query first and pivots once candidates land. A forced query that comes back empty leaves the dropdown as it was, where drop-pin-from-search offers the manual path."
     },
     {
       "id": "drop-pin-from-search",
@@ -151,7 +151,7 @@
       "region": "search",
       "event": "DROP_PIN",
       "target": "LocationDraftSheet",
-      "rendering": "A full-width button in the dropdown footer, below the hit list. Renders only when the query is non-blank, the active provider is not mid-search, and the dropdown holds no unadopted provider candidate — the search-can't-find-it fallback to the manual-pin flow. Reuses the map's DROP_PIN transition, dropping a pin at the viewport center and opening LocationDraftSheet; in add-to-collection mode `collection-context` propagates exactly as the long-press drop-pin does. The complement of commit-search-to-map: one renders only with candidates, the other only without."
+      "rendering": "A full-width button in the dropdown footer, below the hit list. Renders only when the query is non-blank, the active provider is not mid-search, and the dropdown holds no unadopted provider candidate — the search-can't-find-it fallback to the manual-pin flow. Reuses the map's DROP_PIN transition, dropping a pin at the viewport center and opening LocationDraftSheet; in add-to-collection mode `collection-context` propagates exactly as the long-press drop-pin does."
     },
     {
       "id": "search-this-area",
@@ -287,13 +287,13 @@
       "predicate": "has(search-context)"
     },
     {
-      "id": "commit-search-needs-candidates",
-      "text": "The `commit-search-to-map` affordance renders only when at least one unadopted provider candidate is present in the dropdown; existing-entry-only results do not enable it.",
-      "note": "Text-only — the precondition is candidate-set-shape (dropdown content), not a context key or mode. Awaits an `enabled(affordance-id)` or candidate-set atom extension."
+      "id": "commit-search-always-present",
+      "text": "The `commit-search-to-map` affordance is present whenever the dropdown is open, regardless of candidate-set shape. With candidates ready it commits them; with none it forces the query first, then pivots once candidates land (or no-ops the pivot if the forced query is empty).",
+      "note": "Text-only — the affordance's presence is unconditional on the dropdown; its outcome branches on candidate-set shape, which is dropdown content rather than a context key or mode."
     },
     {
       "id": "drop-pin-from-search-needs-no-candidate",
-      "text": "The `drop-pin-from-search` affordance renders only when the dropdown holds no unadopted provider candidate and the provider is not mid-search; it is the complement of `commit-search-to-map`.",
+      "text": "The `drop-pin-from-search` affordance renders only when the dropdown holds no unadopted provider candidate and the provider is not mid-search — the manual fallback for a query the geocoder can't surface.",
       "note": "Text-only — the precondition is candidate-set-shape (dropdown content), not a context key or mode. Awaits an `enabled(affordance-id)` or candidate-set atom extension."
     },
     {

@@ -44,6 +44,10 @@ Every concept action that mutates state follows the same order. Example: `Review
 
 Durability is step 2. Steps 3–5 may lag or fail without risking data.
 
+## Collection import
+
+An import parses and validates its complete portable payload before it creates a Collection. The importer reports entry progress and checks coroutine cancellation between entries. If any template, Location, or Entry write fails, the importer removes the partial Collection, its template fields, its Entries, and Locations left orphaned by that attempt. The UI therefore observes either one complete imported Collection or no imported Collection.
+
 ## Overview projection (memoized secondary store)
 
 A derived projection holding exactly what `MapOverview.open()` needs to paint the first frame: `viewport`, `collectionFilter`, and `visiblePins` (entry id, lat/lng, collection color, reviewed flag). No review `data`, no templates.

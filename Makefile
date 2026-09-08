@@ -120,7 +120,7 @@ ios-pod-install:
 
 ios-build:
 	xcodebuild -workspace $(WORKSPACE) -scheme iosApp -configuration Debug \
-		-destination 'platform=iOS Simulator,name=$(SIM)' \
+		-destination 'generic/platform=iOS Simulator' \
 		-derivedDataPath $(DERIVED) build
 
 ios-run: ios-build

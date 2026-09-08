@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
  */
 object RtpOverlay {
     /** Corner radius for overlay panels — reads as a card over the map, not an edge-to-edge slab. */
-    val shape: Shape = RoundedCornerShape(20.dp)
+    val shape: Shape = RoundedCornerShape(8.dp)
 
     /** Gap an overlay keeps from the surface edges so it floats rather than bleeding to the bezel. */
     val edgeInset: Dp = 12.dp

@@ -41,7 +41,7 @@ internal fun EntryDrawerSheet(
             .fillMaxWidth()
             .navigationBarsPadding(),
     ) {
-        DebugSheetLabel("EntryDrawerSheet")
+        SheetLabel("Review")
         CollectionBreadcrumb(
             entry = entry,
             onViewCollectionClick = { onViewCollection(entry.collectionId) },

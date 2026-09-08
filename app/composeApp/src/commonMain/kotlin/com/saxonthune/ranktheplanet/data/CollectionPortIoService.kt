@@ -10,11 +10,20 @@ import com.saxonthune.ranktheplanet.domain.io.PortFormat
 import com.saxonthune.ranktheplanet.data.op.generateUuid
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.CancellationException
 
 interface CollectionPortIoService {
     suspend fun export(collectionId: CollectionId, format: PortFormat): Result<ExportedBundle>
-    suspend fun import(text: String, format: PortFormat): Result<CollectionId>
+    suspend fun import(
+        text: String,
+        format: PortFormat,
+        onProgress: (ImportProgress) -> Unit = {},
+    ): Result<CollectionId>
 }
+
+data class ImportProgress(val completed: Int, val total: Int)
 
 data class ExportedBundle(
     val text: String,
@@ -54,8 +63,14 @@ class DefaultCollectionPortIoService(
             )
         }
 
-    override suspend fun import(text: String, format: PortFormat): Result<CollectionId> =
-        runCatching {
+    override suspend fun import(
+        text: String,
+        format: PortFormat,
+        onProgress: (ImportProgress) -> Unit,
+    ): Result<CollectionId> {
+        var newId: CollectionId? = null
+        val result = runCatching {
+            require(text.length <= MAX_IMPORT_CHARS) { "Import is larger than the 25 MB safety limit" }
             val portable = when (format) {
                 PortFormat.Kml -> KmlCodec.decode(text)
                 PortFormat.GeoJson -> GeoJsonCodec.decode(text)
@@ -67,16 +82,18 @@ class DefaultCollectionPortIoService(
                 description = portable.collection.description,
                 appearance = appearance,
             ).getOrElse { throw it }
-            val newId = newCollection.id
+            newId = newCollection.id
+            val importedId = newCollection.id
 
-            // TODO atomic rollback when CollectionRepository.delete lands
             if (portable.template != null) {
-                templates.define(newId, portable.template.fields).getOrElse { throw it }
+                templates.define(importedId, portable.template.fields).getOrElse { throw it }
             } else {
-                templates.define(newId, BuiltInTemplates.wishlist.fields).getOrElse { throw it }
+                templates.define(importedId, BuiltInTemplates.wishlist.fields).getOrElse { throw it }
             }
 
-            for (portableEntry in portable.entries) {
+            onProgress(ImportProgress(completed = 0, total = portable.entries.size))
+            portable.entries.forEachIndexed { index, portableEntry ->
+                currentCoroutineContext().ensureActive()
                 val rawLoc = portableEntry.location
                 // Locations with no stable sourceId must each get a unique identity to avoid accidental reuse.
                 val loc = if (rawLoc.sourceId.isEmpty()) rawLoc.copy(sourceId = generateUuid()) else rawLoc
@@ -94,11 +111,19 @@ class DefaultCollectionPortIoService(
                     ReviewDraft(data = persistentMapOf())
                 }
 
-                collections.addEntry(newId, finalLoc, review).getOrElse { throw it }
+                collections.addEntry(importedId, finalLoc, review).getOrElse { throw it }
+                onProgress(ImportProgress(completed = index + 1, total = portable.entries.size))
             }
 
-            newId
+            importedId
         }
+        if (result.isFailure && newId != null) {
+            collections.discardImport(newId!!)
+        }
+        val failure = result.exceptionOrNull()
+        if (failure is CancellationException) throw failure
+        return result
+    }
 
     private suspend fun nextAvailableAppearance() =
         collections.observeAll().first().map { it.appearance.color }.toSet().let { usedColors ->
@@ -106,3 +131,5 @@ class DefaultCollectionPortIoService(
                 ?: AppearancePalette.default
         }
 }
+
+private const val MAX_IMPORT_CHARS = 25 * 1024 * 1024

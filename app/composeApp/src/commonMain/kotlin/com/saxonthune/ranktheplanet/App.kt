@@ -78,7 +78,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 private const val GITHUB_URL = "https://github.com/saxonthune/RankThePlanet"
 
 @Composable
-fun App(graph: RtpAppGraph? = null) {
+fun App(graph: RtpAppGraph? = null, enableDebugTools: Boolean = false) {
     RtpTheme {
         val navController = rememberNavController()
         val fake = if (graph == null) remember { FakeRepositories() } else null
@@ -251,7 +251,9 @@ fun App(graph: RtpAppGraph? = null) {
                     onBack = { navController.popBackStack() },
                     onManageProviders = { navController.navigate(ManageProviders) },
                     onOpenAbout = { navController.navigate(About) },
-                    onOpenDebug = { navController.navigate(DebugSettings) },
+                    onOpenDebug = if (enableDebugTools) {
+                        { navController.navigate(DebugSettings) }
+                    } else null,
                 )
             }
             composable<About> {

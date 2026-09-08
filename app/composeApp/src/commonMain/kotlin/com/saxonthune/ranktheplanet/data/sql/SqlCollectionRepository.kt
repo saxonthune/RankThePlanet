@@ -211,6 +211,17 @@ internal class SqlCollectionRepository(
             }
         }
     }
+
+    override suspend fun discardImport(collectionId: CollectionId): Result<Unit> = withContext(Dispatchers.Default) {
+        runCatching {
+            database.transaction {
+                database.entryQueries.deleteByCollection(collectionId.value)
+                database.templateFieldQueries.deleteByCollection(collectionId.value)
+                database.collectionQueries.deleteById(collectionId.value)
+                database.locationQueries.deleteOrphans()
+            }
+        }
+    }
 }
 
 private fun com.saxonthune.ranktheplanet.db.Collection.toDomain() = Collection(

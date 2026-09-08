@@ -39,6 +39,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -464,6 +465,9 @@ fun MapOverviewScreen(
                         onClick = { vm.openCollectionList() },
                         icon = { Icon(Icons.Default.Layers, contentDescription = null) },
                         text = { Text("Collections") },
+                        shape = MaterialTheme.shapes.medium,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             },
@@ -582,6 +586,13 @@ fun MapOverviewScreen(
                                     .clickable { vm.clearFilter() },
                             )
                         },
+                        shape = MaterialTheme.shapes.small,
+                        colors = InputChipDefaults.inputChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.surface,
+                            selectedLabelColor = MaterialTheme.colorScheme.onSurface,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            selectedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(top = 120.dp),
@@ -775,4 +786,3 @@ private fun SearchHitRow(
         }
     }
 }
-

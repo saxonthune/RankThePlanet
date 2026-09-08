@@ -26,6 +26,9 @@ interface CollectionRepository {
     ): Result<Collection>
     suspend fun addEntry(collectionId: CollectionId, location: Location, review: ReviewDraft): Result<Entry>
     suspend fun removeEntry(entryId: EntryId): Result<Unit>
+    /** Removes a Collection created by a failed import and any import-owned dependent rows. */
+    suspend fun discardImport(collectionId: CollectionId): Result<Unit> =
+        Result.failure(UnsupportedOperationException("Import rollback is not supported"))
 }
 
 interface EntryRepository {

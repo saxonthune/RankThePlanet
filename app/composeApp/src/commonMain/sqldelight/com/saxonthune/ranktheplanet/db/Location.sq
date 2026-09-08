@@ -31,3 +31,6 @@ UPDATE location SET source_type = ?, source_id = ?, lat = ?, lng = ?, display_na
 
 delete:
 DELETE FROM location WHERE id = ?;
+
+deleteOrphans:
+DELETE FROM location WHERE id NOT IN (SELECT DISTINCT location_id FROM entry);

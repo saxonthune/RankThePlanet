@@ -4,6 +4,7 @@ import com.saxonthune.ranktheplanet.data.CollectionPortIoService
 import com.saxonthune.ranktheplanet.data.CollectionRepository
 import com.saxonthune.ranktheplanet.data.EntryRepository
 import com.saxonthune.ranktheplanet.data.ExportedBundle
+import com.saxonthune.ranktheplanet.data.ImportProgress
 import com.saxonthune.ranktheplanet.data.TemplateRepository
 import com.saxonthune.ranktheplanet.data.db.createDatabase
 import com.saxonthune.ranktheplanet.data.db.createDriver
@@ -285,6 +286,10 @@ private class CdvFakePortIoService(
         return exportResult ?: Result.failure(NotImplementedError())
     }
 
-    override suspend fun import(text: String, format: PortFormat): Result<CollectionId> =
+    override suspend fun import(
+        text: String,
+        format: PortFormat,
+        onProgress: (ImportProgress) -> Unit,
+    ): Result<CollectionId> =
         Result.failure(NotImplementedError())
 }

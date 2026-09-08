@@ -86,6 +86,9 @@ UPDATE entry SET data = ?, recorded_template_version = ?, last_modified = ? WHER
 deleteById:
 DELETE FROM entry WHERE id = ?;
 
+deleteByCollection:
+DELETE FROM entry WHERE collection_id = ?;
+
 selectByCollectionAndLocation:
 SELECT id FROM entry WHERE collection_id = ? AND location_id = ?;
 

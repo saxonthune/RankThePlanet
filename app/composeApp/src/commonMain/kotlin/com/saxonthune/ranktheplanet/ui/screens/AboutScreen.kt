@@ -44,8 +44,22 @@ fun AboutScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                text = "A private, map-first diary for collecting places and reviewing them your way.",
                 style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "Privacy & data",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+            Text(
+                text = "RTP keeps your Collections and Reviews on this device. It fetches map tiles from OpenFreeMap. When you search or resolve a pin, it sends the search text or coordinates to your active Location Provider. RTP does not include advertising or analytics SDKs.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "Support and full policy details: github.com/saxonthune/RankThePlanet",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
                 text = "Copyright © Saxon Thune. Licensed under GNU AGPLv3.\nThis program is distributed WITHOUT ANY WARRANTY.",

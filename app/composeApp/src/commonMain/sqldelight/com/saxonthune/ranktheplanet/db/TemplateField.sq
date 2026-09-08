@@ -23,3 +23,6 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
 
 deleteByCollectionAndVersion:
 DELETE FROM template_field WHERE collection_id = ? AND version = ?;
+
+deleteByCollection:
+DELETE FROM template_field WHERE collection_id = ?;

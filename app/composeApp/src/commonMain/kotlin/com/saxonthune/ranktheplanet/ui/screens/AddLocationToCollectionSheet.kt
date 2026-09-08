@@ -43,7 +43,7 @@ fun AddLocationToCollectionSheet(
         contentPadding = PaddingValues(bottom = 16.dp),
     ) {
         item {
-            DebugSheetLabel("AddLocationToCollectionSheet")
+            SheetLabel("Add to collection")
         }
         item {
             Row(

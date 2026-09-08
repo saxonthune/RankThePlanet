@@ -242,4 +242,50 @@ class CollectionPortIoServiceTest {
         val afterCount = repos.collections.observeAll().first().size
         assertEquals(beforeCount, afterCount)
     }
+
+    @Test
+    fun importFiveThousandGeoJsonEntriesReportsProgressAndCompletes() = runBlocking {
+        val (repos, service) = setup()
+        val entryCount = 5_000
+        val json = buildString {
+            append("{\"type\":\"FeatureCollection\",\"features\":[")
+            repeat(entryCount) { index ->
+                if (index > 0) append(',')
+                append("{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[")
+                append(-73.0 + index * 0.00001)
+                append(',')
+                append(40.0 + index * 0.00001)
+                append("]},\"properties\":{\"rtp:displayName\":\"Place ")
+                append(index)
+                append("\"}}")
+            }
+            append("]}")
+        }
+        var finalProgress: ImportProgress? = null
+
+        val id = service.import(json, PortFormat.GeoJson) { finalProgress = it }.getOrThrow()
+
+        assertEquals(entryCount, repos.entries.observeByCollection(id).first().size)
+        assertEquals(ImportProgress(entryCount, entryCount), finalProgress)
+    }
+
+    @Test
+    fun failureHalfwayThroughImportRemovesPartialCollection() = runBlocking {
+        val (repos, service) = setup()
+        val beforeCount = repos.collections.observeAll().first().size
+        val json = """
+            {
+              "type": "FeatureCollection",
+              "features": [
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[-73.0,40.0]},"properties":{"rtp:displayName":"First","rtp:sourceType":"Manual","rtp:sourceId":"duplicate"}},
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[-73.1,40.1]},"properties":{"rtp:displayName":"Second","rtp:sourceType":"Manual","rtp:sourceId":"duplicate"}}
+              ]
+            }
+        """.trimIndent()
+
+        val result = service.import(json, PortFormat.GeoJson)
+
+        assertTrue(result.isFailure)
+        assertEquals(beforeCount, repos.collections.observeAll().first().size)
+    }
 }

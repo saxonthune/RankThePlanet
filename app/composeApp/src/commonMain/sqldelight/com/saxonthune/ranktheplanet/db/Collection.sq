@@ -34,3 +34,6 @@ UPDATE collection SET name = ?, description = ?, appearance_color = ?, appearanc
 
 bumpLastModifiedAndTemplateVersion:
 UPDATE collection SET last_modified = ?, template_version = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM collection WHERE id = ?;

@@ -19,6 +19,7 @@ import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
 import platform.UIKit.UIViewController
+import platform.UIKit.UIModalPresentationFullScreen
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeJSON
 import platform.darwin.dispatch_async
@@ -84,11 +85,15 @@ class IosFilePicker(
             val fileUrl = writeTempFile(suggestedName, text).getOrThrow()
             suspendCancellableCoroutine { cont ->
                 dispatch_async(dispatch_get_main_queue()) {
+                    val root = rootViewControllerProvider()
                     val vc = UIActivityViewController(
                         activityItems = listOf(fileUrl),
                         applicationActivities = null,
                     )
-                    rootViewControllerProvider().presentViewController(vc, animated = true, completion = null)
+                    // Full-screen presentation avoids iPad's unanchored-popover crash while
+                    // retaining the native activity sheet contents on every supported device.
+                    vc.modalPresentationStyle = UIModalPresentationFullScreen
+                    root.presentViewController(vc, animated = true, completion = null)
                     cont.resume(Unit)
                 }
             }

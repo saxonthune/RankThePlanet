@@ -2,6 +2,7 @@ package com.saxonthune.ranktheplanet.ui.screens
 
 import com.saxonthune.ranktheplanet.data.CollectionPortIoService
 import com.saxonthune.ranktheplanet.data.ExportedBundle
+import com.saxonthune.ranktheplanet.data.ImportProgress
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.io.PortFormat
 import com.saxonthune.ranktheplanet.io.FilePicker
@@ -112,7 +113,11 @@ private class FakePortIoService(
     var importCalledWith: Pair<String, PortFormat>? = null
     var exportCalledWith: Pair<CollectionId, PortFormat>? = null
 
-    override suspend fun import(text: String, format: PortFormat): Result<CollectionId> {
+    override suspend fun import(
+        text: String,
+        format: PortFormat,
+        onProgress: (ImportProgress) -> Unit,
+    ): Result<CollectionId> {
         importCalledWith = text to format
         return importResult ?: Result.failure(NotImplementedError("not configured"))
     }

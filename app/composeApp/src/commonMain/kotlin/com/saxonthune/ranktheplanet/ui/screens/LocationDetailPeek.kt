@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.saxonthune.ranktheplanet.domain.EntryId
 
@@ -42,7 +41,7 @@ internal fun LocationDetailPeek(
             .fillMaxWidth()
             .navigationBarsPadding(),
     ) {
-        DebugSheetLabel("LocationDetailPeek")
+        SheetLabel("Location")
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -165,14 +164,13 @@ internal fun LocationDetailPeek(
 }
 
 @Composable
-internal fun DebugSheetLabel(name: String) {
+internal fun SheetLabel(name: String) {
     Text(
-        text = "debug: $name",
+        text = name.uppercase(),
         style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.error,
-        fontFamily = FontFamily.Monospace,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 20.dp, vertical = 6.dp),
     )
 }

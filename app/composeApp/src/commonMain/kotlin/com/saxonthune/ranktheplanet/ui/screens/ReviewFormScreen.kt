@@ -1,17 +1,25 @@
 package com.saxonthune.ranktheplanet.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -20,6 +28,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -30,6 +40,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -85,7 +99,7 @@ fun ReviewFormScreen(
                     .dismissKeyboardOnTap()
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 state.fields.forEach { field ->
                     FieldRow(
@@ -100,6 +114,7 @@ fun ReviewFormScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FieldRow(
     field: TemplateField,
@@ -107,7 +122,16 @@ private fun FieldRow(
     onEdit: (String) -> Unit,
     onClear: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = field.label,
@@ -124,20 +148,38 @@ private fun FieldRow(
                 val config = field.config as? TemplateFieldConfig.Score
                 val max = config?.max?.toInt() ?: 5
                 val filled = value?.toIntOrNull() ?: 0
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
                     (1..max).forEach { i ->
-                        Text(
-                            text = if (i <= filled) "★" else "☆",
-                            style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.clickable { onEdit(i.toString()) },
-                        )
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .semantics {
+                                    contentDescription = "$i out of $max"
+                                    selected = i == filled
+                                }
+                                .clickable { onEdit(i.toString()) },
+                        ) {
+                            Text(
+                                text = if (i <= filled) "★" else "☆",
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = if (i <= filled) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 }
             }
             FieldType.Enum -> {
                 val config = field.config as? TemplateFieldConfig.Enum
                 val options = config?.options ?: persistentListOf()
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     options.forEach { option ->
                         FilterChip(
                             selected = value == option,
@@ -161,13 +203,26 @@ private fun FieldRow(
                 )
             }
             FieldType.Boolean -> {
-                Switch(
-                    checked = value == "true",
-                    onCheckedChange = { onEdit(it.toString()) },
-                )
+                val checked = value == "true"
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                        .toggleable(
+                            value = checked,
+                            role = Role.Switch,
+                            onValueChange = { onEdit(it.toString()) },
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(if (checked) "Yes" else "No", style = MaterialTheme.typography.bodyLarge)
+                    Switch(checked = checked, onCheckedChange = null)
+                }
             }
             FieldType.Date -> DateField(value = value, onEdit = onEdit)
         }
+    }
     }
 }
 
@@ -175,14 +230,25 @@ private fun FieldRow(
 @Composable
 private fun DateField(value: String?, onEdit: (String) -> Unit) {
     var showPicker by remember { mutableStateOf(false) }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = value ?: "Not set",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
-        )
-        TextButton(onClick = { showPicker = true }) {
-            Text(if (value == null) "Pick a date" else "Change")
+    Surface(
+        onClick = { showPicker = true },
+        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+        shape = MaterialTheme.shapes.small,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Outlined.CalendarToday, contentDescription = null, modifier = Modifier.size(20.dp))
+            Text(
+                text = value ?: "Pick a date",
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (value == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f).padding(start = 12.dp),
+            )
+            if (value != null) Text("Change", style = MaterialTheme.typography.labelLarge)
         }
     }
     if (showPicker) {

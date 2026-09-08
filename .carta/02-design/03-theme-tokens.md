@@ -21,7 +21,7 @@ The indirection earns its keep: semantic names survive a redesign, one token-set
 
 ## Token categories — first cut
 
-Three categories are specified now because every screen needs them; a fourth — the overlay treatment — is specified because the map surface composes floating overlays that need a shared anchor. Motion (durations, easing) stays deferred — add it when an animation is specified.
+Four categories serve every screen; the overlay treatment gives map chrome a shared anchor. Motion (durations, easing) stays deferred — add it when an animation is specified.
 
 ### Colors — `RtpColors`
 
@@ -35,11 +35,15 @@ A fixed scale of `Dp` values (`xs`, `sm`, `md`, `lg`). Every `padding`/`gap` in 
 
 Named text roles (e.g. `screenTitle`, `body`, `caption`, `label`), each a `TextStyle`. Roles are named for *where text appears in RTP*, not for a type-ramp number.
 
+### Shapes — `RtpShapes`
+
+RTP uses compact radii: 4dp for controls, 6dp for field and card surfaces, and 8dp for large containers. Components read these values through Material's `Shapes` local so stock controls inherit the same square-ish silhouette. Pills remain reserved for compact status and filter controls whose shape communicates that they behave as chips.
+
 ### Overlay treatment — `RtpOverlay`
 
 The shared shape + spacing + elevation contract for surfaces that float **over the map** — the search dropdown, the filter chip, the *Search this area* chip, and any later FAB or attribution overlay. One token set so every map overlay shares a corner radius, an inset from the surface edges, and an elevation, instead of each picking its own. The slots:
 
-- `shape` — the corner radius for overlay panels (a `CornerBasedShape`). The panel reads as a card over the map, not an edge-to-edge slab.
+- `shape` — the 8dp corner radius for overlay panels (a `CornerBasedShape`). The panel reads as a card over the map, not an edge-to-edge slab or a pill.
 - `edgeInset` — the gap an overlay keeps from the surface edges, so it floats rather than bleeding to the bezel. This is the *anchor* the overlays align to.
 - `tonalElevation` / `shadowElevation` — the depth that lifts the panel off the map (HIG *Depth*, Material elevation). Deference: enough to separate the panel from the map without veiling it (cf. doc02.05 G009 — overlays must leave the map readable).
 
@@ -72,4 +76,3 @@ All token types and the provider live in `commonMain` — `Color`, `Dp`, `TextSt
 ## Deferred
 
 - Motion (durations, easing) — when an animation is specified.
-- Component-anatomy shapes beyond the overlay treatment (e.g. a bespoke card or button radius) — when a component needs one. `RtpOverlay` covers map overlays; a general `RtpShapes` set graduates when a second, non-overlay shape need appears.

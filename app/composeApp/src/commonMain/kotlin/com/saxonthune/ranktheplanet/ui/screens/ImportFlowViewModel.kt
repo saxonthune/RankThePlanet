@@ -3,6 +3,7 @@ package com.saxonthune.ranktheplanet.ui.screens
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.saxonthune.ranktheplanet.data.CollectionPortIoService
+import com.saxonthune.ranktheplanet.data.ImportProgress
 import com.saxonthune.ranktheplanet.domain.CollectionId
 import com.saxonthune.ranktheplanet.domain.io.PortFormat
 import com.saxonthune.ranktheplanet.io.FilePicker
@@ -12,11 +13,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 
 data class ImportFlowUiState(
     val phase: Phase = Phase.Idle,
     val pickedFileName: String? = null,
     val error: String? = null,
+    val completedEntries: Int = 0,
+    val totalEntries: Int = 0,
 ) {
     enum class Phase { Idle, Picking, Importing, Done }
 }
@@ -31,6 +35,8 @@ class ImportFlowViewModel(
     private val filePicker: FilePicker,
 ) : ViewModel() {
 
+    private var importJob: Job? = null
+
     private val _uiState = MutableStateFlow(ImportFlowUiState())
     val uiState: StateFlow<ImportFlowUiState> = _uiState
 
@@ -38,7 +44,8 @@ class ImportFlowViewModel(
     val events = _events.receiveAsFlow()
 
     fun onPickFile() {
-        viewModelScope.launch {
+        if (importJob?.isActive == true) return
+        importJob = viewModelScope.launch {
             _uiState.value = _uiState.value.copy(phase = ImportFlowUiState.Phase.Picking, error = null)
 
             val pickResult = filePicker.openForRead(listOf(PortFormat.Kml, PortFormat.GeoJson))
@@ -67,7 +74,12 @@ class ImportFlowViewModel(
                 pickedFileName = picked.name,
             )
 
-            portIo.import(picked.text, format).fold(
+            portIo.import(picked.text, format) { progress: ImportProgress ->
+                _uiState.value = _uiState.value.copy(
+                    completedEntries = progress.completed,
+                    totalEntries = progress.total,
+                )
+            }.fold(
                 onSuccess = { collectionId ->
                     _uiState.value = _uiState.value.copy(phase = ImportFlowUiState.Phase.Done)
                     _events.send(ImportFlowEvent.Imported(collectionId))
@@ -83,6 +95,7 @@ class ImportFlowViewModel(
     }
 
     fun onCancel() {
+        importJob?.cancel()
         viewModelScope.launch { _events.send(ImportFlowEvent.Cancelled) }
     }
 }

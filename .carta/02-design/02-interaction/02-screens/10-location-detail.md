@@ -12,6 +12,8 @@ The affordance inventory for the `LocationSheet` surface — a skinny bottom-she
 
 `LocationSheet` renders as a sheet (`meta.modality: sheet`) hosted by `MapOverview` (`meta.host: MapOverview`); the sheet's state lives in the host's UiState rather than being its own route ([[04-surface-composition-rules]], doc02.04).
 
+A permanent *Location* eyebrow names the sheet in quiet label type. It replaces implementation-facing debug text and gives users orientation without competing with the Location name.
+
 The surface is a skinny bottom sheet split into two halves. The **locationSummary** region (left half) shows the Location — its display name and coordinates. The **entries** region (right half) is a vertically scrolling list of every Entry that references this Location, one per Collection; each row shows the owning Collection's name and appearance color and the Entry's reviewed/unreviewed state. Tapping a row picks that Entry and opens the [[09-entry-drawer]] ([[01-navigation]], doc02.02.01: `TAP_ENTRY` → `EntrySheet`). Below the list sits *Add another Entry at this Location* (`TAP_ADD_ENTRY` → `AddLocationToCollection`), which propagates the Location as `location-context` so the picked Collection's new Entry binds to this Location.
 
 The peek renders the same way for any Entry count ≥ 1; a one-Entry list is a single row above the add-entry affordance. *Dismiss* is the bottom-sheet's swipe-down or scrim-tap gesture and is modeled as `BACK` → `MapOverview`.

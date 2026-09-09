@@ -42,7 +42,7 @@ help:
 	@echo "  stop          Stop the Gradle daemon"
 	@echo "  adb-devices   List attached Android devices/emulators"
 	@echo "  wrapper       Print Gradle wrapper version"
-	@echo "  verify        Run the carta doc verifier (.carta/verify.mjs)"
+	@echo "  verify        Run the rhidoc doc verifier (.rhidoc/verify.mjs)"
 	@echo "  compile-check Compile Android + commonMain metadata (off-macOS proxy for iOS)"
 	@echo "  code-map      Regenerate the agent-consumable Kotlin code map"
 	@echo ""
@@ -89,13 +89,13 @@ adb-devices:
 wrapper:
 	$(GRADLE) --version
 
-# Run the carta doc verifier suite — context-chain, guard-coverage,
+# Run the rhidoc doc verifier suite — context-chain, guard-coverage,
 # modality-host, screen-inventory, invariant-resolution, action-concept,
 # journeys-verify, journey-trace, generated-traces. Walks every .md doc with
 # a `verify:` frontmatter entry and runs the named kinds against their
-# sidecars. Doc-level gate; run after any .carta/ change.
+# sidecars. Doc-level gate; run after any .rhidoc/ change.
 verify:
-	node .carta/verify.mjs
+	node .rhidoc/verify.mjs
 
 # Compile the Android target + commonMain metadata. Off macOS the iOS targets
 # are disabled (cinterop for MapLibre needs macOS), so this is the strongest

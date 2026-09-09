@@ -5,7 +5,7 @@
 // Pack-agnostic helpers shared by `statechart-canvas.pipeline.mjs` (which
 // renders the surface graph) and `journeys-canvas.pipeline.mjs` (which
 // renders user-intent paths through it). Both need: discovery of sidecars
-// under .carta/, file read, contract-checked parsing of a flat XState v5
+// under .rhidoc/, file read, contract-checked parsing of a flat XState v5
 // machine, and the (surface, event) → label map sourced from per-screen
 // inventories.
 //
@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = resolve(__dirname, '..');
-export const CARTA_ROOT = join(REPO_ROOT, '.carta');
+export const RHIDOC_ROOT = join(REPO_ROOT, '.rhidoc');
 export const GENERATED_ROOT = join(REPO_ROOT, '.luminous', 'generated');
 
 // ── walk / discover ──────────────────────────────────────────────────────────
@@ -32,9 +32,9 @@ export async function* walk(dir) {
 }
 
 export async function discoverBySuffix(suffix) {
-  if (!existsSync(CARTA_ROOT)) return [];
+  if (!existsSync(RHIDOC_ROOT)) return [];
   const out = [];
-  for await (const f of walk(CARTA_ROOT)) {
+  for await (const f of walk(RHIDOC_ROOT)) {
     if (f.endsWith(suffix)) out.push({ path: f });
   }
   return out.sort((a, b) => a.path.localeCompare(b.path));

@@ -57,7 +57,7 @@ Do not stress-test as a first move. The user came to build, not to defend.
 ## What You Do
 
 - **Think with the user** — help them clarify what they're building by writing it down together
-- **Write docs** — using `carta create` for new docs and direct edits for existing ones
+- **Write docs** — using `rhidoc make` for new docs and direct edits for existing ones
 - **Track decisions** — maintain decisions and open questions so the next session has continuity
 - **Read source code** — when relevant, understand what exists and what patterns to follow
 

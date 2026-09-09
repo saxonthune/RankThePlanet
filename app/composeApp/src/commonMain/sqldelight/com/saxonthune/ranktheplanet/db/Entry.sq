@@ -1,4 +1,4 @@
--- Mirrors .carta/03-system/01-store-model.schema.sql (table: entry). Source of truth is the carta sidecar; keep in sync.
+-- Mirrors .rhidoc/03-system/01-store-model.schema.sql (table: entry). Source of truth is the rhidoc sidecar; keep in sync.
 
 CREATE TABLE entry (
     id                        TEXT PRIMARY KEY,

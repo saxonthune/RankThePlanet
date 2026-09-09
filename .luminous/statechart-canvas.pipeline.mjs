@@ -3,11 +3,11 @@
 // ║  statechart → Luminous canvas pipeline                                   ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 //
-// Walks .carta/ for *.statechart.json sidecars and, for each, emits a
+// Walks .rhidoc/ for *.statechart.json sidecars and, for each, emits a
 // Luminous canvas pair into .luminous/generated/, mirroring the sidecar's
-// path under .carta/:
+// path under .rhidoc/:
 //
-//   .carta/<sub>/<base>.statechart.json
+//   .rhidoc/<sub>/<base>.statechart.json
 //        →  .luminous/generated/<sub>/<base>.canvas.graph.json
 //           .luminous/generated/<sub>/<base>.canvas.pack.json
 //
@@ -60,7 +60,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join, relative, basename } from 'node:path';
 import { validateGraphPack } from './validate-graph.mjs';
 import {
-  REPO_ROOT, CARTA_ROOT, GENERATED_ROOT,
+  REPO_ROOT, RHIDOC_ROOT, GENERATED_ROOT,
   discoverBySuffix, readSidecar, parseStatechart, loadInventoryLabels,
 } from './statechart-lib.mjs';
 
@@ -470,7 +470,7 @@ async function buildOne(ref, dumpStage) {
   if (dumpStage === 'graph') return { dump: graph };
   if (dumpStage === 'pack') return { dump: pack };
 
-  const dir = join(GENERATED_ROOT, dirname(relative(CARTA_ROOT, ref.path)));
+  const dir = join(GENERATED_ROOT, dirname(relative(RHIDOC_ROOT, ref.path)));
   await mkdir(dir, { recursive: true });
   const graphPath = join(dir, `${packName}.graph.json`);
   const packPath = join(dir, `${packName}.pack.json`);
@@ -500,7 +500,7 @@ async function main() {
 
   const sidecars = await discoverBySuffix('.statechart.json');
   if (sidecars.length === 0) {
-    console.log('No *.statechart.json sidecars found under .carta/.');
+    console.log('No *.statechart.json sidecars found under .rhidoc/.');
     return;
   }
 

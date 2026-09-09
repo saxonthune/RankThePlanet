@@ -312,13 +312,13 @@ This is the load-bearing dependency. It is a Compose-first wrapper around MapLib
 - Platform parity: Android and iOS are well-supported; Desktop and Web are not. Do not depend on map functionality in `commonMain` for the desktop/web split until the wrapper catches up.
 
 ### Architectural decisions already made
-- Compose Multiplatform is the framework. (`.carta/02-design/01-architecture.md` → doc02.01)
+- Compose Multiplatform is the framework. (`.rhidoc/02-design/01-architecture.md` → doc02.01)
 - Android + iOS first; desktop/web later, gated on `maplibre-compose` parity.
 - Tiles: Protomaps PMTiles, bundled low-zoom basemap.
 - Persistence: **undecided** (SQLCipher vs. zipped bundle). Don't assume a DB layer exists when shaping new code; design the repository interface against the domain, let the persistence choice plug in behind it.
 
 ### Conventions for this repo
-- All design docs live under `.carta/`. Read `.carta/MANIFEST.md` before architecture work.
+- All design docs live under `.rhidoc/`. Read `.rhidoc/MANIFEST.md` before architecture work.
 - Domain models in `commonMain`, no Compose imports.
 - One `UiState` per screen, exposed as `StateFlow` from a `ViewModel`.
 - `expect`/`actual` reserved for tiny shims; everything bigger goes through an `interface` + DI.

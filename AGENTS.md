@@ -6,7 +6,7 @@ Free, fast, open-source geo diary. User-curated lists of places with per-list re
 
 ## First action, every session
 
-**Before answering any product, design, or scaffolding question, read `.carta/MANIFEST.md` and any docs whose summary/tags match the task.** Prior decisions and research live there. Do not propose technology, architecture, or behavior without first checking what the workspace has already converged on. This rule outranks brevity — a fast answer that contradicts existing docs is worse than a slow one that aligns with them.
+**Before answering any product, design, or scaffolding question, read `.rhidoc/MANIFEST.md` and any docs whose summary/tags match the task.** Prior decisions and research live there. Do not propose technology, architecture, or behavior without first checking what the workspace has already converged on. This rule outranks brevity — a fast answer that contradicts existing docs is worse than a slow one that aligns with them.
 
 ## Project status: pre-alpha
 
@@ -20,7 +20,7 @@ Docs (and code, when it arrives) **unfold**. Start sparse. Grow only what the ne
 
 Inspirations:
 
-- `.carta/00-codex/02-maintenance.md` — the local statement of unfolding for this workspace.
+- `.rhidoc/00-handbook/02-maintenance.md` — the local statement of unfolding for this workspace.
 - The artifact chain: each spec reduces residual entropy for the one after it. By the time you write code, the question "what should this do?" should already be answered upstream.
 - Two sources of truth (product expectations vs. source code). Everything else is an artifact bridging them; there is no third source. Avoid simulation-style ("dollhouse") design — describe artifacts, actions, and side effects, not a model of the real world.
 
@@ -34,7 +34,7 @@ What this means day-to-day:
 
 ## No temporal language in docs
 
-This rule is load-bearing and easy to violate. Every carta doc is written in the **present tense of intent** — describe how things *should be*, never when they were built, what they replace, what is "currently"/"now"/"today"/"pending"/"not yet"/"will soon"/"in the future" true, or how the doc changed. Temporal framing rots: the doc that says "will soon" is wrong the moment "soon" passes, and the reader has no way to tell.
+This rule is load-bearing and easy to violate. Every rhidoc doc is written in the **present tense of intent** — describe how things *should be*, never when they were built, what they replace, what is "currently"/"now"/"today"/"pending"/"not yet"/"will soon"/"in the future" true, or how the doc changed. Temporal framing rots: the doc that says "will soon" is wrong the moment "soon" passes, and the reader has no way to tell.
 
 For genuinely unbuilt ideas, use **conditional phrasing** and flag them as not-yet-built: "a candidate verifier kind", "the surface could declare X", "one approach would be". Conditional voice stays correct whether the idea ships or not.
 
@@ -65,36 +65,36 @@ Detection: scan for a subject of the form *"the {noun}"* coupled with *is/has/ma
 
 This is an experiment, not yet a load-bearing rule. The evidence for human readability is strong (jargon disrupts processing fluency even with inline definitions; see doc01.06.05 §1). The evidence for LLM output quality is thin and untested directly. Apply the rule and notice whether the prose reads better.
 
-## Working with the carta workspace
+## Working with the rhidoc workspace
 
-All design lives under `.carta/`. Carta is a CLI for managing numbered Markdown docs with stable cross-references and an auto-generated MANIFEST.
+All design lives under `.rhidoc/`. Rhidoc is a CLI for managing numbered Markdown docs with stable cross-references and an auto-generated MANIFEST.
 
-**Always read `.carta/MANIFEST.md` first.** It is the machine-readable index — fetch only the docs whose summary/tags match your task. Target: <10% of docs read per operation.
+**Always read `.rhidoc/MANIFEST.md` first.** It is the machine-readable index — fetch only the docs whose summary/tags match your task. Target: <10% of docs read per operation.
 
 Cross-references use `docXX.YY.ZZ` (two digits per segment). They survive moves automatically.
 
-Use the carta CLI for structural ops — never hand-edit numbering or move files manually:
+Use the rhidoc CLI for structural ops — never hand-edit numbering or move files manually:
 
-- `carta create <dir> <slug> --title ... --summary ... --tags csv --deps csv` — new doc
-- `carta group <dir> --title ...` — new group with index
-- `carta move <src> <dst> [--order N]` — move/reorder; rewrites all refs
-- `carta delete <ref>` — gap-closing delete; rewrites refs
-- `carta punch <ref>` — leaf .md → directory
-- `carta flatten <ref>` — directory → siblings in parent
-- `carta attach <host> <file>` — add a sidecar (JSON, etc.) to a doc's bundle
-- `carta regenerate` — rebuild MANIFEST after batch ops
-- `carta cat <ref>` / `carta tree` / `carta ls <dir>` — read
+- `rhidoc make <dir> <slug>` — new doc
+- `rhidoc make -g <dir> <slug>` — new group with index
+- `rhidoc move <src> <dst> [--order N]` — move/reorder; rewrites all refs
+- `rhidoc delete <ref>` — gap-closing delete; rewrites refs
+- `rhidoc punch <ref>` — leaf .md → directory
+- `rhidoc hoist <ref>` — directory → siblings in parent
+- `rhidoc attach <host> <file>` — add a sidecar (JSON, etc.) to a doc's bundle
+- `rhidoc regenerate` — rebuild MANIFEST after batch ops
+- `rhidoc cat <ref>` / `rhidoc tree` / `rhidoc ls <dir>` — read
 
-Full reference: `carta ai-skill`.
+Full reference: `rhidoc ai-skill`.
 
-Conventions live in `doc00.03`. Maintenance / unfolding rules live in `doc00.02`. About / theory in `doc00.01`. AI retrieval patterns in `doc00.04`.
+Conventions live in `doc00.03`. Maintenance / unfolding rules live in `doc00.02`. About / theory in `doc00.01`. Agent navigation rules live in `.rhidoc/AGENTS.md`.
 
 ## Where things live (so far)
 
-- `00-codex/` — meta-documentation about the workspace itself
+- `00-handbook/` — Rhidoc's handbook about the workspace itself
 - `01-product/` — what we're building and why; user-visible behavior; research; development philosophy
 - `02-design/` — framework decisions; interaction (surfaces, navigation graph)
-- `.luminous/` — Luminous pipelines that turn carta sidecars into visual canvas graphs
+- `.luminous/` — Luminous pipelines that turn rhidoc sidecars into visual canvas graphs
 
 CMP-bound system specs (state tiers, repository contracts, screens-as-Composables, component tree) will appear in a future group when the interaction layer stabilizes.
 
@@ -114,19 +114,19 @@ Use the dedicated tools — they're allowlisted and don't trigger approval promp
 
 ## Statechart sidecar workflow
 
-When editing a `*.statechart.json` carta sidecar, regenerate its Luminous canvas:
+When editing a `*.statechart.json` rhidoc sidecar, regenerate its Luminous canvas:
 
 ```
 node .luminous/statechart-canvas.pipeline.mjs
 ```
 
-The pipeline walks `.carta/` for `*.statechart.json` sidecars and emits a derived canvas pair (`*.canvas.graph.json` + `*.canvas.pack.json`) per sidecar under `.luminous/generated/`. That output tree is gitignored — edit the sidecar and re-run, never hand-edit the generated files.
+The pipeline walks `.rhidoc/` for `*.statechart.json` sidecars and emits a derived canvas pair (`*.canvas.graph.json` + `*.canvas.pack.json`) per sidecar under `.luminous/generated/`. That output tree is gitignored — edit the sidecar and re-run, never hand-edit the generated files.
 
 ## Verifying changes locally
 
 Three gates, picked by what changed:
 
-- `make verify` — the carta doc verifier (`node .carta/verify.mjs`). Walks every `.md` doc for a `verify:` frontmatter entry and runs the named kinds against their sidecars — `context-chain`, `guard-coverage`, `modality-host`, `screen-inventory`, `invariant-resolution`, `action-concept`, `journeys-verify`, `journey-trace`, `generated-traces`. Each kind is documented in doc01.04.02. Run after any `.carta/` change — schema edits, transition changes, inventory additions, statechart edits all flow through this.
+- `make verify` — the rhidoc doc verifier (`node .rhidoc/verify.mjs`). Walks every `.md` doc for a `verify:` frontmatter entry and runs the named kinds against their sidecars — `context-chain`, `guard-coverage`, `modality-host`, `screen-inventory`, `invariant-resolution`, `action-concept`, `journeys-verify`, `journey-trace`, `generated-traces`. Each kind is documented in doc01.04.02. Run after any `.rhidoc/` change — schema edits, transition changes, inventory additions, statechart edits all flow through this.
 - `make compile-check` — compile Android + commonMain metadata. Off-macOS proxy for iOS; on macOS the iOS Kotlin/Native targets compile too. Run after Kotlin changes. For real iOS verification on macOS prefer `make ios-device-run`.
 - `make test` — JVM unit suite (`:composeApp:jvmTest`). Pass `FILTER=...` to scope it, e.g. `make test FILTER=com.saxonthune.ranktheplanet.data.sql.*`. Prefer this over invoking `./gradlew` directly — the make wrapper is allowlisted, the direct gradlew invocation is not.
 

@@ -9,8 +9,8 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '..');
-const chartPath = path.join(repo, '.carta/02-design/02-interaction/01-navigation.statechart.json');
-const screensDir = path.join(repo, '.carta/02-design/02-interaction/02-screens');
+const chartPath = path.join(repo, '.rhidoc/02-design/02-interaction/01-navigation.statechart.json');
+const screensDir = path.join(repo, '.rhidoc/02-design/02-interaction/02-screens');
 
 // Build (surface, event) → covered set from inventories.
 const covered = new Set();

@@ -1,5 +1,5 @@
 // code-map.pipeline.mjs — derive a compressed, agent-consumable code map from
-// the Kotlin sources. See .carta doc01.04.03 for the intent.
+// the Kotlin sources. See .rhidoc doc01.04.03 for the intent.
 //
 //   node .luminous/code-map.pipeline.mjs
 //
@@ -92,7 +92,7 @@ function members(bodyNode, src) {
 }
 
 function parseFile(path, src) {
-  const root = parser.parse(src).rootNode;
+  const root = parser.parse(src, undefined, { bufferSize: src.length + 1 }).rootNode;
   const pkgNode = root.namedChildren.find((c) => c.type === 'package_header');
   const pkg = pkgNode ? pkgNode.text.replace(/^package\s+/, '').trim() : '(default)';
 

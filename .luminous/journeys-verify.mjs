@@ -3,7 +3,7 @@
 // ║  journeys-verify — intent-vs-reality diff (journeys vs statechart)      ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 //
-// Walks .carta/ for *.journeys.json sidecars. For each declared step,
+// Walks .rhidoc/ for *.journeys.json sidecars. For each declared step,
 // classifies against the sibling statechart and reports observations:
 //
 //   match            journey and chart agree
@@ -68,7 +68,7 @@ async function main() {
   const sidecars = await discoverBySuffix('.journeys.json');
   if (sidecars.length === 0) {
     if (asJson) console.log(JSON.stringify({ results: [], failed: false }, null, 2));
-    else console.log('No *.journeys.json sidecars found under .carta/.');
+    else console.log('No *.journeys.json sidecars found under .rhidoc/.');
     return;
   }
 

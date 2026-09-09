@@ -13,7 +13,7 @@
 // structurally different paths; that's the whole point of the view.
 //
 // Output:
-//   .carta/<sub>/<base>.journeys.json
+//   .rhidoc/<sub>/<base>.journeys.json
 //        → .luminous/generated/<sub>/<base>.journeys-tree.graph.json
 //          .luminous/generated/<sub>/<base>.journeys-tree.pack.json
 
@@ -22,7 +22,7 @@ import { dirname, join, relative, basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import { validateGraphPack } from './validate-graph.mjs';
 import {
-  REPO_ROOT, CARTA_ROOT, GENERATED_ROOT, discoverBySuffix,
+  REPO_ROOT, RHIDOC_ROOT, GENERATED_ROOT, discoverBySuffix,
 } from './statechart-lib.mjs';
 import {
   readJourneys, parseJourneys, walkJourneys, loadStatechartFor,
@@ -250,7 +250,7 @@ async function buildOne(ref, dumpStage) {
   if (dumpStage === 'graph') return { dump: graph };
   if (dumpStage === 'pack') return { dump: pack };
 
-  const dir = join(GENERATED_ROOT, dirname(relative(CARTA_ROOT, ref.path)));
+  const dir = join(GENERATED_ROOT, dirname(relative(RHIDOC_ROOT, ref.path)));
   await mkdir(dir, { recursive: true });
   const graphPath = join(dir, `${packName}.graph.json`);
   const packPath = join(dir, `${packName}.pack.json`);
@@ -278,7 +278,7 @@ async function main() {
     process.exit(2);
   }
   const sidecars = await discoverBySuffix('.journeys.json');
-  if (sidecars.length === 0) { console.log('No *.journeys.json sidecars found under .carta/.'); return; }
+  if (sidecars.length === 0) { console.log('No *.journeys.json sidecars found under .rhidoc/.'); return; }
 
   let failed = false;
   for (const ref of sidecars) {

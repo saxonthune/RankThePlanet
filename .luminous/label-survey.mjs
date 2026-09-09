@@ -9,8 +9,8 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '..');
-const statechartPath = path.join(repo, '.carta/02-design/02-interaction/01-navigation.statechart.json');
-const screensDir = path.join(repo, '.carta/02-design/02-interaction/02-screens');
+const statechartPath = path.join(repo, '.rhidoc/02-design/02-interaction/01-navigation.statechart.json');
+const screensDir = path.join(repo, '.rhidoc/02-design/02-interaction/02-screens');
 
 const chart = JSON.parse(fs.readFileSync(statechartPath, 'utf8'));
 

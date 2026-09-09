@@ -1,0 +1,80 @@
+{
+  "surface": "LocationDraftSheet",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Carries dismiss on the left and the primary forward action (Add to a Collection) on the right. In add-to-collection mode it additionally carries Cancel adding."
+    },
+    {
+      "id": "preview",
+      "purpose": "Shows the draft Location as it would be committed: displayName (or (untitled location) when nothing is resolved or named yet), an address line when the adopted candidate provides one, and the raw coordinates as tertiary detail."
+    },
+    {
+      "id": "candidates",
+      "purpose": "The selection list that resolves the draft. The first row is Use coordinates (the bare-coords outcome, with an inline name field when selected); the remaining rows are the nearby real places offered by the provider."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "close",
+      "label": "Go back",
+      "region": "topBar",
+      "event": "CLOSE",
+      "target": "MapOverview"
+    },
+    {
+      "id": "cancel-add",
+      "label": "Cancel adding",
+      "region": "topBar",
+      "event": "CANCEL_ADD",
+      "target": "CollectionDetail",
+      "appearsInModes": ["addToCollection"],
+      "reactsToContext": ["collection-context"]
+    },
+    {
+      "id": "add-to-collection",
+      "label": "Add to a Collection",
+      "region": "topBar",
+      "event": "ADD_TO_COLLECTION",
+      "target": "AddLocationToCollection"
+    },
+    {
+      "id": "find-nearby",
+      "label": "Find nearby places",
+      "region": "candidates",
+      "action": "Location.resolveNearby"
+    },
+    {
+      "id": "use-coordinates",
+      "label": "Use coordinates",
+      "region": "candidates",
+      "action": "Location.dropPin"
+    },
+    {
+      "id": "name-coordinates",
+      "label": "Name this place",
+      "region": "candidates",
+      "appearsWhen": "use-coordinates is the selected candidate"
+    }
+  ],
+  "lists": [
+    {
+      "id": "candidates",
+      "region": "candidates",
+      "iterates": "Location",
+      "reads": "nearby-candidates",
+      "item": {
+        "shows": [
+          "candidate Location.displayName",
+          "category or address from cachedMetadata, when the provider supplied it",
+          "distance from the dropped point"
+        ],
+        "affordance": {
+          "id": "adopt-candidate",
+          "label": "Adopt this candidate"
+        }
+      },
+      "emptyState": "When the provider returns no nearby places — or has not run yet — only the Use coordinates row appears; the draft remains committable through it."
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "surface": "CollectionEditor",
+  "deferred": ["Collection.create", "Review.defineTemplate"],
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Identifies the surface and holds Done, which commits the Collection and continues into it, and Cancel, which discards uncommitted changes."
+    },
+    {
+      "id": "metadata",
+      "purpose": "The Collection's own identity — name, description, appearance (color, pin style), and the powerRanking toggle. The only place this metadata is editable."
+    },
+    {
+      "id": "template",
+      "purpose": "The Review template — the ordered field set governing every Review in this Collection. Add fields, adopt a built-in template, and edit each field in place."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "done",
+      "label": "Finish editing",
+      "region": "topBar",
+      "event": "DONE",
+      "target": "CollectionDetail",
+      "altAffordances": [
+        {
+          "id": "done-as-draft-return",
+          "label": "Finish editing (return to map and commit candidate)",
+          "event": "DONE_AS_DRAFT_RETURN",
+          "target": "MapOverview",
+          "reactsToContext": ["return-to-draft-context"],
+          "note": "Same Save affordance as DONE. Fires this alt event when return-to-draft-context is set (editor reached from AddLocationToCollection's TAP_NEW_COLLECTION). The host commits the in-flight candidate Location against the just-created Collection (Location.addToCollection) and emerges in MapOverview with pending-review-context."
+        }
+      ]
+    },
+    {
+      "id": "cancel",
+      "label": "Cancel",
+      "region": "topBar",
+      "event": "CLOSE",
+      "target": "CollectionDetail"
+    },
+    {
+      "id": "edit-metadata",
+      "label": "Edit the Collection's name, description, appearance, and powerRanking toggle",
+      "region": "metadata",
+      "action": "Collection.edit"
+    },
+    {
+      "id": "adopt-builtin",
+      "label": "Adopt a built-in template as a starting point",
+      "region": "template",
+      "action": "Review.useBuiltIn"
+    },
+    {
+      "id": "add-field",
+      "label": "Add a template field",
+      "region": "template",
+      "action": "Review.editTemplate"
+    },
+    {
+      "id": "field-editor-cancel",
+      "label": "Cancel (in per-field editor sheet) — discard the in-flight edit",
+      "region": "template",
+      "action": "Review.editTemplate"
+    },
+    {
+      "id": "field-editor-done",
+      "label": "Done (in per-field editor sheet) — commit the edit and close the sheet",
+      "region": "template",
+      "action": "Review.editTemplate"
+    },
+    {
+      "id": "field-editor-add-another",
+      "label": "Add another (in per-field editor sheet) — commit the current edit and re-open the sheet on a fresh blank field",
+      "region": "template",
+      "action": "Review.editTemplate"
+    }
+  ],
+  "lists": [
+    {
+      "id": "template-fields",
+      "region": "template",
+      "iterates": "Review template field",
+      "reads": "template",
+      "item": {
+        "shows": [
+          "the field's name (its user-facing section label)",
+          "the field's type — score, text, enum, boolean",
+          "the field's per-type configuration — for a score field, its range, step, and Display As style (number, stars, icon, slider, bar); for an enum, its option list"
+        ],
+        "affordance": {
+          "id": "edit-field",
+          "label": "Edit, reorder, or remove a field",
+          "action": "Review.editTemplate"
+        }
+      },
+      "lockedHeadRow": {
+        "id": "date-field",
+        "shows": "The implicit date field that every Review captures at the head of the form.",
+        "affordance": "none — the date row cannot be edited, reordered, or removed from the editor."
+      },
+      "emptyState": "A template with no user-authored fields — the region prompts the user to add a field or adopt a built-in template. The implicit date row remains. An empty template is a valid (if unusual) end state; a Collection with one leaves ReviewForm with only the date to fill."
+    }
+  ]
+}

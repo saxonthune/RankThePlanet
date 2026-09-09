@@ -1,0 +1,32 @@
+package com.saxonthune.ranktheplanet.nav
+
+import com.saxonthune.ranktheplanet.domain.CollectionId
+import kotlinx.serialization.Serializable
+
+@Serializable data class MapOverview(
+    val addToCollectionId: String? = null,
+    val filterCollectionId: String? = null,
+)
+@Serializable data class CollectionDetail(val collectionId: String)
+@Serializable data class CollectionEntryDetail(val entryId: String)
+@Serializable data class ReviewForm(val entryId: String)
+@Serializable data class CollectionEditor(
+    val collectionId: String? = null,
+    val addToDraft: Boolean = false,
+)
+@Serializable object ImportFlow
+@Serializable object Settings
+@Serializable object DebugSettings
+@Serializable object About
+@Serializable object LicenseViewer
+@Serializable object Attributions
+@Serializable object ManageProviders
+@Serializable data class ProviderConfig(val provider: String)
+
+sealed interface MapMode {
+    data object Browse : MapMode
+    data class AddingToCollection(
+        val collectionId: CollectionId,
+        val collectionName: String,
+    ) : MapMode
+}

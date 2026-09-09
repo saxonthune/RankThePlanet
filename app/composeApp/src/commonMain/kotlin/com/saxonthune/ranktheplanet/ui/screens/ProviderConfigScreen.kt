@@ -1,0 +1,138 @@
+package com.saxonthune.ranktheplanet.ui.screens
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
+import com.saxonthune.ranktheplanet.ui.RtpDrillDownScaffold
+import com.saxonthune.ranktheplanet.ui.dismissKeyboardOnTap
+
+@Composable
+fun ProviderConfigScreen(
+    viewModel: ProviderConfigViewModel,
+    onBack: () -> Unit,
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    val focusManager = LocalFocusManager.current
+    RtpDrillDownScaffold(title = uiState.providerName, onBack = onBack) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .dismissKeyboardOnTap()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            // status region
+            Text(
+                text = uiState.statusText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            // setup region
+            when (uiState.mode) {
+                ProviderMode.Google -> {
+                    OutlinedTextField(
+                        value = uiState.keyDraft,
+                        onValueChange = viewModel::onKeyDraftChange,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("API key") },
+                        placeholder = { Text("AIza...") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                        singleLine = true,
+                    )
+                    Text(
+                        text = "Get a key in Google Cloud Console — enable Places API (New).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Button(
+                        onClick = viewModel::onSaveKey,
+                        enabled = uiState.keyDraft.isNotBlank() && !uiState.isSaving,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Save key")
+                    }
+                }
+                ProviderMode.Osm -> {
+                    Text(
+                        text = "Endpoints: photon.komoot.io",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = "Attribution: © OpenStreetMap contributors",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                ProviderMode.Fake -> {
+                    Text(
+                        text = "Dev provider. No setup required.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            // actions region
+            OutlinedButton(
+                onClick = viewModel::onTestConnection,
+                enabled = uiState.isConfigured && uiState.testState !is ProviderTestState.Testing,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    when (uiState.testState) {
+                        ProviderTestState.Testing -> "Testing…"
+                        else -> "Test connection"
+                    }
+                )
+            }
+            when (val test = uiState.testState) {
+                ProviderTestState.Idle, ProviderTestState.Testing -> Unit
+                ProviderTestState.Ok -> Text(
+                    text = "Connection OK",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                is ProviderTestState.Error -> Text(
+                    text = test.message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
+            Button(
+                onClick = viewModel::onSetAsDefault,
+                enabled = uiState.isConfigured && !uiState.isDefault,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Set as default")
+            }
+        }
+    }
+}

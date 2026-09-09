@@ -1,0 +1,14 @@
+visibleEntries:
+SELECT
+    entry.id AS entry_id,
+    location.lat,
+    location.lng,
+    collection.appearance_color,
+    CASE WHEN entry.data IS NOT NULL THEN 1 ELSE 0 END AS reviewed
+FROM entry
+JOIN location ON entry.location_id = location.id
+JOIN collection ON entry.collection_id = collection.id
+WHERE collection.is_visible = 1;
+
+visibleCollectionIds:
+SELECT id FROM collection WHERE is_visible = 1;

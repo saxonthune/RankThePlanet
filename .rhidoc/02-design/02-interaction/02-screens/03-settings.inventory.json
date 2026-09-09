@@ -1,0 +1,44 @@
+{
+  "surface": "Settings",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Identifies the surface and holds the affordance back to the everything view."
+    },
+    {
+      "id": "content",
+      "purpose": "Configuration groups — provider config entry, plus sync target and BYOK keys as stubs."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "topBar",
+      "event": "BACK",
+      "target": "MapOverview"
+    },
+    {
+      "id": "manage-providers",
+      "label": "Manage providers",
+      "region": "content",
+      "event": "TAP_MANAGE_PROVIDERS",
+      "target": "ManageProviders"
+    },
+    {
+      "id": "about",
+      "label": "About",
+      "region": "content",
+      "event": "TAP_ABOUT",
+      "target": "About"
+    },
+    {
+      "id": "debug",
+      "label": "Debug",
+      "region": "content",
+      "event": "TAP_DEBUG",
+      "target": "DebugSettings"
+    }
+  ],
+  "lists": []
+}

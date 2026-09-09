@@ -1,0 +1,102 @@
+{
+  "surface": "CollectionDetail",
+  "deferred": ["TAP_TOGGLE_PROJECTION", "Collection.removeEntry", "Collection.share"],
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Identifies the Collection — title leads with a colored dot rendering the Collection's appearance — and holds the Collection-level affordances."
+    },
+    {
+      "id": "details",
+      "purpose": "Collapsed-by-default section that expands in place to show the Collection's metadata."
+    },
+    {
+      "id": "content",
+      "purpose": "The Collection's Entries, browsable as a sortable vertical list."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "topBar",
+      "event": "BACK",
+      "target": "MapOverview"
+    },
+    {
+      "id": "add-entry",
+      "label": "Add a Collection Entry",
+      "region": "topBar",
+      "event": "TAP_ADD_ENTRY",
+      "target": "MapOverview",
+      "action": "Collection.addEntry"
+    },
+    {
+      "id": "edit-collection",
+      "label": "Edit the Collection",
+      "region": "topBar",
+      "event": "TAP_EDIT_TEMPLATE",
+      "target": "CollectionEditor",
+      "action": "Review.editTemplate"
+    },
+    {
+      "id": "toggle-details",
+      "label": "Expand or collapse the Details section",
+      "region": "details"
+    },
+    {
+      "id": "sort-entries",
+      "label": "Open the sort menu and pick the active sort key",
+      "region": "content",
+      "notes": "A single sort chip above the list reads `Sort: {active key} {direction-arrow}`. Tap opens a menu whose options are derived from Collection state: `Date Added` and `Review Time` are always present; `Score` appears iff the Collection's Review template defines a rating field; `Power Rank` appears iff `Collection.powerRanking` is on ([[03-concepts]], doc01.03 §1). `Near Me` is named but inert until device location lands."
+    },
+    {
+      "id": "sort-direction",
+      "label": "Toggle the active sort's direction (ascending or descending)",
+      "region": "content",
+      "notes": "Direction arrow on the sort chip; tapping it flips ascending/descending. Suppressed when the active sort is `Power Rank` — the user's authored order has no asc/desc axis."
+    },
+    {
+      "id": "reorder-entry",
+      "label": "Drag an entry to a new position in the Power Rank order",
+      "region": "content",
+      "notes": "Available only when the active sort is `Power Rank`. The list renders leading drag handles; releasing an item writes back the entry's rank position. Switching to any other sort key removes the handles and the list becomes read-only ordering."
+    },
+    {
+      "id": "export-collection",
+      "label": "Export the Collection — KML or GeoJSON",
+      "region": "topBar",
+      "action": "Collection.export"
+    },
+    {
+      "id": "view-on-map",
+      "label": "View on map",
+      "region": "topBar",
+      "event": "JUMP_TO_COLLECTION",
+      "target": "MapOverview",
+      "notes": "Re-enters MapOverview with `filter-context` set to a single-element set containing this Collection's id; the viewport fits to the Collection's Entries (MapOverview.jumpToCollection). Single-Collection variant of CollectionList's APPLY_FILTER."
+    }
+  ],
+  "lists": [
+    {
+      "id": "entries",
+      "region": "content",
+      "iterates": "Entry",
+      "reads": "entries",
+      "item": {
+        "shows": [
+          "Entry.location displayName",
+          "a short summary of the Entry's Review",
+          "the Review's score, when the Collection's template defines a rating field"
+        ],
+        "affordance": {
+          "id": "open-entry",
+          "label": "Open a Collection Entry",
+          "event": "TAP_ENTRY",
+          "target": "CollectionEntryDetail"
+        }
+      },
+      "emptyState": "When the Collection has no Entries, the region shows a hint pointing at Add a Collection Entry."
+    }
+  ]
+}

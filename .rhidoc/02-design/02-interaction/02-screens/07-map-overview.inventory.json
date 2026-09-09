@@ -1,0 +1,315 @@
+{
+  "surface": "MapOverview",
+  "regions": [
+    {
+      "id": "map",
+      "purpose": "The full-screen map canvas — a pin for every Collection Entry in every visible Collection. Panning and zooming move the viewport; a long-press drops a pin. A single tap on empty map (one that misses every pin and candidate) dismisses an open search dropdown if one is showing — collapsing the field, lowering the keyboard, and abandoning the working query, the same effect as the back affordance — and otherwise does nothing; pins and candidate pins handle their own taps before the canvas sees the gesture."
+    },
+    {
+      "id": "settingsButton",
+      "purpose": "Shows the settings (cog) icon and opens the Settings surface.",
+      "slot": "navigationIcon",
+      "appearsInModes": ["browse"]
+    },
+    {
+      "id": "closeButton",
+      "purpose": "Shows the close (X) icon and cancels the add-to-collection flow, dropping the carried Collection and returning to CollectionDetail.",
+      "slot": "navigationIcon",
+      "appearsInModes": ["addToCollection"]
+    },
+    {
+      "id": "search",
+      "purpose": "A search field across the top-center, spanning roughly 30% of the surface width so it never overlaps the navigationIcon. Tapping it widens the field and raises the keyboard. Results are biased near the current map viewport — the visible center is the query's locality anchor — and interleave two sources: Locations the user already has Entries for (rendered with their owning Collection's color dot) and unadopted provider candidates. Whether the field queries per keystroke or only on submit is a per-provider trait declared on LocationProvider (doc03.02.02); the field follows the active provider's setting. Present in all modes — finding a place is part of completing the add flow. In searchResults mode the field renders the committed query with a trailing close (X) affordance that fires CLEAR_SEARCH.",
+      "rendering": "The dropdown is a floating overlay panel — inset from the surface edges with rounded corners and elevation from the shared map-overlay treatment (`RtpOverlay`, doc02.03), reading as a card over the map rather than an edge-to-edge slab. Dismissed four ways: the back affordance, committing the search, picking a hit, or a tap on the map outside it (which collapses the field, lowers the keyboard, and abandons the working query — equivalent to back). The dropdown's container consumes `WindowInsets.ime` so its available height is screen − keyboard − search-field; the search-results list scrolls within that remaining height. No keyboard-height constants or platform branches — the inset animates in lockstep with the IME on show/hide. The action row carries a pending-state indicator at its leading edge: for a typeahead provider a filled ring sweeps full→empty over that provider's `typeaheadDebounceMillis` (doc03.02.02) after each keystroke — a visible countdown to the auto-search — then turns into a spinner while the query is in flight, and is blank otherwise. The ring's sweep and the flow's debounce read the same provider trait, so they complete together."
+    },
+    {
+      "id": "searchThisAreaChip",
+      "purpose": "A chip overlaid on the upper-center of the map in searchResults mode, holding the *Search this area* affordance. Renders only when the live viewport has drifted past a threshold from `search-context.viewportAtQuery` (the viewport active when the current candidate set was issued). Tapping it fires SEARCH_THIS_AREA, which re-runs the committed query against the now-current viewport and replaces the candidate pins.",
+      "appearsInModes": ["searchResults"],
+      "reactsToContext": ["search-context"]
+    },
+    {
+      "id": "collectionsButton",
+      "purpose": "An extended floating action button anchored bottom-end over the map, opening the CollectionList sheet (a tall bottom-sheet drawer hosted here per doc02.04 Rule 2).",
+      "slot": "fab",
+      "appearsInModes": ["browse"]
+    },
+    {
+      "id": "filterChip",
+      "purpose": "A Material 3 input/assist chip overlaid on the upper area of the map (anchored to the safe-area inset, sitting under the search field). Renders only when `filter-context` is set. Leading content reflects the filter: for a single-Collection filter, the Collection's appearance dot; for a multi-Collection filter, a stacked-dots glyph (or the leading Collection's dot). Label reads the Collection name when n=1 or `Filtered: {n} Collections` when n>1. Trailing close (X) icon fires CLEAR_FILTER. Tapping the chip body (not the close) fires TAP_FILTER_CHIP and reopens CollectionList in selection mode with the active filter pre-checked. Context-driven overlay (doc02.04 Rule 1); chrome is unchanged so this is not a mode.",
+      "reactsToContext": ["filter-context"]
+    },
+    {
+      "id": "statusBar",
+      "purpose": "A panel along the bottom of the surface naming the target Collection — \"Adding to {collectionName}\".",
+      "slot": "bottomBar",
+      "appearsInModes": ["addToCollection"],
+      "reactsToContext": ["collection-context"]
+    }
+  ],
+  "affordances": [
+    {
+      "id": "pan-map",
+      "label": "Pan the map",
+      "region": "map",
+      "action": "MapOverview.pan"
+    },
+    {
+      "id": "zoom-map",
+      "label": "Zoom the map",
+      "region": "map",
+      "action": "MapOverview.zoom"
+    },
+    {
+      "id": "drop-pin",
+      "label": "Drop a pin",
+      "region": "map",
+      "event": "DROP_PIN",
+      "target": "LocationDraftSheet"
+    },
+    {
+      "id": "search-locations",
+      "label": "Search for a place",
+      "region": "search",
+      "action": "Location.resolve"
+    },
+    {
+      "id": "open-collections",
+      "label": "Browse Collections",
+      "region": "collectionsButton",
+      "event": "TAP_COLLECTIONS_BUTTON",
+      "target": "CollectionList",
+      "appearsInModes": ["browse"]
+    },
+    {
+      "id": "open-settings",
+      "label": "Open Settings",
+      "region": "settingsButton",
+      "event": "TAP_SETTINGS",
+      "target": "Settings",
+      "appearsInModes": ["browse"]
+    },
+    {
+      "id": "tap-filter-chip",
+      "label": "Edit the active filter",
+      "region": "filterChip",
+      "event": "TAP_FILTER_CHIP",
+      "target": "CollectionList",
+      "reactsToContext": ["filter-context"]
+    },
+    {
+      "id": "clear-filter",
+      "label": "Clear filter",
+      "region": "filterChip",
+      "event": "CLEAR_FILTER",
+      "reactsToContext": ["filter-context"],
+      "rendering": "Trailing close (X) icon on the filterChip; tapping it drops `filter-context` and restores all Collections' pins."
+    },
+    {
+      "id": "cancel-add",
+      "label": "Cancel adding",
+      "region": "closeButton",
+      "event": "CANCEL_ADD",
+      "target": "CollectionDetail",
+      "appearsInModes": ["addToCollection"],
+      "reactsToContext": ["collection-context"]
+    },
+    {
+      "id": "go-to-review",
+      "label": "Review",
+      "region": "map",
+      "event": "GO_TO_REVIEW",
+      "target": "ReviewForm",
+      "reactsToContext": ["pending-review-context"],
+      "rendering": "Material 3 Snackbar action — appears transiently after AddLocationToCollection's PICK_COLLECTION. Not a persistent region; the chrome is unchanged in browse mode."
+    },
+    {
+      "id": "dismiss-review-bar",
+      "label": "Dismiss",
+      "region": "map",
+      "event": "DISMISS_REVIEW_BAR",
+      "reactsToContext": ["pending-review-context"],
+      "rendering": "Snackbar timeout or swipe-dismiss. Drops pending-review-context; the Entry stays saved."
+    },
+    {
+      "id": "submit-search",
+      "label": "Search",
+      "region": "search",
+      "event": "SUBMIT_SEARCH",
+      "rendering": "A button on the dropdown's action row — the row directly under the search field and above the hit list, shared with commit-search-to-map. Always present while the dropdown is open, irrespective of the active provider's `supportsTypeahead` trait. Tapping it re-issues the current query against the current viewport via Location.resolve; the dropdown's hit list refreshes in place and the field, keyboard, and dropdown stay open. Useful for non-typeahead providers (the user types then submits) and for typeahead providers when the viewport has moved since the last keystroke."
+    },
+    {
+      "id": "commit-search-to-map",
+      "label": "Map",
+      "region": "search",
+      "event": "COMMIT_SEARCH_TO_MAP",
+      "rendering": "A button on the dropdown's action row — the row directly under the search field and above the hit list, shared with submit-search. Always present while the dropdown is open. Tapping it sets `search-context` from the current query / candidate set / viewport, dismisses the dropdown and keyboard, and pivots the surface into searchResults mode. When the dropdown already holds unadopted provider candidates it commits them straight away; when it holds none yet — the user tapped before a typeahead pass ran, or the provider only queries on submit — it forces the query first and pivots once candidates land. A forced query that comes back empty leaves the dropdown as it was, where drop-pin-from-search offers the manual path."
+    },
+    {
+      "id": "drop-pin-from-search",
+      "label": "Drop a pin here",
+      "region": "search",
+      "event": "DROP_PIN",
+      "target": "LocationDraftSheet",
+      "rendering": "A full-width button in the dropdown footer, below the hit list. Renders only when the query is non-blank, the active provider is not mid-search, and the dropdown holds no unadopted provider candidate — the search-can't-find-it fallback to the manual-pin flow. Reuses the map's DROP_PIN transition, dropping a pin at the viewport center and opening LocationDraftSheet; in add-to-collection mode `collection-context` propagates exactly as the long-press drop-pin does."
+    },
+    {
+      "id": "search-this-area",
+      "label": "Search this area",
+      "region": "searchThisAreaChip",
+      "event": "SEARCH_THIS_AREA",
+      "appearsInModes": ["searchResults"],
+      "reactsToContext": ["search-context"]
+    },
+    {
+      "id": "clear-search",
+      "label": "Clear search",
+      "region": "search",
+      "event": "CLEAR_SEARCH",
+      "appearsInModes": ["searchResults"],
+      "reactsToContext": ["search-context"],
+      "rendering": "A trailing close (X) icon on the search field when search-context is set, *and* an implicit fire on the first keystroke into the field while search-context is set — editing the query is treated as starting a new search, never as filtering the committed candidate set."
+    }
+  ],
+  "lists": [
+    {
+      "id": "pins",
+      "region": "map",
+      "iterates": "Collection Entry",
+      "reads": "all-entries",
+      "item": {
+        "shows": [
+          "a pin at the Entry's Location coordinates",
+          "the pin colored by its Collection's appearance",
+          "reviewed or unreviewed styling from the Entry's Review status",
+          "a darkened color variant when the pin's Location matches the host sheet currently open over MapOverview (LocationSheet, EntrySheet, or a Peek-shaped PinSheet) — a derived projection of which sheet is active, not a separately carried context; clears on sheet dismiss. See statechart `meta.derivedRendering.selectedPin` on MapOverview (doc02.02.01)"
+        ],
+        "affordance": {
+          "id": "tap-pin",
+          "label": "Tap multi-entry pin",
+          "event": "TAP_PIN",
+          "target": "LocationSheet",
+          "action": "MapOverview.selectPin",
+          "appliesWhen": "the pin's Location is referenced by more than one Collection Entry"
+        },
+        "altAffordances": [
+          {
+            "id": "tap-single-entry-pin",
+            "label": "Tap 1-entry pin",
+            "event": "TAP_PIN_SINGLE",
+            "target": "EntrySheet",
+            "action": "MapOverview.selectPin",
+            "appliesWhen": "the pin's Location is referenced by exactly one Collection Entry"
+          }
+        ]
+      },
+      "emptyState": "Before any Collection has Entries the map shows no pins; the collectionsButton still points the user toward creating a Collection.",
+      "visibility": "When `filter-context` is set, only pins whose owning Collection's id is in `filter-context.collectionIds` render; every other pin is hidden. With no `filter-context` set, every Collection's pins render."
+    },
+    {
+      "id": "search-results",
+      "region": "search",
+      "iterates": "SearchHit",
+      "reads": "provider-results",
+      "item": {
+        "shows": [
+          "the hit's displayName",
+          "address or category, when supplied",
+          "for existing-entry hits: the owning Collection's color dot (one dot per Entry referencing the Location); for candidate hits: no dot"
+        ],
+        "affordance": {
+          "id": "pick-search-result",
+          "label": "Pick a provider candidate (browse mode)",
+          "event": "PICK_SEARCH_RESULT",
+          "target": "LocationSheet",
+          "appliesWhen": "the hit is an unadopted provider candidate — no saved Location with this (sourceType, sourceId) — and the user is in browse mode (no `collection-context`)"
+        },
+        "altAffordances": [
+          {
+            "id": "pick-search-result-for-add",
+            "label": "Pick a provider candidate (add-to-collection mode)",
+            "event": "PICK_SEARCH_RESULT_FOR_ADD",
+            "target": "AddLocationToCollection",
+            "reactsToContext": ["collection-context"],
+            "appliesWhen": "same affordance as pick-search-result, but emitted when `collection-context` is set so the candidate is funneled straight into the collection picker, skipping LocationSheet"
+          },
+          {
+            "id": "pick-search-entry",
+            "label": "Pick an existing entry",
+            "event": "PICK_SEARCH_ENTRY",
+            "target": "LocationSheet",
+            "appliesWhen": "the hit is an existing Location with at least one Collection Entry — LocationSheet's single-entry rendering shortcut applies downstream"
+          }
+        ]
+      },
+      "composition": "The list is one ranked view over two upstream sources, merged at the surface and never persisted: (a) existing-entry hits derived in-memory from `all-entries` filtered by the query, biased by the live `viewport`; (b) unadopted provider candidates from the active LocationProvider's `resolve(query, near=viewport.center)` (doc03.02.02). The declared `reads: provider-results` names the async/external source; the existing-entry half rides the surface's already-loaded `all-entries` stream and needs no separate read.",
+      "ordering": "Hits compete on a single axis — proximity to the viewport center, with displayName match strength as the tiebreaker — not segregated into existing-vs-candidate sections. Duplicate suppression: a provider candidate whose (sourceType, sourceId) matches a saved Location via LocationRepository.findByIdentity is dropped in favor of the existing-entry hit.",
+      "emptyState": "An empty search field shows no results; the map stays the focus. Existing-entry matches surface as soon as the query is non-empty. Provider candidates surface per the active provider's `supportsTypeahead` trait (per keystroke when true, on submit otherwise — see doc03.02.02). When a non-blank query settles with no provider candidate, the dropdown footer offers the `drop-pin-from-search` fallback so a place the geocoder cannot find is still reachable by a manual pin."
+    },
+    {
+      "id": "searchCandidatePins",
+      "region": "map",
+      "iterates": "LocationCandidate",
+      "reads": "search-context",
+      "appearsInModes": ["searchResults"],
+      "item": {
+        "shows": [
+          "a pin at the candidate's coordinates, drawn with the same teardrop body as Collection Entry pins but slightly smaller so a coincident entry pin's silhouette pokes out around the edges — the user can tell another pin is underneath",
+          "candidate styling distinct from Collection Entry pins (orange tint, smaller size) so the user can tell *result-to-adopt* from *already-saved*"
+        ],
+        "affordance": {
+          "id": "tap-candidate-pin",
+          "label": "Pick a provider candidate (browse mode)",
+          "event": "PICK_SEARCH_RESULT",
+          "target": "LocationSheet",
+          "appliesWhen": "user is in browse mode (no `collection-context`)"
+        },
+        "altAffordances": [
+          {
+            "id": "tap-candidate-pin-for-add",
+            "label": "Pick a provider candidate (add-to-collection mode)",
+            "event": "PICK_SEARCH_RESULT_FOR_ADD",
+            "target": "AddLocationToCollection",
+            "reactsToContext": ["collection-context"],
+            "appliesWhen": "`collection-context` is set — the pin tap funnels straight into the collection picker, skipping LocationSheet"
+          }
+        ]
+      },
+      "composition": "Drawn from `search-context.candidates`, the candidate list committed by COMMIT_SEARCH_TO_MAP and refreshed by SEARCH_THIS_AREA. The list is *only* the unadopted provider candidates from that committed set — existing-entry hits are already drawn by the `pins` list (their owning Entry's pin) and would double-render.",
+      "emptyState": "If a SEARCH_THIS_AREA refresh returns zero candidates, the searchResults mode stays active with an empty candidate set; the chip remains available for further re-queries and CLEAR_SEARCH exits the mode."
+    }
+  ],
+  "deferred": ["MapOverview.open", "MapOverview.jumpToCollection"],
+  "invariants": [
+    {
+      "id": "search-typing-starts-new",
+      "text": "Typing into the `search` region while `search-context` is set fires `CLEAR_SEARCH`; editing the query never filters the committed candidate set.",
+      "predicate": "has(search-context)"
+    },
+    {
+      "id": "commit-search-always-present",
+      "text": "The `commit-search-to-map` affordance is present whenever the dropdown is open, regardless of candidate-set shape. With candidates ready it commits them; with none it forces the query first, then pivots once candidates land (or no-ops the pivot if the forced query is empty).",
+      "note": "Text-only — the affordance's presence is unconditional on the dropdown; its outcome branches on candidate-set shape, which is dropdown content rather than a context key or mode."
+    },
+    {
+      "id": "drop-pin-from-search-needs-no-candidate",
+      "text": "The `drop-pin-from-search` affordance renders only when the dropdown holds no unadopted provider candidate and the provider is not mid-search — the manual fallback for a query the geocoder can't surface.",
+      "note": "Text-only — the precondition is candidate-set-shape (dropdown content), not a context key or mode. Awaits an `enabled(affordance-id)` or candidate-set atom extension."
+    },
+    {
+      "id": "add-mode-suppresses-competing-flows",
+      "text": "In `addToCollection` mode the `settingsButton` and `collectionsButton` regions are suppressed; the user cannot bounce into `Settings` or `CollectionList` mid-flow.",
+      "predicate": "mode(addToCollection)"
+    },
+    {
+      "id": "search-this-area-needs-drift",
+      "text": "The `searchThisAreaChip` region renders only when the live viewport has drifted past a threshold from `search-context.viewportAtQuery`.",
+      "predicate": "has(search-context)"
+    },
+    {
+      "id": "search-context-survives-sheet-trip",
+      "text": "The candidate-pin to `LocationDraftSheet` to `AddLocationToCollection` to `MapOverview` round-trip preserves `search-context.candidates` and `search-context.viewportAtQuery`; the user returns to the same pins and viewport, not a cleared map.",
+      "predicate": "has(search-context)"
+    }
+  ]
+}

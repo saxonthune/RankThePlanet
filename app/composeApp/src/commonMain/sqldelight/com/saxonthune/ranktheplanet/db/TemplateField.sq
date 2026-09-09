@@ -1,0 +1,28 @@
+-- Mirrors .rhidoc/03-system/01-store-model.schema.sql (table: template_field). Source of truth is the rhidoc sidecar; keep in sync.
+
+CREATE TABLE template_field (
+    collection_id   TEXT NOT NULL REFERENCES collection(id),
+    version         INTEGER NOT NULL,
+    ordinal         INTEGER NOT NULL,
+    name            TEXT NOT NULL,
+    label           TEXT NOT NULL,
+    type            TEXT NOT NULL,
+    config          TEXT,
+    PRIMARY KEY (collection_id, version, name)
+);
+
+selectAll:
+SELECT * FROM template_field;
+
+selectByCollectionAndVersion:
+SELECT * FROM template_field WHERE collection_id = ? AND version = ? ORDER BY ordinal;
+
+insertField:
+INSERT INTO template_field (collection_id, version, ordinal, name, label, type, config)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteByCollectionAndVersion:
+DELETE FROM template_field WHERE collection_id = ? AND version = ?;
+
+deleteByCollection:
+DELETE FROM template_field WHERE collection_id = ?;

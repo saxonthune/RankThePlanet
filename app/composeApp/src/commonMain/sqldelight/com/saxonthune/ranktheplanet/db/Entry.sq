@@ -1,0 +1,96 @@
+-- Mirrors .rhidoc/03-system/01-store-model.schema.sql (table: entry). Source of truth is the rhidoc sidecar; keep in sync.
+
+CREATE TABLE entry (
+    id                        TEXT PRIMARY KEY,
+    collection_id             TEXT NOT NULL REFERENCES collection(id),
+    location_id               TEXT NOT NULL REFERENCES location(id),
+    data                      TEXT,
+    recorded_template_version INTEGER,
+    created                   TEXT NOT NULL,
+    last_modified             TEXT NOT NULL,
+    UNIQUE (collection_id, location_id)
+);
+
+selectAll:
+SELECT * FROM entry;
+
+observeAll:
+SELECT
+    entry.id AS entry_id,
+    entry.collection_id,
+    entry.location_id,
+    entry.data,
+    entry.recorded_template_version,
+    entry.created AS entry_created,
+    entry.last_modified AS entry_last_modified,
+    location.id AS loc_id,
+    location.source_type,
+    location.source_id,
+    location.lat,
+    location.lng,
+    location.display_name,
+    location.address,
+    location.cached_metadata,
+    location.refreshable
+FROM entry JOIN location ON entry.location_id = location.id;
+
+observeByCollection:
+SELECT
+    entry.id AS entry_id,
+    entry.collection_id,
+    entry.location_id,
+    entry.data,
+    entry.recorded_template_version,
+    entry.created AS entry_created,
+    entry.last_modified AS entry_last_modified,
+    location.id AS loc_id,
+    location.source_type,
+    location.source_id,
+    location.lat,
+    location.lng,
+    location.display_name,
+    location.address,
+    location.cached_metadata,
+    location.refreshable
+FROM entry JOIN location ON entry.location_id = location.id
+WHERE entry.collection_id = ?;
+
+observeById:
+SELECT
+    entry.id AS entry_id,
+    entry.collection_id,
+    entry.location_id,
+    entry.data,
+    entry.recorded_template_version,
+    entry.created AS entry_created,
+    entry.last_modified AS entry_last_modified,
+    location.id AS loc_id,
+    location.source_type,
+    location.source_id,
+    location.lat,
+    location.lng,
+    location.display_name,
+    location.address,
+    location.cached_metadata,
+    location.refreshable
+FROM entry JOIN location ON entry.location_id = location.id
+WHERE entry.id = ?;
+
+insert:
+INSERT INTO entry (id, collection_id, location_id, data, recorded_template_version, created, last_modified)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateReviewData:
+UPDATE entry SET data = ?, recorded_template_version = ?, last_modified = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM entry WHERE id = ?;
+
+deleteByCollection:
+DELETE FROM entry WHERE collection_id = ?;
+
+selectByCollectionAndLocation:
+SELECT id FROM entry WHERE collection_id = ? AND location_id = ?;
+
+updateLocationId:
+UPDATE entry SET location_id = ? WHERE location_id = ?;

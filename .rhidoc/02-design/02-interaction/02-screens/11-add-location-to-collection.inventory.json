@@ -1,0 +1,64 @@
+{
+  "surface": "AddLocationToCollection",
+  "regions": [
+    {
+      "id": "candidate",
+      "purpose": "Reflects the candidate Location being added (display name or raw coordinates). Read-only confirmation that the user is still adding the right place; not editable here."
+    },
+    {
+      "id": "collections",
+      "purpose": "The user's Collections, browsable as a vertical list — the pick. Holds the New Collection affordance as the first row so creating a new Collection mid-flow is one tap away without leaving the sheet. Also holds the Back affordance for stepping back to LocationDraftSheet without dropping the candidate."
+    }
+  ],
+  "affordances": [
+    {
+      "id": "back",
+      "label": "Back",
+      "region": "collections",
+      "event": "BACK",
+      "target": "LocationDraftSheet"
+    },
+    {
+      "id": "close",
+      "label": "Close",
+      "region": "collections",
+      "event": "CLOSE",
+      "target": "MapOverview"
+    },
+    {
+      "id": "new-collection",
+      "label": "New Collection",
+      "region": "collections",
+      "event": "TAP_NEW_COLLECTION",
+      "target": "CollectionEditor",
+      "action": "Collection.create",
+      "note": "Propagates return-to-draft-context, which carries the candidate Location as payload (the editor is fullScreen so the MapOverview host is not preserved across it). CollectionEditor's DONE_AS_DRAFT_RETURN pops back to MapOverview, commits the carried candidate against the just-created Collection, and surfaces the same post-add Snackbar as PICK_COLLECTION."
+    }
+  ],
+  "lists": [
+    {
+      "id": "collections",
+      "region": "collections",
+      "iterates": "Collection",
+      "reads": "collections",
+      "item": {
+        "shows": [
+          "Collection.name",
+          "Collection.appearance (color, pinStyle) as a visual marker",
+          "entry count for the Collection",
+          "a pre-selected indicator when this Collection matches collection-context (addToCollection mode)"
+        ],
+        "affordance": {
+          "id": "pick-collection",
+          "label": "Pick this Collection",
+          "event": "PICK_COLLECTION",
+          "target": "MapOverview",
+          "action": "Location.addToCollection",
+          "note": "Commits the Entry and dismisses the sheet; the host carries the new Entry as pending-review-context and renders a Snackbar prompt to author the Review. See doc02.02.02.07."
+        }
+      },
+      "emptyState": "When the user has no Collections, the region shows a hint pointing at New Collection. The candidate Location is held in the host's UiState; tapping New Collection enters CollectionEditor with return-to-draft-context, and DONE_AS_DRAFT_RETURN resumes the flow by committing the candidate against the just-created Collection."
+    }
+  ],
+  "deferred": ["Collection.addEntry"]
+}

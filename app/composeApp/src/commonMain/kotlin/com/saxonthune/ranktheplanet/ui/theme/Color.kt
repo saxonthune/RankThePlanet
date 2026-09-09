@@ -1,0 +1,71 @@
+package com.saxonthune.ranktheplanet.ui.theme
+
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.ui.graphics.Color
+
+// Seed: #5B6B7E (slightly cool grey / blue-grey neutral).
+
+val LightColors = lightColorScheme(
+    primary = Color(0xFF4C6079),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFD4E3F7),
+    onPrimaryContainer = Color(0xFF07182A),
+    secondary = Color(0xFF545F6D),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFD8E3F2),
+    onSecondaryContainer = Color(0xFF111C28),
+    tertiary = Color(0xFF6A5C72),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFF2DAFA),
+    onTertiaryContainer = Color(0xFF241431),
+    error = Color(0xFFBA1A1A),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFF9F9FC),
+    onBackground = Color(0xFF1A1C1E),
+    surface = Color(0xFFF9F9FC),
+    onSurface = Color(0xFF1A1C1E),
+    surfaceVariant = Color(0xFFDEE2EB),
+    onSurfaceVariant = Color(0xFF42474E),
+    outline = Color(0xFF72777F),
+    outlineVariant = Color(0xFFC2C7CF),
+    scrim = Color(0xFF000000),
+    inverseSurface = Color(0xFF2F3033),
+    inverseOnSurface = Color(0xFFF0F0F4),
+    inversePrimary = Color(0xFFB3C8E8),
+    surfaceTint = Color(0xFF4C6079),
+)
+
+val DarkColors = darkColorScheme(
+    primary = Color(0xFFB3C8E8),
+    onPrimary = Color(0xFF1C3048),
+    primaryContainer = Color(0xFF344761),
+    onPrimaryContainer = Color(0xFFD4E3F7),
+    secondary = Color(0xFFBCC7D7),
+    onSecondary = Color(0xFF26313E),
+    secondaryContainer = Color(0xFF3C4654),
+    onSecondaryContainer = Color(0xFFD8E3F2),
+    tertiary = Color(0xFFD6BEDE),
+    onTertiary = Color(0xFF3A2947),
+    tertiaryContainer = Color(0xFF524060),
+    onTertiaryContainer = Color(0xFFF2DAFA),
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF121316),
+    onBackground = Color(0xFFE3E2E6),
+    surface = Color(0xFF121316),
+    onSurface = Color(0xFFE3E2E6),
+    surfaceVariant = Color(0xFF42474E),
+    onSurfaceVariant = Color(0xFFC2C7CF),
+    outline = Color(0xFF8C9199),
+    outlineVariant = Color(0xFF42474E),
+    scrim = Color(0xFF000000),
+    inverseSurface = Color(0xFFE3E2E6),
+    inverseOnSurface = Color(0xFF2F3033),
+    inversePrimary = Color(0xFF4C6079),
+    surfaceTint = Color(0xFFB3C8E8),
+)

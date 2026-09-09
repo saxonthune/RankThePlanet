@@ -1,0 +1,206 @@
+{
+  "statechart": "01-navigation.statechart.json",
+  "journeys": [
+    {
+      "id": "tap-pin-multi",
+      "description": "Tap a pin shared by multiple Collection Entries → opens the LocationSheet listing all entries at that pin.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN"],
+      "targets": ["LocationSheet"]
+    },
+    {
+      "id": "tap-pin-single",
+      "description": "Tap a pin owned by exactly one Collection Entry → opens the EntrySheet for that entry.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE"],
+      "targets": ["EntrySheet"]
+    },
+    {
+      "id": "open-collections",
+      "description": "Tap the Collections button in the MapOverview chrome → CollectionList.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON"],
+      "targets": ["CollectionList"]
+    },
+    {
+      "id": "drop-pin",
+      "description": "Long-press the map to drop a pin → LocationDraftSheet with nearby resolution candidates.",
+      "start": "MapOverview",
+      "events":  ["DROP_PIN"],
+      "targets": ["LocationDraftSheet"]
+    },
+    {
+      "id": "pick-search-result",
+      "description": "Browse-mode pick of a provider candidate → LocationSheet showing the resolved Location with an empty entries list, where TAP_ADD_ENTRY is the next step into AddLocationToCollection.",
+      "start": "MapOverview",
+      "events":  ["PICK_SEARCH_RESULT"],
+      "targets": ["LocationSheet"]
+    },
+    {
+      "id": "pick-search-result-for-add",
+      "description": "Add-to-collection mode pick of a provider candidate → AddLocationToCollection with the candidate pre-filled and the originating Collection pre-selected (skips both LocationSheet and LocationDraftSheet). Mode-only journey: meaningful only when MapOverview carries a collection-context.",
+      "start": "MapOverview",
+      "events":  ["PICK_SEARCH_RESULT_FOR_ADD"],
+      "targets": ["AddLocationToCollection"]
+    },
+    {
+      "id": "open-settings",
+      "description": "Tap the Settings affordance → Settings surface.",
+      "start": "MapOverview",
+      "events":  ["TAP_SETTINGS"],
+      "targets": ["Settings"]
+    },
+    {
+      "id": "cancel-add-to-collection",
+      "description": "In addToCollection mode, dismiss the status bar → return to CollectionDetail. Mode-only journey: meaningful only when MapOverview carries a collection-context.",
+      "start": "MapOverview",
+      "events":  ["CANCEL_ADD"],
+      "targets": ["CollectionDetail"]
+    },
+    {
+      "id": "pin-single-edit-review",
+      "description": "Tap a single-entry pin, edit the Review, and submit. SUBMIT commits the Review and navigates to the Entry's CollectionEntryDetail — the canonical detail view for the saved (Location, Review) pair.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE", "TAP_EDIT_REVIEW", "SUBMIT"],
+      "targets": ["EntrySheet",     "ReviewForm",      "CollectionEntryDetail"]
+    },
+    {
+      "id": "pin-multi-pick-entry",
+      "description": "Tap a multi-entry pin, then pick which Collection's Entry to peek at. Extends tap-pin-multi by one step; shares its prefix and diverges only after LocationSheet.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN",       "TAP_ENTRY"],
+      "targets": ["LocationSheet", "EntrySheet"]
+    },
+    {
+      "id": "drop-pin-to-review",
+      "description": "User intent: drop a pin, add it to a Collection, then review it. PICK_COLLECTION lands on MapOverview (showing a transient 'go to review' status bar — a mode of MapOverview, not a separate state). Tapping that bar fires GO_TO_REVIEW → ReviewForm. The statechart does not yet expose GO_TO_REVIEW; the verifier reports it as chart-missing.",
+      "start": "MapOverview",
+      "events":  ["DROP_PIN",          "ADD_TO_COLLECTION",       "PICK_COLLECTION", "GO_TO_REVIEW"],
+      "targets": ["LocationDraftSheet","AddLocationToCollection", "MapOverview",     "ReviewForm"]
+    },
+    {
+      "id": "create-collection",
+      "description": "Create a new Collection from scratch: open the Collections sheet, start a new Collection, author its metadata and Review template, and finish. CollectionEditor's DONE commits the Collection and continues into its CollectionDetail.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "TAP_NEW_COLLECTION", "DONE"],
+      "targets": ["CollectionList",         "CollectionEditor",   "CollectionDetail"]
+    },
+    {
+      "id": "pin-single-tap-location",
+      "description": "Tap a single-entry pin to open EntrySheet, then tap the locationBlock to see the Location surface (LocationSheet) — the skinny peek of that Location and any sibling Entries. The peek renders for any Entry count, so on a single-entry pin it is a one-row list above the *Add another Entry at this Location* affordance — the launching pad for binding a sibling Entry without leaving the map context.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE", "TAP_LOCATION"],
+      "targets": ["EntrySheet",     "LocationSheet"]
+    },
+    {
+      "id": "pin-single-add-sibling-entry",
+      "description": "From a single-entry pin, peek the Location and bind a new Entry to the same Location. Opens EntrySheet, pivots to LocationSheet via TAP_LOCATION, then TAP_ADD_ENTRY hands off to AddLocationToCollection with the existing Location carried as `location-context`. PICK_COLLECTION commits the new Entry against the chosen Collection and returns to MapOverview with the just-created Entry as `pending-review-context`.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE", "TAP_LOCATION",  "TAP_ADD_ENTRY",           "PICK_COLLECTION"],
+      "targets": ["EntrySheet",     "LocationSheet", "AddLocationToCollection", "MapOverview"]
+    },
+    {
+      "id": "pin-single-tap-collection",
+      "description": "Tap a single-entry pin to open EntrySheet, then tap the collectionRow to open the owning Collection's CollectionDetail.",
+      "start": "MapOverview",
+      "events":  ["TAP_PIN_SINGLE", "VIEW_COLLECTION"],
+      "targets": ["EntrySheet",     "CollectionDetail"]
+    },
+    {
+      "id": "drop-pin-new-collection-to-review",
+      "description": "Drop a pin, open AddLocationToCollection, pick *New Collection* to create one mid-flow, finish the editor, land back on MapOverview with the candidate auto-committed against the just-created Collection, then tap the post-add Snackbar to author the Review. The CollectionEditor detour carries the in-flight candidate as payload on `return-to-draft-context` (the editor is fullScreen so the MapOverview host is not preserved across it); DONE_AS_DRAFT_RETURN is modeled as a distinct event from DONE because the schema's one-transition-per-event constraint cannot branch on `return-to-draft-context`.",
+      "start": "MapOverview",
+      "events":  ["DROP_PIN",          "ADD_TO_COLLECTION",       "TAP_NEW_COLLECTION", "DONE_AS_DRAFT_RETURN", "GO_TO_REVIEW"],
+      "targets": ["LocationDraftSheet","AddLocationToCollection", "CollectionEditor",   "MapOverview",          "ReviewForm"]
+    },
+    {
+      "id": "collection-add-entry-via-search",
+      "description": "Collection-rooted add flow via search. From the map, open the Collections list, drill into one Collection, tap *Add entry* to enter MapOverview in add-to-collection mode, then TAP_SEARCH to open a dedicated LocationSearch surface (a sheet/view, not the inline search-on-map field — search deserves its own surface so typing has room and the map can be deprioritized). Pick a suggestion: because `collection-context` is set, PICK_SEARCH_RESULT_FOR_ADD opens LocationSheet centered on the candidate, carrying a confirmation affordance labeled *Add to • {CollectionName}* where the • is a colored dot rendering the Collection's appearance color. The peek's purpose in add-mode is confirmation of the chosen Location — not a Collection picker. CONFIRM_ADD commits the Entry against the pre-selected Collection (Location.addToCollection) and returns to the originating CollectionDetail with a transient Snackbar carrying the new Entry; its Edit action fires GO_TO_REVIEW into ReviewForm. Divergences the verifier will surface: LocationSearch is an undeclared surface (unknown-surface); TAP_SEARCH is not on MapOverview (chart-missing); PICK_SEARCH_RESULT_FOR_ADD currently targets AddLocationToCollection rather than LocationSheet (target-mismatch — the picker step is redundant when `collection-context` already names the Collection); CONFIRM_ADD is not on LocationSheet (chart-missing); GO_TO_REVIEW is not on CollectionDetail (chart-missing). Together they describe an analogue of MapOverview's post-add Snackbar machinery rooted on CollectionDetail, and a search surface promoted out of MapOverview's chrome.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "TAP_COLLECTION",    "TAP_ADD_ENTRY", "TAP_SEARCH",     "PICK_SEARCH_RESULT_FOR_ADD", "CONFIRM_ADD",      "GO_TO_REVIEW"],
+      "targets": ["CollectionList",         "CollectionDetail",  "MapOverview",   "LocationSearch", "LocationSheet",              "CollectionDetail", "ReviewForm"]
+    },
+    {
+      "id": "filter-map-from-sheet",
+      "description": "Open the CollectionList sheet from the map, long-press a row to enter selection mode (the long-pressed row starts checked), then tap *See on map* on the selection action bar to apply the filter. Lands on MapOverview with `filter-context` set to the selected Collection ids and the viewport fit to the union of those Collections' Entries. The filterChip renders over the upper area of the map with a trailing close (X) to clear the filter.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "ENTER_SELECT_MODE", "APPLY_FILTER"],
+      "targets": ["CollectionList",         "CollectionList",    "MapOverview"]
+    },
+    {
+      "id": "filter-map-from-collection-detail",
+      "description": "From the map, open the Collections list, drill into one Collection, and tap *View on map* in its topBar to focus the map on that single Collection. Lands on MapOverview with `filter-context` set to that Collection's id and the viewport fit to its Entries. Single-Collection variant of the filter-map-from-sheet journey.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "TAP_COLLECTION",    "JUMP_TO_COLLECTION"],
+      "targets": ["CollectionList",         "CollectionDetail",  "MapOverview"]
+    },
+    {
+      "id": "clear-map-filter",
+      "description": "With `filter-context` active on MapOverview, tap the trailing close (X) on the filterChip. Self-transition that drops `filter-context` and restores all Collections' pins to the map.",
+      "start": "MapOverview",
+      "events":  ["CLEAR_FILTER"],
+      "targets": ["MapOverview"]
+    },
+    {
+      "id": "edit-active-filter",
+      "description": "With `filter-context` active on MapOverview, tap the filterChip body (not its close) to reopen CollectionList in selection mode with the active filter pre-checked. Adjust the selection and tap *See on map* to commit the new filter set, replacing the prior one.",
+      "start": "MapOverview",
+      "events":  ["TAP_FILTER_CHIP", "APPLY_FILTER"],
+      "targets": ["CollectionList",  "MapOverview"]
+    },
+    {
+      "id": "browse-to-submit-review",
+      "description": "From the map, drill into a Collection, open one of its Entries, edit the review, submit, land back on the Entry detail with the review now saved.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON","TAP_COLLECTION",    "TAP_ENTRY",             "TAP_EDIT_REVIEW","SUBMIT"],
+      "targets": ["CollectionList",        "CollectionDetail",  "CollectionEntryDetail", "ReviewForm",     "CollectionEntryDetail"]
+    },
+    {
+      "id": "search-then-jump-to-collection-detail",
+      "description": "Adversarial: the motivating bug for Kind G. User commits a search to map, opens the Collections sheet over MapOverview (search-context persists — sheet over host), then taps a Collection row to navigate fullScreen into CollectionDetail. That fullScreen jump leaves MapOverview's host stack; search-context must die with its owning surface. If the host-stack derivation regresses (or someone makes CollectionList persist search-context past the host), the inactive-after-TAP_COLLECTION assertion fires.",
+      "start": "MapOverview",
+      "events":  ["COMMIT_SEARCH_TO_MAP", "TAP_COLLECTIONS_BUTTON", "TAP_COLLECTION"],
+      "targets": ["MapOverview",          "CollectionList",         "CollectionDetail"],
+      "expects": [
+        { "afterEvent": "COMMIT_SEARCH_TO_MAP", "active": ["search-context"], "note": "self-transition sets search-context per meta.context.owns" },
+        { "afterEvent": "TAP_COLLECTIONS_BUTTON", "active": ["search-context"], "note": "sheet over host; MapOverview stays mounted" },
+        { "afterEvent": "TAP_COLLECTION", "inactive": ["search-context"], "note": "fullScreen jump from sheet unmounts MapOverview; search-context dies with its owning surface" }
+      ]
+    },
+    {
+      "id": "search-then-settings-clears",
+      "description": "Adversarial: search-context dies on the explicit-clears fullScreen path. TAP_SETTINGS declares search-context in its `clears` array, so the key dies even before host-stack unmount applies.",
+      "start": "MapOverview",
+      "events":  ["COMMIT_SEARCH_TO_MAP", "TAP_SETTINGS"],
+      "targets": ["MapOverview",          "Settings"],
+      "expects": [
+        { "afterEvent": "COMMIT_SEARCH_TO_MAP", "active": ["search-context"] },
+        { "afterEvent": "TAP_SETTINGS", "inactive": ["search-context"] }
+      ]
+    },
+    {
+      "id": "add-mode-cancel-clears",
+      "description": "Adversarial: collection-context lifetime across the addToCollection round-trip. Set by CollectionDetail.TAP_ADD_ENTRY (the only transition in collection-context.set), persists across the MapOverview add-mode session, then cleared by CANCEL_ADD back to CollectionDetail. The intermediate steps confirm collection-context stays active until the explicit clear, and that the fullScreen jump from CollectionList to CollectionDetail at step 2 does not strand a stale value (none was active there).",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "TAP_COLLECTION",   "TAP_ADD_ENTRY", "CANCEL_ADD"],
+      "targets": ["CollectionList",         "CollectionDetail", "MapOverview",   "CollectionDetail"],
+      "expects": [
+        { "afterEvent": "TAP_COLLECTION", "inactive": ["collection-context"], "note": "fresh CollectionDetail; not in add-mode yet" },
+        { "afterEvent": "TAP_ADD_ENTRY", "active": ["collection-context"], "note": "collection-context.set lists this transition" },
+        { "afterEvent": "CANCEL_ADD", "inactive": ["collection-context"], "note": "CANCEL_ADD's `clears` drops the key explicitly" }
+      ]
+    },
+    {
+      "id": "filter-then-clear",
+      "description": "Adversarial: filter-context lifetime across the CollectionList selection sheet and the trailing close (X) on the filterChip. ENTER_SELECT_MODE is a within-sheet self-transition that must not disturb context; APPLY_FILTER sets filter-context on MapOverview (via its set entry); CLEAR_FILTER drops it via the chip's close affordance.",
+      "start": "MapOverview",
+      "events":  ["TAP_COLLECTIONS_BUTTON", "ENTER_SELECT_MODE", "APPLY_FILTER", "CLEAR_FILTER"],
+      "targets": ["CollectionList",         "CollectionList",    "MapOverview",  "MapOverview"],
+      "expects": [
+        { "afterEvent": "ENTER_SELECT_MODE", "inactive": ["filter-context"], "note": "sheet self-transition; nothing set yet" },
+        { "afterEvent": "APPLY_FILTER", "active": ["filter-context"], "note": "filter-context.set lists CollectionList.APPLY_FILTER" },
+        { "afterEvent": "CLEAR_FILTER", "inactive": ["filter-context"], "note": "self-transition with clears: [filter-context]" }
+      ]
+    }
+  ]
+}

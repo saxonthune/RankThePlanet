@@ -1,0 +1,33 @@
+{
+  "actions": [
+    {"concept": "Collection", "action": "create"},
+    {"concept": "Collection", "action": "edit"},
+    {"concept": "Collection", "action": "addEntry"},
+    {"concept": "Collection", "action": "removeEntry"},
+    {"concept": "Collection", "action": "import"},
+    {"concept": "Collection", "action": "export"},
+    {"concept": "Collection", "action": "share"},
+    {"concept": "Location", "action": "resolve"},
+    {"concept": "Location", "action": "resolveNearby"},
+    {"concept": "Location", "action": "dropPin"},
+    {"concept": "Location", "action": "addToCollection"},
+    {"concept": "Location", "action": "openExternally"},
+    {"concept": "Location", "action": "refresh"},
+    {"concept": "Review", "action": "defineTemplate"},
+    {"concept": "Review", "action": "editTemplate"},
+    {"concept": "Review", "action": "useBuiltIn"},
+    {"concept": "Review", "action": "start"},
+    {"concept": "Review", "action": "submit"},
+    {"concept": "Review", "action": "edit"},
+    {"concept": "Review", "action": "clear"},
+    {"concept": "MapOverview", "action": "open"},
+    {"concept": "MapOverview", "action": "pan"},
+    {"concept": "MapOverview", "action": "zoom"},
+    {"concept": "MapOverview", "action": "selectPin"},
+    {"concept": "MapOverview", "action": "applyFilter"},
+    {"concept": "MapOverview", "action": "jumpToCollection"},
+    {"concept": "LocationProvider", "action": "addProvider"},
+    {"concept": "LocationProvider", "action": "switchProvider"}
+  ],
+  "skipNamespaces": ["Debug", "About"]
+}

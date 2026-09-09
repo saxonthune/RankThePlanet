@@ -1,0 +1,12 @@
+.idea/
+build/
+local.properties
+.gradle/
+*.iml
+xcuserdata/
+.DS_Store
+Pods/
+*.xcworkspace
+!iosApp/iosApp.xcodeproj/project.xcworkspace/
+!iosApp/iosApp.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+*.orig

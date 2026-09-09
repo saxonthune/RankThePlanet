@@ -1,0 +1,108 @@
+{
+  "surface": "CollectionList",
+  "regions": [
+    {
+      "id": "topBar",
+      "purpose": "Identifies the surface and holds creation affordances in browse mode. In selection mode swaps to the selection action bar ({n} selected, Cancel, See on map)."
+    },
+    {
+      "id": "content",
+      "purpose": "The user's Collections, browsable as a vertical list. Rows render with a leading checkbox in selection mode."
+    },
+    {
+      "id": "search",
+      "purpose": "A search field at the top of the content region. Filters the rendered list of Collections by name in-surface. Suppressed in selection mode.",
+      "appearsInModes": ["browse"]
+    }
+  ],
+  "affordances": [
+    {
+      "id": "new-collection",
+      "label": "New Collection",
+      "region": "topBar",
+      "event": "TAP_NEW_COLLECTION",
+      "target": "CollectionEditor",
+      "action": "Collection.create",
+      "appearsInModes": ["browse"]
+    },
+    {
+      "id": "import-list",
+      "label": "Import a list",
+      "region": "topBar",
+      "event": "TAP_IMPORT",
+      "target": "ImportFlow",
+      "action": "Collection.import",
+      "appearsInModes": ["browse"]
+    },
+    {
+      "id": "search-collections",
+      "label": "Search collections by name",
+      "region": "search",
+      "appearsInModes": ["browse"]
+    },
+    {
+      "id": "cancel-selection",
+      "label": "Cancel",
+      "region": "topBar",
+      "event": "EXIT_SELECT_MODE",
+      "appearsInModes": ["selection"]
+    },
+    {
+      "id": "dismiss-sheet",
+      "label": "Dismiss the sheet",
+      "region": "content",
+      "event": "BACK",
+      "target": "MapOverview",
+      "rendering": "The bottom-sheet's swipe-down or scrim-tap dismiss-gesture, not a dedicated button. Leaves any active `filter-context` on MapOverview untouched."
+    },
+    {
+      "id": "apply-filter",
+      "label": "See on map",
+      "region": "topBar",
+      "event": "APPLY_FILTER",
+      "target": "MapOverview",
+      "action": "MapOverview.applyFilter",
+      "appearsInModes": ["selection"],
+      "rendering": "Primary action on the selection action bar. Disabled when zero rows are checked. On fire: sets MapOverview's `filter-context` to the selected ids (replacing any prior value), dismisses the sheet, and invokes MapOverview.jumpToCollection."
+    }
+  ],
+  "lists": [
+    {
+      "id": "collections",
+      "region": "content",
+      "iterates": "Collection",
+      "reads": "collections",
+      "item": {
+        "shows": [
+          "Collection.name",
+          "Collection.appearance (color, pinStyle) as a visual marker",
+          "entry count for the Collection",
+          "leading checkbox in selection mode (checked when the Collection's id is in the in-progress selection set, or in `filter-context.collectionIds` when the sheet was opened via TAP_FILTER_CHIP)"
+        ],
+        "affordance": {
+          "id": "open-collection",
+          "label": "Open a Collection",
+          "event": "TAP_COLLECTION",
+          "target": "CollectionDetail",
+          "appearsInModes": ["browse"]
+        },
+        "altAffordances": [
+          {
+            "id": "enter-select-mode",
+            "label": "Long-press to select",
+            "event": "ENTER_SELECT_MODE",
+            "appearsInModes": ["browse"],
+            "rendering": "Long-press gesture on any row. The long-pressed row starts checked; the sheet enters selection mode."
+          },
+          {
+            "id": "toggle-row-selection",
+            "label": "Toggle selection",
+            "appearsInModes": ["selection"],
+            "rendering": "Tap on a row in selection mode toggles its checkbox. Within-mode self-affordance — not a navigation transition."
+          }
+        ]
+      },
+      "emptyState": "When the user has no Collections, the content region shows a hint pointing at New Collection and Import a list."
+    }
+  ]
+}
